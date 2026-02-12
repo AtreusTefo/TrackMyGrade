@@ -1,0 +1,87 @@
+<div class="container">
+  <div class="header">
+    <h1>Student Details</h1>
+    <a routerLink="/" class="btn btn-secondary">Back to List</a>
+  </div>
+
+  <div *ngIf="errors.length > 0" class="error-banner">
+    <ul>
+      <li *ngFor="let error of errors">{{ error }}</li>
+    </ul>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    Loading student details...
+  </div>
+
+  <div *ngIf="!isLoading && student" class="detail-card">
+    <div class="detail-section">
+      <h2>{{ student.firstName }} {{ student.lastName }}</h2>
+      
+      <div class="detail-row">
+        <div class="detail-item">
+          <label>Email:</label>
+          <p>{{ student.email }}</p>
+        </div>
+        <div class="detail-item">
+          <label>Phone:</label>
+          <p>{{ student.phone }}</p>
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-item">
+          <label>Grade:</label>
+          <p>{{ student.grade }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Assessments</h3>
+      <div class="assessment-grid">
+        <div class="assessment-item">
+          <label>Assessment 1:</label>
+          <p class="value">{{ student.assessment1 }}/20</p>
+        </div>
+        <div class="assessment-item">
+          <label>Assessment 2:</label>
+          <p class="value">{{ student.assessment2 }}/20</p>
+        </div>
+        <div class="assessment-item">
+          <label>Assessment 3:</label>
+          <p class="value">{{ student.assessment3 }}/20</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section calculations-section">
+      <h3>Performance Metrics</h3>
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <label>Total Score:</label>
+          <p class="metric-value">{{ student.total }}/60</p>
+        </div>
+        <div class="metric-item">
+          <label>Average:</label>
+          <p class="metric-value">{{ student.average.toFixed(2) }}</p>
+        </div>
+        <div class="metric-item">
+          <label>Percentage:</label>
+          <p class="metric-value">{{ student.percentage.toFixed(2) }}%</p>
+        </div>
+        <div class="metric-item">
+          <label>Performance Level:</label>
+          <p class="performance-badge" [ngClass]="getPerformanceLevelClass(student.performanceLevel)">
+            {{ student.performanceLevel }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a [routerLink]="['/edit', student.id]" class="btn btn-warning">Edit Student</a>
+      <button (click)="deleteStudent()" class="btn btn-danger">Delete Student</button>
+    </div>
+  </div>
+</div>

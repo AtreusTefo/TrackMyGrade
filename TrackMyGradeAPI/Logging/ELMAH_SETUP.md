@@ -1,0 +1,212 @@
+# ELMAH Error Logging Setup
+
+This document describes the ELMAH (Error Logging Modules and Handlers) integration in the TrackMyGrade API.
+
+## Overview
+
+ELMAH is a flexible error logging framework that allows you to log, view, and filter unhandled exceptions in your ASP.NET application. The integration includes:
+
+- **Automatic exception logging** for all unhandled errors
+- **Error filtering** to exclude certain error types (e.g., 404 errors)
+- **Web-based error log viewer** accessible via `/elmah.axd`
+- **Email notifications** (optional - can be configured in web.config)
+- **Multiple storage backends** (In-Memory, SQL Server, etc.)
+
+## Installation
+
+The ELMAH NuGet packages have been added to the project:
+- `ELMAH` - Core error logging framework
+- `elmah.io` - Optional cloud-based error logging
+
+## Configuration
+
+### web.config
+
+The main configuration is in `web.config`:
+
+```xml
+<elmah>
+  <!-- Security: restrict remote access to error log viewer -->
+  <security allowRemoteAccess="false"/>
+  
+  <!-- Error log storage: currently using in-memory storage -->
+  <errorLog type="Elmah.MemoryErrorLog, Elmah" size="100"/>
+  
+  <!-- Error filtering: excludes 404 errors from logging -->
+  <errorFilter>
+    <test>
+      <eq binding="HttpStatusCode" value="404" type="Int32"/>
+    </test>
+  </errorFilter>
+</elmah>
+```
+
+## Accessing the Error Log
+
+### Local Access
+
+To view logged errors, navigate to:
+```
+http://localhost:PORT/elmah.axd
+```
+
+This page displays:
+- List of all logged errors
+- Error details (stack trace, request info, etc.)
+- Error filtering and searching capabilities
+- Option to delete errors
+
+### Security
+
+Currently, remote access is disabled. To allow remote access:
+
+```xml
+<security allowRemoteAccess="true"/>
+```
+
+**Warning**: Limit access to authorized users only to prevent exposing sensitive errors.
+
+## Using ELMAH in Code
+
+### Automatic Logging
+
+Unhandled exceptions are automatically logged via:
+1. `Global.asax.cs` - Application_Error event
+2. Web API Exception Handlers - registered in WebApiConfig
+3. ELMAH modules in web.config
+
+### Manual Logging
+
+To manually log exceptions in your code:
+
+```csharp
+using TrackMyGradeAPI.Logging;
+
+// Log an exception
+try 
+{
+    // some code
+}
+catch (Exception ex)
+{
+    ErrorLoggingConfig.LogError(ex);
+}
+
+// Log with custom message
+ErrorLoggingConfig.LogErrorWithMessage("Custom error message", exception);
+```
+
+## Storage Options
+
+### In-Memory Storage (Current)
+
+```xml
+<errorLog type="Elmah.MemoryErrorLog, Elmah" size="100"/>
+```
+
+**Pros**: No database required, fast
+**Cons**: Errors lost on application restart, limited capacity
+
+### SQL Server Storage
+
+To store errors in SQL Server, update web.config:
+
+```xml
+<errorLog type="Elmah.SqlErrorLog, Elmah" connectionStringName="DefaultConnection"/>
+```
+
+Run the SQL Server installation script to create required tables:
+
+```powershell
+sqlcmd -S (local) -E < ELMAH_SQLServer.sql
+```
+
+## Email Notifications (Optional)
+
+To enable email notifications for errors, uncomment and configure in web.config:
+
+```xml
+<errorMail 
+  from="error@yourdomain.com" 
+  to="admin@yourdomain.com" 
+  subject="TrackMyGrade API Error"
+  smtpServer="smtp.yourdomain.com"
+  smtpPort="587"
+  useSsl="true"
+  userName="your-email@domain.com"
+  password="your-password"/>
+```
+
+## Error Filtering
+
+ELMAH allows you to exclude certain errors from logging. Current filter excludes 404 errors:
+
+```xml
+<errorFilter>
+  <test>
+    <eq binding="HttpStatusCode" value="404" type="Int32"/>
+  </test>
+</errorFilter>
+```
+
+To filter other error types, modify the `<test>` element. Examples:
+
+```xml
+<!-- Exclude 401 Unauthorized -->
+<eq binding="HttpStatusCode" value="401" type="Int32"/>
+
+<!-- Exclude specific exception types -->
+<regex binding="Exception.Type" pattern="NullReferenceException"/>
+
+<!-- Exclude by message -->
+<regex binding="Exception.Message" pattern="timeout"/>
+```
+
+## Exception Handlers
+
+### Global Handler (Global.asax.cs)
+
+Catches unhandled exceptions from the entire application and logs them to ELMAH.
+
+### Web API Exception Handlers
+
+Two custom exception handlers are registered in WebApiConfig:
+
+1. **ElmahExceptionHandler** - Handles exceptions and returns JSON error response
+2. **ElmahExceptionLogger** - Logs exception details
+
+These ensure API errors are properly logged and formatted.
+
+## Best Practices
+
+1. **Monitor Errors Regularly**: Check `/elmah.axd` regularly to monitor application health
+2. **Configure Email Alerts**: For production, enable email notifications for critical errors
+3. **Use SQL Storage**: For production, use SQL Server storage instead of in-memory
+4. **Secure Access**: Restrict access to `/elmah.axd` to authorized users only
+5. **Filter Errors Appropriately**: Exclude expected errors (404, 401) to focus on real issues
+6. **Review Stack Traces**: Use detailed error information to fix bugs quickly
+
+## Troubleshooting
+
+### ELMAH page not loading
+
+- Ensure `modules` and `handlers` are configured in web.config
+- Check that the path matches: `path="elmah.axd"`
+- Verify IIS/IIS Express permissions
+
+### Errors not appearing
+
+- Check error filters in web.config
+- Ensure error log type is properly configured
+- Check application event logs for ELMAH startup errors
+
+### Storage issues
+
+- For SQL Server: verify connection string and database tables exist
+- For In-Memory: verify size parameter is set (default 100)
+
+## References
+
+- [ELMAH Official Documentation](https://elmah.github.io/)
+- [Microsoft ELMAH Tutorial](https://learn.microsoft.com/en-us/aspnet/web-forms/overview/older-versions-getting-started/deploying-web-site-projects/logging-error-details-with-elmah-cs)
+- [ELMAH Error Filtering Syntax](https://elmah.github.io/a/error-filtering/)

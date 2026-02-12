@@ -1,0 +1,16 @@
+<header class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-brand">
+      <h1>{{ title }}</h1>
+    </div>
+    <nav *ngIf="isAuthenticated" class="navbar-menu">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <span class="user-info">Welcome, {{ currentTeacher?.firstName }}</span>
+      <button (click)="logout()" class="btn-logout">Logout</button>
+    </nav>
+  </div>
+</header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
