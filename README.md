@@ -260,10 +260,23 @@ Then navigate to `http://localhost:4200` in your browser.
 
 ## Troubleshooting
 
+For a **comprehensive troubleshooting guide** with detailed root-cause analysis and solutions,
+see [`TrackMyGradeAPI/TROUBLESHOOTING.md`](TrackMyGradeAPI/TROUBLESHOOTING.md).
+
+### Quick Reference — Known Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `No Entity Framework provider found for ADO.NET provider 'System.Data.SQLite'` | EF6 can't resolve the SQLite EF provider at runtime | Fix `providerName` in `App.config` to `System.Data.SQLite`; add code-based `SQLiteConfiguration : DbConfiguration`; apply `[DbConfigurationType]` to DbContext |
+| `An error occurred while executing the command definition` (0-byte .db file) | EF6's `CreateIfNotExists()` uses SQL Server DDL that SQLite ignores | Disable default initializer with `Database.SetInitializer(null)`; create tables manually with `CREATE TABLE IF NOT EXISTS` |
+| `Failed to listen on prefix 'http://localhost:5000/'` | Port 5000 already in use by a previous instance | Kill old process: `Get-Process -Name TrackMyGradeAPI \| Stop-Process -Force` |
+| `Your project file doesn't list 'win' as a RuntimeIdentifier` | MSBuild can't resolve SQLite native interop DLLs without a target runtime | Add `<RuntimeIdentifier>win</RuntimeIdentifier>` to `.csproj` |
+
 ### Backend won't start
-- Ensure port 5000 is available
+- Ensure port 5000 is available (`netstat -ano | findstr ":5000"`)
 - Check that .NET Framework 4.8 is installed
-- Verify all NuGet packages are restored
+- Verify all NuGet packages are restored (`dotnet restore`)
+- Kill any previous instances before restarting
 
 ### Frontend shows CORS error
 - Ensure backend is running on http://localhost:5000

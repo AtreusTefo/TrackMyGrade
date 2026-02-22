@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { StudentService } from '../../services/student.service';
 import { Student, StudentCreate, StudentUpdate } from '../../models';
+import { extractErrors } from '../../services/error.util';
 
 @Component({
   selector: 'app-student-form',
@@ -152,7 +153,7 @@ export class StudentFormComponent implements OnInit {
           this.router.navigate(['/detail', this.studentId]);
         },
         (error) => {
-          this.errors = [error.error || 'Failed to update student'];
+          this.errors = extractErrors(error);
           this.isSubmitting = false;
         }
       );
@@ -162,7 +163,7 @@ export class StudentFormComponent implements OnInit {
           this.router.navigate(['/']);
         },
         (error) => {
-          this.errors = [error.error || 'Failed to create student'];
+          this.errors = extractErrors(error);
           this.isSubmitting = false;
         }
       );

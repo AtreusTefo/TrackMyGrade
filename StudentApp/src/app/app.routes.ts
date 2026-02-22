@@ -1,4 +1,4 @@
-import { Routes, CanActivateFn } from '@angular/router';
+import { Routes, CanActivateFn, Router } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { StudentListComponent } from './components/student-list/student-list.component';
@@ -9,7 +9,11 @@ import { inject } from '@angular/core';
 
 const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
-  return authService.isAuthenticated();
+  const router = inject(Router);
+  if (authService.isAuthenticated()) {
+    return true;
+  }
+  return router.createUrlTree(['/login']);
 };
 
 export const routes: Routes = [

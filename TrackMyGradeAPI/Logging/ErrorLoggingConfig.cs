@@ -15,8 +15,8 @@ namespace TrackMyGradeAPI.Logging
         /// </summary>
         public static void InitializeErrorLogging()
         {
-            // Subscribe to global error event
-            ErrorSignal.FromContext(HttpContext.Current).Raise(null);
+            // ELMAH is configured via web.config modules — nothing to do at startup.
+            // ErrorLog, ErrorMail and ErrorFilter modules are registered declaratively.
         }
 
         /// <summary>
@@ -29,14 +29,21 @@ namespace TrackMyGradeAPI.Logging
             if (exception == null)
                 return;
 
-            HttpContext currentContext = context as HttpContext ?? HttpContext.Current;
-            if (currentContext != null)
+            try
             {
-                ErrorSignal.FromContext(currentContext).Raise(exception);
+                HttpContext currentContext = HttpContext.Current;
+                if (currentContext != null)
+                {
+                    ErrorSignal.FromContext(currentContext).Raise(exception);
+                }
+                else
+                {
+                    ErrorLog.GetDefault(null).Log(new Error(exception));
+                }
             }
-            else
+            catch
             {
-                ErrorLog.GetDefault(null).Log(new Error(exception));
+                // Logging must never crash the application
             }
         }
 
@@ -47,7 +54,7 @@ namespace TrackMyGradeAPI.Logging
         /// <param name="exception">The exception</param>
         public static void LogErrorWithMessage(string message, Exception exception)
         {
-            var customException = new ApplicationException(message, exception);
+            var customException = new System.ApplicationException(message, exception);
             LogError(customException);
         }
 

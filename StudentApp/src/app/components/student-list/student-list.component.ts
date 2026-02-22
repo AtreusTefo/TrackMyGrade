@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StudentService } from '../../services/student.service';
 import { Student } from '../../models';
+import { extractErrors } from '../../services/error.util';
 
 @Component({
   selector: 'app-student-list',
@@ -31,7 +32,7 @@ export class StudentListComponent implements OnInit {
         this.isLoading = false;
       },
       (error) => {
-        this.errors = [error.error || 'Failed to load students'];
+        this.errors = extractErrors(error);
         this.isLoading = false;
       }
     );
@@ -44,7 +45,7 @@ export class StudentListComponent implements OnInit {
           this.loadStudents();
         },
         (error) => {
-          this.errors = [error.error || 'Failed to delete student'];
+          this.errors = extractErrors(error);
         }
       );
     }
