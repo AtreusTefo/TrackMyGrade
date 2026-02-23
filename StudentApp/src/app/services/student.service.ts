@@ -17,9 +17,9 @@ export class StudentService {
 
   private getHeaders(): HttpHeaders {
     const teacher = this.authService.getCurrentTeacher();
-    const headers = new HttpHeaders();
-    if (teacher) {
-      return headers.set('X-TeacherId', teacher.id.toString());
+    let headers = new HttpHeaders();
+    if (teacher?.id != null) {
+      headers = headers.set('X-TeacherId', teacher.id.toString());
     }
     return headers;
   }

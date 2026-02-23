@@ -383,4 +383,75 @@ When troubleshooting EF6 + SQLite issues, verify all of these in `App.config`:
 
 ---
 
+## Frontend: Create Student Stuck On "Saving..."
+
+**Symptom**
+
+- On the Angular student form, clicking `Create` changes the button text to `Saving...` and it never completes. No navigation occurs, and the browser Network tab may show no request or an aborted one.
+
+**Root Cause**
+
+- The backend originally serialized JSON using PascalCase (`Id`, `FirstName`, `Token`).
+- The Angular `Teacher` and `Student` interfaces use camelCase (`id`, `firstName`, `token`).
+- After login, the raw teacher object from the backend was stored in `localStorage` without normalization.
+- `StudentService.getHeaders()` called `teacher.id.toString()` even when `teacher.id` was `undefined`, throwing a synchronous `TypeError` before the HTTP `post`/`put` observable was subscribed.
+- Because the exception occurred before `subscribe(...)` registered handlers, `StudentFormComponent.onSubmit()` never hit the `next` or `error` callbacks, and `isSubmitting` stayed `true`, leaving the button stuck on `Saving...`.
+
+**Fix**
+
+Backend:
+
+- In `WebApiConfig.cs`, configure camelCase JSON serialization so API responses match the Angular models:
+
+  ```csharp
+  config.Formatters.JsonFormatter.SerializerSettings.NullValueHandling =
+      Newtonsoft.Json.NullValueHandling.Ignore;
+  config.Formatters.JsonFormatter.SerializerSettings.ContractResolver =
+      new CamelCasePropertyNamesContractResolver();
+  ```
+
+Frontend:
+
+- In `AuthService.setCurrentTeacher(...)` and `getStoredTeacher()`, normalize both PascalCase and camelCase keys when reading/writing the teacher object so `teacher.id` and `teacher.token` are always present.
+- In `StudentService.getHeaders()`, guard against `null`/`undefined` IDs:
+
+  ```ts
+  const teacher = this.authService.getCurrentTeacher();
+  let headers = new HttpHeaders();
+  if (teacher?.id != null) {
+    headers = headers.set('X-TeacherId', teacher.id.toString());
+  }
+  return headers;
+  ```
+
+- In `StudentFormComponent.onSubmit()`, wrap the service call in a `try/catch` and always reset `isSubmitting` in both success and error paths so any unexpected synchronous error cannot leave the UI stuck:
+
+  ```ts
+  this.isSubmitting = true;
+  try {
+    // create or update via StudentService...
+  } catch {
+    this.errors = ['An unexpected error occurred. Please try logging out and back in.'];
+    this.isSubmitting = false;
+  }
+  ```
+
+- Update all remaining `subscribe(success, error)` calls to the `subscribe({ next, error })` object form to avoid deprecated patterns with RxJS 7.
+
+Environment / Tooling:
+
+- For Angular 18 with TypeScript 5+, ensure `tsconfig.json` uses `"moduleResolution": "bundler"` so the compiler can resolve Angular's ESM packages via their `exports` field.
+- In Visual Studio, add the `StudentApp.esproj` to the solution so the IDE uses the workspace TypeScript version (from `node_modules`) instead of the older built-in tools, which do not understand `moduleResolution: "bundler"`.
+
+**Verification Steps**
+
+1. Rebuild the backend (`TrackMyGradeAPI`) and start `TrackMyGradeAPI.exe` on `http://localhost:5000`.
+2. Stop and restart `ng serve` for the Angular app.
+3. Clear browser `localStorage` for `http://localhost:4200` to remove any stale PascalCase teacher objects.
+4. Register or log in as a teacher.
+5. Open the student form, fill it out, and click `Create`.
+6. The request should complete, the button text should revert from `Saving...`, and the app should navigate to the student list/detail view with the new record visible.
+
+---
+
 **Last Updated**: February 2026

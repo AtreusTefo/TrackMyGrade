@@ -80,14 +80,15 @@ export class RegisterComponent implements OnInit {
       password: this.password
     };
 
-    this.authService.register(registerData).subscribe(
-      (response) => {
+    this.authService.register(registerData).subscribe({
+      next: (response) => {
+        this.isSubmitting = false;
         this.router.navigate(['/login']);
       },
-      (error) => {
+      error: (error) => {
         this.errors = extractErrors(error);
         this.isSubmitting = false;
       }
-    );
+    });
   }
 }

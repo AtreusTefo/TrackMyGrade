@@ -271,6 +271,7 @@ see [`TrackMyGradeAPI/TROUBLESHOOTING.md`](TrackMyGradeAPI/TROUBLESHOOTING.md).
 | `An error occurred while executing the command definition` (0-byte .db file) | EF6's `CreateIfNotExists()` uses SQL Server DDL that SQLite ignores | Disable default initializer with `Database.SetInitializer(null)`; create tables manually with `CREATE TABLE IF NOT EXISTS` |
 | `Failed to listen on prefix 'http://localhost:5000/'` | Port 5000 already in use by a previous instance | Kill old process: `Get-Process -Name TrackMyGradeAPI \| Stop-Process -Force` |
 | `Your project file doesn't list 'win' as a RuntimeIdentifier` | MSBuild can't resolve SQLite native interop DLLs without a target runtime | Add `<RuntimeIdentifier>win</RuntimeIdentifier>` to `.csproj` |
+| Student form stuck on `Saving...` when creating a new student | Backend originally returned PascalCase JSON which didn't match Angular's camelCase models; this made `teacher.id` undefined and threw inside `StudentService.getHeaders()` before `subscribe()`, leaving `isSubmitting` `true` | Configure camelCase JSON in `WebApiConfig.cs`; normalize teacher objects in `AuthService`; guard `teacher?.id` in `getHeaders()`; wrap `onSubmit()` in `try/catch` and always reset `isSubmitting`; ensure Angular uses `moduleResolution: "bundler"` with workspace TypeScript |
 
 ### Backend won't start
 - Ensure port 5000 is available (`netstat -ano | findstr ":5000"`)

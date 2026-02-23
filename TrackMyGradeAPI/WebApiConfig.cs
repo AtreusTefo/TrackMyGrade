@@ -1,6 +1,7 @@
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.ExceptionHandling;
+using Newtonsoft.Json.Serialization;
 using TrackMyGradeAPI.Handlers;
 using TrackMyGradeAPI.Infrastructure;
 
@@ -33,6 +34,8 @@ namespace TrackMyGradeAPI
             // Configure JSON formatter
             config.Formatters.JsonFormatter.SerializerSettings.NullValueHandling = 
                 Newtonsoft.Json.NullValueHandling.Ignore;
+            config.Formatters.JsonFormatter.SerializerSettings.ContractResolver =
+                new CamelCasePropertyNamesContractResolver();
         }
     }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { StudentService } from '../../services/student.service';
 import { Student, StudentCreate, StudentUpdate } from '../../models';
 import { extractErrors } from '../../services/error.util';
@@ -9,7 +9,7 @@ import { extractErrors } from '../../services/error.util';
 @Component({
   selector: 'app-student-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './student-form.component.html',
   styleUrls: ['./student-form.component.css']
 })
@@ -53,8 +53,8 @@ export class StudentFormComponent implements OnInit {
     if (!this.studentId) return;
     
     this.isLoading = true;
-    this.studentService.getStudentById(this.studentId).subscribe(
-      (student) => {
+    this.studentService.getStudentById(this.studentId).subscribe({
+      next: (student) => {
         this.firstName = student.firstName;
         this.lastName = student.lastName;
         this.email = student.email;
@@ -66,11 +66,11 @@ export class StudentFormComponent implements OnInit {
         this.isLoading = false;
         this.calculateValues();
       },
-      (error) => {
-        this.errors = [error.error || 'Failed to load student'];
+      error: (error) => {
+        this.errors = extractErrors(error);
         this.isLoading = false;
       }
-    );
+    });
   }
 
   calculateValues(): void {
@@ -147,26 +147,33 @@ export class StudentFormComponent implements OnInit {
       assessment3: this.assessment3!
     };
 
-    if (this.isEditMode && this.studentId) {
-      this.studentService.updateStudent(this.studentId, data as StudentUpdate).subscribe(
-        (response) => {
-          this.router.navigate(['/detail', this.studentId]);
-        },
-        (error) => {
-          this.errors = extractErrors(error);
-          this.isSubmitting = false;
-        }
-      );
-    } else {
-      this.studentService.createStudent(data as StudentCreate).subscribe(
-        (response) => {
-          this.router.navigate(['/']);
-        },
-        (error) => {
-          this.errors = extractErrors(error);
-          this.isSubmitting = false;
-        }
-      );
+    try {
+      if (this.isEditMode && this.studentId) {
+        this.studentService.updateStudent(this.studentId, data as StudentUpdate).subscribe({
+          next: (response) => {
+            this.isSubmitting = false;
+            this.router.navigate(['/detail', this.studentId]);
+          },
+          error: (error) => {
+            this.errors = extractErrors(error);
+            this.isSubmitting = false;
+          }
+        });
+      } else {
+        this.studentService.createStudent(data as StudentCreate).subscribe({
+          next: (response) => {
+            this.isSubmitting = false;
+            this.router.navigate(['/list']);
+          },
+          error: (error) => {
+            this.errors = extractErrors(error);
+            this.isSubmitting = false;
+          }
+        });
+      }
+    } catch (e) {
+      this.errors = ['An unexpected error occurred. Please try logging out and back in.'];
+      this.isSubmitting = false;
     }
   }
 }

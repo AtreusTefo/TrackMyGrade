@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { StudentService } from '../../services/student.service';
 import { Student } from '../../models';
+import { extractErrors } from '../../services/error.util';
 
 @Component({
   selector: 'app-student-detail',
@@ -31,28 +32,28 @@ export class StudentDetailComponent implements OnInit {
 
   loadStudent(id: number): void {
     this.isLoading = true;
-    this.studentService.getStudentById(id).subscribe(
-      (data) => {
+    this.studentService.getStudentById(id).subscribe({
+      next: (data) => {
         this.student = data;
         this.isLoading = false;
       },
-      (error) => {
-        this.errors = [error.error || 'Failed to load student'];
+      error: (error) => {
+        this.errors = extractErrors(error);
         this.isLoading = false;
       }
-    );
+    });
   }
 
   deleteStudent(): void {
     if (this.student && confirm(`Are you sure you want to delete ${this.student.firstName} ${this.student.lastName}?`)) {
-      this.studentService.deleteStudent(this.student.id).subscribe(
-        () => {
+      this.studentService.deleteStudent(this.student.id).subscribe({
+        next: () => {
           this.router.navigate(['/']);
         },
-        (error) => {
-          this.errors = [error.error || 'Failed to delete student'];
+        error: (error) => {
+          this.errors = extractErrors(error);
         }
-      );
+      });
     }
   }
 

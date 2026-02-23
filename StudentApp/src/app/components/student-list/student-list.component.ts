@@ -26,28 +26,28 @@ export class StudentListComponent implements OnInit {
   loadStudents(): void {
     this.isLoading = true;
     this.errors = [];
-    this.studentService.getAllStudents().subscribe(
-      (data) => {
+    this.studentService.getAllStudents().subscribe({
+      next: (data) => {
         this.students = data;
         this.isLoading = false;
       },
-      (error) => {
+      error: (error) => {
         this.errors = extractErrors(error);
         this.isLoading = false;
       }
-    );
+    });
   }
 
   deleteStudent(id: number, firstName: string, lastName: string): void {
     if (confirm(`Are you sure you want to delete ${firstName} ${lastName}?`)) {
-      this.studentService.deleteStudent(id).subscribe(
-        () => {
+      this.studentService.deleteStudent(id).subscribe({
+        next: () => {
           this.loadStudents();
         },
-        (error) => {
+        error: (error) => {
           this.errors = extractErrors(error);
         }
-      );
+      });
     }
   }
 

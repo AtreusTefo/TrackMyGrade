@@ -66,9 +66,9 @@
           <div class="form-group">
             <label for="grade">Grade:</label>
             <select id="grade" [(ngModel)]="grade" name="grade" required>
-              <option [ngValue]="null">Select Grade</option>
-              <option *ngFor="let g of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="g">{{ g }}</option>
-            </select>
+                <option [ngValue]="null">Select Grade</option>
+                <option *ngFor="let g of [1,2,3,4,5,6,7,8,9,10,11,12]" [ngValue]="g">{{ g }}</option>
+              </select>
           </div>
         </div>
       </div>

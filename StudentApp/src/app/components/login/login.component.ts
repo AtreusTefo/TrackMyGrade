@@ -46,15 +46,16 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    this.authService.login({ email: this.email, password: this.password }).subscribe(
-      (response) => {
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: (response) => {
+        this.isSubmitting = false;
         this.authService.setCurrentTeacher(response);
         this.router.navigate(['/']);
       },
-      (error) => {
+      error: (error) => {
         this.errors = extractErrors(error);
         this.isSubmitting = false;
       }
-    );
+    });
   }
 }

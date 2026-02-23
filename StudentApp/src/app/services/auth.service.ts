@@ -27,10 +27,19 @@ export class AuthService {
     this.currentTeacher.next(null);
   }
 
-  setCurrentTeacher(teacher: Teacher): void {
-    localStorage.setItem('teacher', JSON.stringify(teacher));
-    localStorage.setItem('token', teacher.token);
-    this.currentTeacher.next(teacher);
+  setCurrentTeacher(teacher: any): void {
+    const normalized: Teacher = {
+      id: teacher.id ?? teacher.Id ?? 0,
+      firstName: teacher.firstName ?? teacher.FirstName ?? '',
+      lastName: teacher.lastName ?? teacher.LastName ?? '',
+      email: teacher.email ?? teacher.Email ?? '',
+      phone: teacher.phone ?? teacher.Phone ?? '',
+      subject: teacher.subject ?? teacher.Subject ?? '',
+      token: teacher.token ?? teacher.Token ?? ''
+    };
+    localStorage.setItem('teacher', JSON.stringify(normalized));
+    localStorage.setItem('token', normalized.token);
+    this.currentTeacher.next(normalized);
   }
 
   getCurrentTeacher(): Teacher | null {
@@ -46,7 +55,21 @@ export class AuthService {
   }
 
   private getStoredTeacher(): Teacher | null {
-    const teacher = localStorage.getItem('teacher');
-    return teacher ? JSON.parse(teacher) : null;
+    const stored = localStorage.getItem('teacher');
+    if (!stored) return null;
+    try {
+      const parsed = JSON.parse(stored);
+      return {
+        id: parsed.id ?? parsed.Id ?? 0,
+        firstName: parsed.firstName ?? parsed.FirstName ?? '',
+        lastName: parsed.lastName ?? parsed.LastName ?? '',
+        email: parsed.email ?? parsed.Email ?? '',
+        phone: parsed.phone ?? parsed.Phone ?? '',
+        subject: parsed.subject ?? parsed.Subject ?? '',
+        token: parsed.token ?? parsed.Token ?? ''
+      };
+    } catch {
+      return null;
+    }
   }
 }
