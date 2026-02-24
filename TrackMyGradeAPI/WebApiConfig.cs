@@ -14,6 +14,9 @@ namespace TrackMyGradeAPI
             // Register dependency resolver so controllers with constructor injection work
             config.DependencyResolver = new SimpleDependencyResolver();
 
+            // Register FluentValidation as a global action filter
+            config.Filters.Add(new FluentValidationFilter());
+
             // Enable CORS
             var cors = new EnableCorsAttribute("http://localhost:4200", "*", "*");
             config.EnableCors(cors);

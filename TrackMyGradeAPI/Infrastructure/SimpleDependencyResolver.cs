@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Web.Http.Dependencies;
+using FluentValidation;
 using TrackMyGradeAPI.Controllers;
 using TrackMyGradeAPI.Data;
+using TrackMyGradeAPI.DTOs;
+using TrackMyGradeAPI.Mapping;
 using TrackMyGradeAPI.Services;
 using TrackMyGradeAPI.Validators;
 
@@ -34,17 +37,27 @@ namespace TrackMyGradeAPI.Infrastructure
 
         public object GetService(Type serviceType)
         {
+            var mapper = AutoMapperConfig.Mapper;
+
             if (serviceType == typeof(TeachersController))
                 return new TeachersController(
-                    new TeacherService(_dbContext),
-                    new TeacherRegisterValidator(),
-                    new TeacherLoginValidator());
+                    new TeacherService(_dbContext, mapper));
 
             if (serviceType == typeof(StudentsController))
                 return new StudentsController(
-                    new StudentService(_dbContext),
-                    new StudentCreateValidator(),
-                    new StudentUpdateValidator());
+                    new StudentService(_dbContext, mapper));
+
+            if (serviceType == typeof(IValidator<StudentCreateDto>))
+                return new StudentCreateValidator();
+
+            if (serviceType == typeof(IValidator<StudentUpdateDto>))
+                return new StudentUpdateValidator();
+
+            if (serviceType == typeof(IValidator<TeacherRegisterDto>))
+                return new TeacherRegisterValidator();
+
+            if (serviceType == typeof(IValidator<TeacherLoginDto>))
+                return new TeacherLoginValidator();
 
             return null;
         }

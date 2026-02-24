@@ -19,12 +19,8 @@ namespace TrackMyGradeAPI.Handlers
         {
             Exception exception = context.Exception;
 
-            // Log the exception to ELMAH
-            ErrorLoggingConfig.LogErrorWithMessage(
-                $"API Error: {context.Request.RequestUri}",
-                exception);
-
             // Create a response with error details
+            // Logging is handled by ElmahExceptionLogger
             var response = context.Request.CreateResponse(
                 HttpStatusCode.InternalServerError,
                 new

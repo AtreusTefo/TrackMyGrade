@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
 using TrackMyGradeAPI.Data;
 using TrackMyGradeAPI.DTOs;
 using TrackMyGradeAPI.Models;
@@ -17,10 +18,12 @@ namespace TrackMyGradeAPI.Services
     public class TeacherService : ITeacherService
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IMapper _mapper;
 
-        public TeacherService(ApplicationDbContext dbContext)
+        public TeacherService(ApplicationDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
         public TeacherResponseDto Register(TeacherRegisterDto request)
@@ -29,30 +32,13 @@ namespace TrackMyGradeAPI.Services
             if (_dbContext.Teachers.Any(t => t.Email == request.Email))
                 throw new Exception("Email already registered");
 
-            var teacher = new Teacher
-            {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Email = request.Email,
-                Phone = request.Phone,
-                Subject = request.Subject,
-                Password = request.Password,
-                Token = Guid.NewGuid().ToString()
-            };
+            var teacher = _mapper.Map<Teacher>(request);
+            teacher.Token = Guid.NewGuid().ToString();
 
             _dbContext.Teachers.Add(teacher);
             _dbContext.SaveChanges();
 
-            return new TeacherResponseDto
-            {
-                Id = teacher.Id,
-                FirstName = teacher.FirstName,
-                LastName = teacher.LastName,
-                Email = teacher.Email,
-                Phone = teacher.Phone,
-                Subject = teacher.Subject,
-                Token = teacher.Token
-            };
+            return _mapper.Map<TeacherResponseDto>(teacher);
         }
 
         public TeacherResponseDto Login(TeacherLoginDto request)
@@ -66,16 +52,7 @@ namespace TrackMyGradeAPI.Services
             teacher.Token = Guid.NewGuid().ToString();
             _dbContext.SaveChanges();
 
-            return new TeacherResponseDto
-            {
-                Id = teacher.Id,
-                FirstName = teacher.FirstName,
-                LastName = teacher.LastName,
-                Email = teacher.Email,
-                Phone = teacher.Phone,
-                Subject = teacher.Subject,
-                Token = teacher.Token
-            };
+            return _mapper.Map<TeacherResponseDto>(teacher);
         }
 
         public TeacherResponseDto GetById(int id)
@@ -84,16 +61,7 @@ namespace TrackMyGradeAPI.Services
             if (teacher == null)
                 throw new Exception("Teacher not found");
 
-            return new TeacherResponseDto
-            {
-                Id = teacher.Id,
-                FirstName = teacher.FirstName,
-                LastName = teacher.LastName,
-                Email = teacher.Email,
-                Phone = teacher.Phone,
-                Subject = teacher.Subject,
-                Token = teacher.Token
-            };
+            return _mapper.Map<TeacherResponseDto>(teacher);
         }
     }
 }

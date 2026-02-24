@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
-using FluentValidation;
 using TrackMyGradeAPI.DTOs;
+using TrackMyGradeAPI.Logging;
 using TrackMyGradeAPI.Services;
 
 namespace TrackMyGradeAPI.Controllers
@@ -12,16 +12,10 @@ namespace TrackMyGradeAPI.Controllers
     public class StudentsController : ApiController
     {
         private readonly IStudentService _studentService;
-        private readonly IValidator<StudentCreateDto> _createValidator;
-        private readonly IValidator<StudentUpdateDto> _updateValidator;
 
-        public StudentsController(IStudentService studentService,
-            IValidator<StudentCreateDto> createValidator,
-            IValidator<StudentUpdateDto> updateValidator)
+        public StudentsController(IStudentService studentService)
         {
             _studentService = studentService;
-            _createValidator = createValidator;
-            _updateValidator = updateValidator;
         }
 
         // GET: api/students
@@ -34,7 +28,7 @@ namespace TrackMyGradeAPI.Controllers
                 // Get teacher ID from header or query - for now, we'll use a default
                 // In a real app, this would come from authentication context
                 int teacherId = 1; // Default for demo; should be from token/context
-                
+
                 if (int.TryParse(Request.Headers.FirstOrDefault(h => h.Key == "X-TeacherId").Value?.FirstOrDefault() ?? "", out int headerId))
                     teacherId = headerId;
 
@@ -43,6 +37,7 @@ namespace TrackMyGradeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ErrorLoggingConfig.LogError(ex);
                 return BadRequest(ex.Message);
             }
         }
@@ -63,6 +58,7 @@ namespace TrackMyGradeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ErrorLoggingConfig.LogError(ex);
                 return BadRequest(ex.Message);
             }
         }
@@ -75,14 +71,6 @@ namespace TrackMyGradeAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var validationResult = _createValidator.Validate(request);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                return BadRequest(ModelState);
-            }
-
             try
             {
                 int teacherId = 1; // Default for demo
@@ -94,6 +82,7 @@ namespace TrackMyGradeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ErrorLoggingConfig.LogError(ex);
                 return BadRequest(ex.Message);
             }
         }
@@ -106,14 +95,6 @@ namespace TrackMyGradeAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var validationResult = _updateValidator.Validate(request);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                return BadRequest(ModelState);
-            }
-
             try
             {
                 int teacherId = 1; // Default for demo
@@ -125,6 +106,7 @@ namespace TrackMyGradeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ErrorLoggingConfig.LogError(ex);
                 return BadRequest(ex.Message);
             }
         }
@@ -145,6 +127,7 @@ namespace TrackMyGradeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ErrorLoggingConfig.LogError(ex);
                 return BadRequest(ex.Message);
             }
         }

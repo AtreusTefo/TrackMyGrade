@@ -1,29 +1,16 @@
 using System;
 using System.Web;
-using TrackMyGradeAPI.Data;
-using TrackMyGradeAPI.Logging;
 
 namespace TrackMyGradeAPI
 {
+    // NOTE: This application is self-hosted via Microsoft.Owin.SelfHost (Program.cs → WebApp.Start<Startup>).
+    // Global.asax / HttpApplication lifecycle events (Application_Start, Application_Error, etc.)
+    // are NOT invoked in self-hosted mode. All startup logic lives in Startup.cs.
+    // This file is retained only so the project type remains recognized as a web project.
     public class Global : HttpApplication
     {
         protected void Application_Start(object sender, EventArgs e)
         {
-            // Initialize the database
-            ApplicationDbContext.Initialize();
-
-            // Initialize ELMAH error logging
-            ErrorLoggingConfig.InitializeErrorLogging();
-        }
-
-        protected void Application_Error(object sender, EventArgs e)
-        {
-            // Log unhandled exceptions with ELMAH
-            Exception ex = Server.GetLastError();
-            if (ex != null)
-            {
-                ErrorLoggingConfig.LogError(ex);
-            }
         }
     }
 }

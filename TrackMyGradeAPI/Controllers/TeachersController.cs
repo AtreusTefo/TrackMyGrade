@@ -1,7 +1,7 @@
 using System;
 using System.Web.Http;
-using FluentValidation;
 using TrackMyGradeAPI.DTOs;
+using TrackMyGradeAPI.Logging;
 using TrackMyGradeAPI.Services;
 
 namespace TrackMyGradeAPI.Controllers
@@ -10,16 +10,10 @@ namespace TrackMyGradeAPI.Controllers
     public class TeachersController : ApiController
     {
         private readonly ITeacherService _teacherService;
-        private readonly IValidator<TeacherRegisterDto> _registerValidator;
-        private readonly IValidator<TeacherLoginDto> _loginValidator;
 
-        public TeachersController(ITeacherService teacherService, 
-            IValidator<TeacherRegisterDto> registerValidator,
-            IValidator<TeacherLoginDto> loginValidator)
+        public TeachersController(ITeacherService teacherService)
         {
             _teacherService = teacherService;
-            _registerValidator = registerValidator;
-            _loginValidator = loginValidator;
         }
 
         // POST: api/teachers/register
@@ -30,14 +24,6 @@ namespace TrackMyGradeAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var validationResult = _registerValidator.Validate(request);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                return BadRequest(ModelState);
-            }
-
             try
             {
                 var result = _teacherService.Register(request);
@@ -45,6 +31,7 @@ namespace TrackMyGradeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ErrorLoggingConfig.LogError(ex);
                 return BadRequest(ex.Message);
             }
         }
@@ -57,14 +44,6 @@ namespace TrackMyGradeAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var validationResult = _loginValidator.Validate(request);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                return BadRequest(ModelState);
-            }
-
             try
             {
                 var result = _teacherService.Login(request);
@@ -72,6 +51,7 @@ namespace TrackMyGradeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ErrorLoggingConfig.LogError(ex);
                 return BadRequest(ex.Message);
             }
         }
@@ -88,6 +68,7 @@ namespace TrackMyGradeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ErrorLoggingConfig.LogError(ex);
                 return BadRequest(ex.Message);
             }
         }
