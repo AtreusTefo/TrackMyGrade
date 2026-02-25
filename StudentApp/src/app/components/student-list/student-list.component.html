@@ -14,35 +14,21 @@
     Loading students...
   </div>
 
-  <div *ngIf="!isLoading && students.length === 0" class="no-data">
-    <p>No students found. <a routerLink="/create">Create your first student</a></p>
-  </div>
-
-  <div *ngIf="!isLoading && students.length > 0" class="table-container">
-    <table class="students-table">
+  <div *ngIf="!isLoading" class="table-container">
+    <table #studentsTable class="students-table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Grade</th>
-          <th>Total</th>
-          <th>Percentage</th>
-          <th>Performance</th>
+          <th>ID</th>
+          <th>First Name</th>
+          <th>Last Name</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let student of students" class="student-row">
-          <td class="name-cell">{{ student.firstName }} {{ student.lastName }}</td>
-          <td>{{ student.email }}</td>
-          <td class="grade-cell">{{ student.grade }}</td>
-          <td class="total-cell">{{ student.total }}</td>
-          <td class="percentage-cell">{{ student.percentage.toFixed(2) }}%</td>
-          <td>
-            <span [ngClass]="['performance-badge', getPerformanceLevelClass(student.performanceLevel)]">
-              {{ student.performanceLevel }}
-            </span>
-          </td>
+        <tr *ngFor="let student of students">
+          <td>{{ student.id }}</td>
+          <td>{{ student.firstName }}</td>
+          <td>{{ student.lastName }}</td>
           <td class="actions-cell">
             <a [routerLink]="['/detail', student.id]" class="btn btn-info">View</a>
             <a [routerLink]="['/edit', student.id]" class="btn btn-warning">Edit</a>

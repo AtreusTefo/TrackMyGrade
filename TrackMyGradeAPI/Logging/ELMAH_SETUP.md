@@ -1,6 +1,101 @@
 # ELMAH Error Logging Setup
 
-This document describes the ELMAH (Error Logging Modules and Handlers) integration in the TrackMyGrade API.
+This document describes the ELMAH integration in the TrackMyGrade API.
+
+## Hosting Model — Important
+
+This application is **self-hosted via OWIN** (`Microsoft.Owin.SelfHost`). This has direct consequences for ELMAH:
+
+| Feature | IIS-Hosted | Self-Hosted OWIN (this app) |
+|---|---|---|
+| HTTP Modules (`ErrorLogModule`) | ✅ Run automatically | ❌ Do not run |
+| `HttpContext.Current` | ✅ Available | ❌ Always `null` |
+| `/elmah.axd` viewer | ✅ Works | ❌ Not available |
+| `Global.asax Application_Error` | ✅ Fires | ❌ Does not fire |
+| Explicit `ErrorLog.GetDefault(null).Log(...)` | ✅ Works | ✅ Works |
+
+All logging in this app is **explicit and programmatic** — there is no automatic capture.
+
+## NuGet Package
+
+```
+ELMAH 1.2.2
+```
+
+## Configuration (`App.config`)
+
+```xml
+<configSections>
+  <sectionGroup name="elmah">
+    <section name="security"    requirePermission="false" type="Elmah.SecuritySectionHandler, Elmah"/>
+    <section name="errorLog"    requirePermission="false" type="Elmah.ErrorLogSectionHandler, Elmah"/>
+    <section name="errorMail"   requirePermission="false" type="Elmah.ErrorMailSectionHandler, Elmah"/>
+    <section name="errorFilter" requirePermission="false" type="Elmah.ErrorFilterSectionHandler, Elmah"/>
+  </sectionGroup>
+</configSections>
+
+<elmah>
+  <security allowRemoteAccess="0"/>
+  <errorLog type="Elmah.MemoryErrorLog, Elmah" size="500"/>
+</elmah>
+```
+
+- `allowRemoteAccess="0"` — use `"0"` (disabled) or `"1"` (enabled), not `"true"`/`"false"`
+- `MemoryErrorLog` — stores up to 500 errors in memory; errors are lost on restart
+
+## How Logging Works in This App
+
+Exceptions flow through two paths:
+
+### 1. Web API pipeline (unhandled exceptions)
+`ElmahExceptionLogger` is registered in `WebApiConfig.cs`:
+```csharp
+config.Services.Replace(typeof(IExceptionHandler), new ElmahExceptionHandler());
+config.Services.Add(typeof(IExceptionLogger), new ElmahExceptionLogger());
+```
+Any exception not caught by a controller reaches `ElmahExceptionLogger.Log()` → `ErrorLoggingConfig.LogErrorWithMessage()`.
+
+### 2. Controller catch blocks (handled exceptions)
+```csharp
+catch (Exception ex)
+{
+    ErrorLoggingConfig.LogError(ex);
+    return BadRequest(ex.Message);
+}
+```
+
+Both paths call `ErrorLog.GetDefault(null).Log(new Error(exception))`, which reads the `<elmah><errorLog>` section from `App.config`.
+
+## Using ELMAH in Code
+
+```csharp
+// Log an exception
+ErrorLoggingConfig.LogError(ex);
+
+// Log with a custom wrapper message
+ErrorLoggingConfig.LogErrorWithMessage("Failed during student creation", ex);
+```
+
+## Storage Options
+
+### In-Memory (current — development only)
+```xml
+<errorLog type="Elmah.MemoryErrorLog, Elmah" size="500"/>
+```
+Errors are lost on restart. Suitable for development only.
+
+### XML File (recommended for this hosting model)
+```xml
+<errorLog type="Elmah.XmlFileErrorLog, Elmah" logPath="~/App_Data/errors"/>
+```
+Persists errors to XML files on disk. Works in self-hosted OWIN with no extra infrastructure.
+
+### SQLite
+```xml
+<errorLog type="Elmah.SQLiteErrorLog, Elmah" connectionStringName="ElmahConnection"/>
+```
+Requires the `Elmah.SQLite` NuGet package and a connection string pointing to a `.db` file.
+
 
 ## Overview
 

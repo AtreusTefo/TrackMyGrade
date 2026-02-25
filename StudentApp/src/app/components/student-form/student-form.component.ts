@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { StudentService } from '../../services/student.service';
-import { Student, StudentCreate, StudentUpdate } from '../../models';
-import { extractErrors } from '../../services/error.util';
+import { StudentCreate, StudentUpdate } from '../../models';
+import { extractFieldErrors } from '../../services/error.util';
 
 @Component({
   selector: 'app-student-form',
@@ -16,19 +16,21 @@ import { extractErrors } from '../../services/error.util';
 export class StudentFormComponent implements OnInit {
   isEditMode = false;
   studentId: number | null = null;
-  firstName: string = '';
-  lastName: string = '';
-  email: string = '';
-  phone: string = '';
+  firstName = '';
+  lastName = '';
+  email = '';
+  phone = '';
   grade: number | null = null;
   assessment1: number | null = null;
   assessment2: number | null = null;
   assessment3: number | null = null;
-  errors: string[] = [];
+
+  fieldErrors: { [key: string]: string } = {};
+  serverErrors: string[] = [];
+
   isSubmitting = false;
   isLoading = false;
 
-  // Calculated values
   total = 0;
   average = 0;
   percentage = 0;
@@ -51,7 +53,6 @@ export class StudentFormComponent implements OnInit {
 
   loadStudent(): void {
     if (!this.studentId) return;
-    
     this.isLoading = true;
     this.studentService.getStudentById(this.studentId).subscribe({
       next: (student) => {
@@ -67,20 +68,21 @@ export class StudentFormComponent implements OnInit {
         this.calculateValues();
       },
       error: (error) => {
-        this.errors = extractErrors(error);
+        const { generalErrors } = extractFieldErrors(error);
+        this.serverErrors = generalErrors;
         this.isLoading = false;
       }
     });
   }
 
   calculateValues(): void {
-    const a1 = this.assessment1 || 0;
-    const a2 = this.assessment2 || 0;
-    const a3 = this.assessment3 || 0;
+    const a1 = this.assessment1 ?? 0;
+    const a2 = this.assessment2 ?? 0;
+    const a3 = this.assessment3 ?? 0;
     this.total = a1 + a2 + a3;
     this.average = this.total / 3;
     this.percentage = (this.total / 60) * 100;
-    
+
     if (this.percentage < 50) {
       this.performanceLevel = 'Needs Support';
     } else if (this.percentage <= 55) {
@@ -96,40 +98,45 @@ export class StudentFormComponent implements OnInit {
     this.calculateValues();
   }
 
+  clearFieldError(field: string): void {
+    delete this.fieldErrors[field];
+  }
+
   validate(): boolean {
-    this.errors = [];
+    this.fieldErrors = {};
 
     if (!this.firstName || this.firstName.length < 2 || this.firstName.length > 50) {
-      this.errors.push('First name must be between 2 and 50 characters');
+      this.fieldErrors['firstName'] = 'First name must be between 2 and 50 characters';
     }
     if (!this.lastName || this.lastName.length < 2 || this.lastName.length > 50) {
-      this.errors.push('Last name must be between 2 and 50 characters');
+      this.fieldErrors['lastName'] = 'Last name must be between 2 and 50 characters';
     }
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!this.email || !emailPattern.test(this.email)) {
-      this.errors.push('Email must be a valid email address');
+      this.fieldErrors['email'] = 'Email must be a valid email address';
     }
     if (!this.phone || !/^\d{8}$/.test(this.phone)) {
-      this.errors.push('Phone must be exactly 8 digits');
+      this.fieldErrors['phone'] = 'Phone must be exactly 8 digits';
     }
     if (this.grade === null || this.grade < 1 || this.grade > 12) {
-      this.errors.push('Grade must be between 1 and 12');
+      this.fieldErrors['grade'] = 'Grade must be between 1 and 12';
     }
     if (this.assessment1 === null || this.assessment1 < 0 || this.assessment1 > 20) {
-      this.errors.push('Assessment 1 must be between 0 and 20');
+      this.fieldErrors['assessment1'] = 'Assessment 1 must be between 0 and 20';
     }
     if (this.assessment2 === null || this.assessment2 < 0 || this.assessment2 > 20) {
-      this.errors.push('Assessment 2 must be between 0 and 20');
+      this.fieldErrors['assessment2'] = 'Assessment 2 must be between 0 and 20';
     }
     if (this.assessment3 === null || this.assessment3 < 0 || this.assessment3 > 20) {
-      this.errors.push('Assessment 3 must be between 0 and 20');
+      this.fieldErrors['assessment3'] = 'Assessment 3 must be between 0 and 20';
     }
 
-    return this.errors.length === 0;
+    return Object.keys(this.fieldErrors).length === 0;
   }
 
   onSubmit(): void {
     this.isSubmitting = true;
+    this.serverErrors = [];
 
     if (!this.validate()) {
       this.isSubmitting = false;
@@ -147,33 +154,32 @@ export class StudentFormComponent implements OnInit {
       assessment3: this.assessment3!
     };
 
-    try {
-      if (this.isEditMode && this.studentId) {
-        this.studentService.updateStudent(this.studentId, data as StudentUpdate).subscribe({
-          next: (response) => {
-            this.isSubmitting = false;
-            this.router.navigate(['/detail', this.studentId]);
-          },
-          error: (error) => {
-            this.errors = extractErrors(error);
-            this.isSubmitting = false;
-          }
-        });
-      } else {
-        this.studentService.createStudent(data as StudentCreate).subscribe({
-          next: (response) => {
-            this.isSubmitting = false;
-            this.router.navigate(['/list']);
-          },
-          error: (error) => {
-            this.errors = extractErrors(error);
-            this.isSubmitting = false;
-          }
-        });
-      }
-    } catch (e) {
-      this.errors = ['An unexpected error occurred. Please try logging out and back in.'];
-      this.isSubmitting = false;
+    if (this.isEditMode && this.studentId) {
+      this.studentService.updateStudent(this.studentId, data as StudentUpdate).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.router.navigate(['/detail', this.studentId]);
+        },
+        error: (error) => {
+          const { fieldErrors, generalErrors } = extractFieldErrors(error);
+          this.fieldErrors = fieldErrors;
+          this.serverErrors = generalErrors;
+          this.isSubmitting = false;
+        }
+      });
+    } else {
+      this.studentService.createStudent(data as StudentCreate).subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.router.navigate(['/list']);
+        },
+        error: (error) => {
+          const { fieldErrors, generalErrors } = extractFieldErrors(error);
+          this.fieldErrors = fieldErrors;
+          this.serverErrors = generalErrors;
+          this.isSubmitting = false;
+        }
+      });
     }
   }
 }

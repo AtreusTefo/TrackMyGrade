@@ -1,9 +1,5 @@
-using System;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.Results;
 using TrackMyGradeAPI.Logging;
@@ -17,18 +13,9 @@ namespace TrackMyGradeAPI.Handlers
     {
         public override void Handle(ExceptionHandlerContext context)
         {
-            Exception exception = context.Exception;
-
-            // Create a response with error details
-            // Logging is handled by ElmahExceptionLogger
             var response = context.Request.CreateResponse(
                 HttpStatusCode.InternalServerError,
-                new
-                {
-                    message = "An error occurred while processing your request.",
-                    exceptionMessage = exception.Message,
-                    exceptionType = exception.GetType().Name
-                });
+                new { message = "An internal server error occurred. Please try again later." });
 
             context.Result = new ResponseMessageResult(response);
         }

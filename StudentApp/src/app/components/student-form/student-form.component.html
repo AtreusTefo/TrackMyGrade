@@ -4,9 +4,9 @@
     <a routerLink="/" class="btn btn-secondary">Back to List</a>
   </div>
 
-  <div *ngIf="errors.length > 0" class="error-banner">
+  <div *ngIf="serverErrors.length > 0" class="error-banner">
     <ul>
-      <li *ngFor="let error of errors">{{ error }}</li>
+      <li *ngFor="let error of serverErrors">{{ error }}</li>
     </ul>
   </div>
 
@@ -21,54 +21,68 @@
         <div class="form-row">
           <div class="form-group">
             <label for="firstName">First Name:</label>
-            <input 
-              type="text" 
-              id="firstName" 
-              [(ngModel)]="firstName" 
+            <input
+              type="text"
+              id="firstName"
+              [(ngModel)]="firstName"
               name="firstName"
               placeholder="First name"
-              required>
+              [class.input-error]="fieldErrors['firstName']"
+              (input)="clearFieldError('firstName')">
+            <span class="field-error" *ngIf="fieldErrors['firstName']">{{ fieldErrors['firstName'] }}</span>
           </div>
           <div class="form-group">
             <label for="lastName">Last Name:</label>
-            <input 
-              type="text" 
-              id="lastName" 
-              [(ngModel)]="lastName" 
+            <input
+              type="text"
+              id="lastName"
+              [(ngModel)]="lastName"
               name="lastName"
               placeholder="Last name"
-              required>
+              [class.input-error]="fieldErrors['lastName']"
+              (input)="clearFieldError('lastName')">
+            <span class="field-error" *ngIf="fieldErrors['lastName']">{{ fieldErrors['lastName'] }}</span>
           </div>
         </div>
 
         <div class="form-group">
           <label for="email">Email:</label>
-          <input 
-            type="email" 
-            id="email" 
-            [(ngModel)]="email" 
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="email"
             name="email"
             placeholder="student@email.com"
-            required>
+            [class.input-error]="fieldErrors['email']"
+            (input)="clearFieldError('email')">
+          <span class="field-error" *ngIf="fieldErrors['email']">{{ fieldErrors['email'] }}</span>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="phone">Phone:</label>
-            <input 
-              type="tel" 
-              id="phone" 
-              [(ngModel)]="phone" 
+            <input
+              type="tel"
+              id="phone"
+              [(ngModel)]="phone"
               name="phone"
               placeholder="8 digits"
-              required>
+              [class.input-error]="fieldErrors['phone']"
+              (input)="clearFieldError('phone')">
+            <span class="field-error" *ngIf="fieldErrors['phone']">{{ fieldErrors['phone'] }}</span>
           </div>
           <div class="form-group">
             <label for="grade">Grade:</label>
-            <select id="grade" [(ngModel)]="grade" name="grade" required>
-                <option [ngValue]="null">Select Grade</option>
-                <option *ngFor="let g of [1,2,3,4,5,6,7,8,9,10,11,12]" [ngValue]="g">{{ g }}</option>
-              </select>
+            <select
+              id="grade"
+              [(ngModel)]="grade"
+              name="grade"
+              [class.input-error]="fieldErrors['grade']"
+              (change)="clearFieldError('grade')">
+              <option [ngValue]="null">Select Grade</option>
+              <option *ngFor="let g of [1,2,3,4,5,6,7,8,9,10,11,12]" [ngValue]="g">{{ g }}</option>
+            </select>
+            <span class="field-error" *ngIf="fieldErrors['grade']">{{ fieldErrors['grade'] }}</span>
           </div>
         </div>
       </div>
@@ -78,39 +92,45 @@
         <div class="form-row">
           <div class="form-group">
             <label for="assessment1">Assessment 1 (0-20):</label>
-            <input 
-              type="number" 
-              id="assessment1" 
-              [(ngModel)]="assessment1" 
+            <input
+              type="number"
+              id="assessment1"
+              [(ngModel)]="assessment1"
               name="assessment1"
               min="0"
               max="20"
+              [class.input-error]="fieldErrors['assessment1']"
               (change)="onAssessmentChange()"
-              required>
+              (input)="clearFieldError('assessment1')">
+            <span class="field-error" *ngIf="fieldErrors['assessment1']">{{ fieldErrors['assessment1'] }}</span>
           </div>
           <div class="form-group">
             <label for="assessment2">Assessment 2 (0-20):</label>
-            <input 
-              type="number" 
-              id="assessment2" 
-              [(ngModel)]="assessment2" 
+            <input
+              type="number"
+              id="assessment2"
+              [(ngModel)]="assessment2"
               name="assessment2"
               min="0"
               max="20"
+              [class.input-error]="fieldErrors['assessment2']"
               (change)="onAssessmentChange()"
-              required>
+              (input)="clearFieldError('assessment2')">
+            <span class="field-error" *ngIf="fieldErrors['assessment2']">{{ fieldErrors['assessment2'] }}</span>
           </div>
           <div class="form-group">
             <label for="assessment3">Assessment 3 (0-20):</label>
-            <input 
-              type="number" 
-              id="assessment3" 
-              [(ngModel)]="assessment3" 
+            <input
+              type="number"
+              id="assessment3"
+              [(ngModel)]="assessment3"
               name="assessment3"
               min="0"
               max="20"
+              [class.input-error]="fieldErrors['assessment3']"
               (change)="onAssessmentChange()"
-              required>
+              (input)="clearFieldError('assessment3')">
+            <span class="field-error" *ngIf="fieldErrors['assessment3']">{{ fieldErrors['assessment3'] }}</span>
           </div>
         </div>
       </div>

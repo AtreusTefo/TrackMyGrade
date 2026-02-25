@@ -24,7 +24,6 @@ namespace TrackMyGradeAPI.Validators
                 .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits");
 
             RuleFor(x => x.Grade)
-                .NotEmpty().WithMessage("Grade is required")
                 .InclusiveBetween(1, 12).WithMessage("Grade must be between 1 and 12");
 
             RuleFor(x => x.Assessment1)
@@ -59,7 +58,6 @@ namespace TrackMyGradeAPI.Validators
                 .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits");
 
             RuleFor(x => x.Grade)
-                .NotEmpty().WithMessage("Grade is required")
                 .InclusiveBetween(1, 12).WithMessage("Grade must be between 1 and 12");
 
             RuleFor(x => x.Assessment1)

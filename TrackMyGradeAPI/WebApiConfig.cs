@@ -34,6 +34,9 @@ namespace TrackMyGradeAPI
                 defaults: new { id = RouteParameter.Optional }
             );
 
+            // Register Swagger / Swagger UI
+            SwaggerConfig.Register(config);
+
             // Configure JSON formatter
             config.Formatters.JsonFormatter.SerializerSettings.NullValueHandling = 
                 Newtonsoft.Json.NullValueHandling.Ignore;

@@ -4,7 +4,7 @@ namespace TrackMyGradeAPI.Mapping
 {
     public static class AutoMapperConfig
     {
-        private static IMapper _mapper;
+        private static volatile IMapper _mapper;
         private static readonly object _lock = new object();
 
         public static IMapper Mapper
