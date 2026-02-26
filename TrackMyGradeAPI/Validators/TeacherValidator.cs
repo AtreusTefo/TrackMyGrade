@@ -8,11 +8,15 @@ namespace TrackMyGradeAPI.Validators
         public TeacherRegisterValidator()
         {
             RuleFor(x => x.FirstName)
+                .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("First name is required")
+                .Matches(@"^[a-zA-Z '\-]+$").WithMessage("First name must contain only letters")
                 .Length(2, 50).WithMessage("First name must be between 2 and 50 characters");
 
             RuleFor(x => x.LastName)
+                .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("Last name is required")
+                .Matches(@"^[a-zA-Z '\-]+$").WithMessage("Last name must contain only letters")
                 .Length(2, 50).WithMessage("Last name must be between 2 and 50 characters");
 
             RuleFor(x => x.Email)

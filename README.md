@@ -8,16 +8,21 @@ TrackMyGrade is a full-stack web application built with ASP.NET Framework (backe
 ```
 TrackMyGrade/
 ├── TrackMyGradeAPI/          # Backend ASP.NET Framework API
-│   ├── Models/               # Database entities
-│   ├── DTOs/                 # Data Transfer Objects
-│   ├── Data/                 # EF Core DbContext
-│   ├── Services/             # Business logic layer
 │   ├── Controllers/          # REST API endpoints
-│   ├── Validators/           # FluentValidation rules
+│   ├── Data/                 # EF6 DbContext and SQLite configuration
+│   ├── DTOs/                 # Data Transfer Objects
+│   ├── Handlers/             # Exception handler and validation filter
+│   ├── Infrastructure/       # DI resolver and Swagger configuration
+│   ├── Logging/              # ELMAH error logging configuration
 │   ├── Mapping/              # AutoMapper profiles
-│   ├── WebApiConfig.cs       # CORS and API configuration
-│   ├── Startup.cs            # OWIN startup
-│   └── Global.asax.cs        # Application lifecycle
+│   ├── Models/               # Database entities
+│   ├── Services/             # Business logic layer
+│   ├── Validators/           # FluentValidation rules
+│   ├── Program.cs            # Console entry point (OWIN self-host)
+│   ├── Startup.cs            # OWIN startup and middleware pipeline
+│   ├── WebApiConfig.cs       # CORS, routing and API configuration
+│   ├── web.config            # Web/OWIN host configuration
+│   └── Global.asax.cs        # Web project marker (startup logic in Startup.cs)
 │
 ├── StudentApp/               # Frontend Angular 18 SPA
 │   ├── src/
@@ -47,10 +52,17 @@ TrackMyGrade/
 ### Dependencies
 The backend uses the following NuGet packages:
 - `EntityFramework` v6.4.4 - ORM for database access
-- `AutoMapper` v12.0.1 - Object-to-object mapping
-- `AutoMapper.Extensions.Microsoft.DependencyInjection` v12.0.0
+- `System.Data.SQLite` v1.0.119.0 - SQLite ADO.NET provider
+- `System.Data.SQLite.EF6` v1.0.119.0 - SQLite EF6 provider
+- `AutoMapper` v10.1.1 - Object-to-object mapping
 - `FluentValidation` v11.8.1 - Model validation
 - `Microsoft.AspNet.WebApi` v5.2.9 - REST API framework
+- `Microsoft.AspNet.WebApi.Cors` v5.2.9 - CORS support
+- `Microsoft.AspNet.WebApi.Owin` v5.2.9 - OWIN integration
+- `Microsoft.Owin` v4.2.2 - OWIN abstractions
+- `Microsoft.Owin.SelfHost` v4.2.2 - Self-hosting support
+- `ELMAH` v1.2.2 - Error logging and monitoring
+- `Swashbuckle.Core` v5.6.0 - Swagger/OpenAPI documentation
 
 ### Build Instructions
 
@@ -73,14 +85,16 @@ The backend uses the following NuGet packages:
 
 4. **Create and seed the database**
    - The database initializes automatically when the application starts
-   - Database.EnsureCreated() is called in Global.asax.cs
-   - Uses SQLite in-memory provider (no external setup required)
+   - `ApplicationDbContext.Initialize()` is called from `Startup.cs` and creates tables using `CREATE TABLE IF NOT EXISTS` (EF6 with SQLite)
+   - Database file (`TrackMyGrade.db`) is created in the output directory (`bin/`) — no external setup required
 
 5. **Run the API**
    ```
    Debug > Start Debugging (F5)
    Default URL: http://localhost:5000
    ```
+   - Swagger UI: `http://localhost:5000/swagger`
+   - The API is a self-hosted OWIN console application — it runs in a terminal window, not IIS
 
 ### API Endpoints
 
@@ -173,6 +187,18 @@ config.EnableCors(cors);
 - Allows requests from Angular app (localhost:4200)
 - Permits all HTTP methods and headers
 
+### Swagger UI
+Swashbuckle is configured in `Infrastructure/SwaggerConfig.cs` and registered from `WebApiConfig.cs`:
+- **Swagger JSON**: `http://localhost:5000/swagger/docs/v1`
+- **Swagger UI**: `http://localhost:5000/swagger`
+
+XML doc comments from the compiled `TrackMyGradeAPI.XML` are loaded automatically if present.
+
+### Error Logging (ELMAH)
+ELMAH is configured in `Logging/ErrorLoggingConfig.cs` and initialized from `Startup.cs`:
+- Unhandled exceptions and Web API errors are captured by `ElmahExceptionHandler` and `ElmahExceptionLogger` in `Handlers/`
+- See `Logging/ELMAH_SETUP.md` for full configuration details
+
 ### Frontend API Base URL
 In `StudentService` and `AuthService`:
 ```typescript
@@ -188,6 +214,8 @@ Change this URL when deploying to production.
 ```bash
 cd TrackMyGradeAPI
 # Open in Visual Studio and press F5
+# OR run the PowerShell helper script:
+.\start-api.ps1
 ```
 
 **Terminal 2 - Frontend**
@@ -299,10 +327,12 @@ see [`TrackMyGradeAPI/TROUBLESHOOTING.md`](TrackMyGradeAPI/TROUBLESHOOTING.md).
 **Backend**
 - C# with .NET Framework 4.8
 - ASP.NET Web API 5.2
-- Entity Framework 6.4
+- Entity Framework 6.4 with SQLite
 - FluentValidation 11.8
-- AutoMapper 12.0
+- AutoMapper 10.1
 - OWIN/Katana for self-hosting
+- ELMAH for error logging
+- Swashbuckle 5.6 for Swagger/OpenAPI docs
 
 **Frontend**
 - Angular 18 (Standalone Components)
@@ -328,5 +358,5 @@ For issues or questions, refer to the detailed PRD in `PROJECT_REQUIREMENTS.md`.
 
 ---
 
-**Last Updated**: February 2026
+**Last Updated**: July 2025
 **Version**: 1.0.0

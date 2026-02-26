@@ -2,9 +2,9 @@
   <div class="register-card">
     <h2>Teacher Registration</h2>
     
-    <div *ngIf="errors.length > 0" class="error-banner">
+    <div *ngIf="serverErrors.length > 0" class="error-banner">
       <ul>
-        <li *ngFor="let error of errors">{{ error }}</li>
+        <li *ngFor="let error of serverErrors">{{ error }}</li>
       </ul>
     </div>
 
@@ -12,79 +12,97 @@
       <div class="form-row">
         <div class="form-group">
           <label for="firstName">First Name:</label>
-          <input 
-            type="text" 
-            id="firstName" 
-            [(ngModel)]="firstName" 
+          <input
+            type="text"
+            id="firstName"
+            [(ngModel)]="firstName"
             name="firstName"
             placeholder="First name"
-            required>
+            [class.input-error]="fieldErrors['firstName']"
+            (keydown)="filterLetters($event)"
+            (input)="validateField('firstName')">
+          <span class="field-error" *ngIf="fieldErrors['firstName']">{{ fieldErrors['firstName'] }}</span>
         </div>
         <div class="form-group">
           <label for="lastName">Last Name:</label>
-          <input 
-            type="text" 
-            id="lastName" 
-            [(ngModel)]="lastName" 
+          <input
+            type="text"
+            id="lastName"
+            [(ngModel)]="lastName"
             name="lastName"
             placeholder="Last name"
-            required>
+            [class.input-error]="fieldErrors['lastName']"
+            (keydown)="filterLetters($event)"
+            (input)="validateField('lastName')">
+          <span class="field-error" *ngIf="fieldErrors['lastName']">{{ fieldErrors['lastName'] }}</span>
         </div>
       </div>
 
       <div class="form-group">
         <label for="email">Email:</label>
-        <input 
-          type="email" 
-          id="email" 
-          [(ngModel)]="email" 
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
           name="email"
           placeholder="your@email.com"
-          required>
+          [class.input-error]="fieldErrors['email']"
+          (input)="validateField('email')">
+        <span class="field-error" *ngIf="fieldErrors['email']">{{ fieldErrors['email'] }}</span>
       </div>
 
       <div class="form-group">
         <label for="phone">Phone:</label>
-        <input 
-          type="tel" 
-          id="phone" 
-          [(ngModel)]="phone" 
+        <input
+          type="tel"
+          id="phone"
+          [(ngModel)]="phone"
           name="phone"
           placeholder="8 digits"
-          required>
+          maxlength="8"
+          [class.input-error]="fieldErrors['phone']"
+          (keydown)="filterDigits($event)"
+          (input)="validateField('phone')">
+        <span class="field-error" *ngIf="fieldErrors['phone']">{{ fieldErrors['phone'] }}</span>
       </div>
 
       <div class="form-group">
         <label for="subject">Subject:</label>
-        <input 
-          type="text" 
-          id="subject" 
-          [(ngModel)]="subject" 
+        <input
+          type="text"
+          id="subject"
+          [(ngModel)]="subject"
           name="subject"
           placeholder="e.g., Mathematics"
-          required>
+          [class.input-error]="fieldErrors['subject']"
+          (input)="validateField('subject')">
+        <span class="field-error" *ngIf="fieldErrors['subject']">{{ fieldErrors['subject'] }}</span>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="password">Password:</label>
-          <input 
-            type="password" 
-            id="password" 
-            [(ngModel)]="password" 
+          <input
+            type="password"
+            id="password"
+            [(ngModel)]="password"
             name="password"
             placeholder="6-20 characters"
-            required>
+            [class.input-error]="fieldErrors['password']"
+            (input)="validateField('password')">
+          <span class="field-error" *ngIf="fieldErrors['password']">{{ fieldErrors['password'] }}</span>
         </div>
         <div class="form-group">
           <label for="confirmPassword">Confirm Password:</label>
-          <input 
-            type="password" 
-            id="confirmPassword" 
-            [(ngModel)]="confirmPassword" 
+          <input
+            type="password"
+            id="confirmPassword"
+            [(ngModel)]="confirmPassword"
             name="confirmPassword"
             placeholder="Confirm password"
-            required>
+            [class.input-error]="fieldErrors['confirmPassword']"
+            (input)="validateField('confirmPassword')">
+          <span class="field-error" *ngIf="fieldErrors['confirmPassword']">{{ fieldErrors['confirmPassword'] }}</span>
         </div>
       </div>
 

@@ -28,7 +28,8 @@
               name="firstName"
               placeholder="First name"
               [class.input-error]="fieldErrors['firstName']"
-              (input)="clearFieldError('firstName')">
+              (keydown)="filterLetters($event)"
+              (input)="validateField('firstName')">
             <span class="field-error" *ngIf="fieldErrors['firstName']">{{ fieldErrors['firstName'] }}</span>
           </div>
           <div class="form-group">
@@ -40,7 +41,8 @@
               name="lastName"
               placeholder="Last name"
               [class.input-error]="fieldErrors['lastName']"
-              (input)="clearFieldError('lastName')">
+              (keydown)="filterLetters($event)"
+              (input)="validateField('lastName')">
             <span class="field-error" *ngIf="fieldErrors['lastName']">{{ fieldErrors['lastName'] }}</span>
           </div>
         </div>
@@ -54,7 +56,7 @@
             name="email"
             placeholder="student@email.com"
             [class.input-error]="fieldErrors['email']"
-            (input)="clearFieldError('email')">
+            (input)="validateField('email')">
           <span class="field-error" *ngIf="fieldErrors['email']">{{ fieldErrors['email'] }}</span>
         </div>
 
@@ -67,8 +69,10 @@
               [(ngModel)]="phone"
               name="phone"
               placeholder="8 digits"
+              maxlength="8"
               [class.input-error]="fieldErrors['phone']"
-              (input)="clearFieldError('phone')">
+              (keydown)="filterDigits($event)"
+              (input)="validateField('phone')">
             <span class="field-error" *ngIf="fieldErrors['phone']">{{ fieldErrors['phone'] }}</span>
           </div>
           <div class="form-group">
@@ -78,7 +82,7 @@
               [(ngModel)]="grade"
               name="grade"
               [class.input-error]="fieldErrors['grade']"
-              (change)="clearFieldError('grade')">
+              (change)="validateField('grade')">
               <option [ngValue]="null">Select Grade</option>
               <option *ngFor="let g of [1,2,3,4,5,6,7,8,9,10,11,12]" [ngValue]="g">{{ g }}</option>
             </select>
@@ -100,8 +104,7 @@
               min="0"
               max="20"
               [class.input-error]="fieldErrors['assessment1']"
-              (change)="onAssessmentChange()"
-              (input)="clearFieldError('assessment1')">
+              (input)="onAssessmentChange(); validateField('assessment1')">
             <span class="field-error" *ngIf="fieldErrors['assessment1']">{{ fieldErrors['assessment1'] }}</span>
           </div>
           <div class="form-group">
@@ -114,8 +117,7 @@
               min="0"
               max="20"
               [class.input-error]="fieldErrors['assessment2']"
-              (change)="onAssessmentChange()"
-              (input)="clearFieldError('assessment2')">
+              (input)="onAssessmentChange(); validateField('assessment2')">
             <span class="field-error" *ngIf="fieldErrors['assessment2']">{{ fieldErrors['assessment2'] }}</span>
           </div>
           <div class="form-group">
@@ -128,8 +130,7 @@
               min="0"
               max="20"
               [class.input-error]="fieldErrors['assessment3']"
-              (change)="onAssessmentChange()"
-              (input)="clearFieldError('assessment3')">
+              (input)="onAssessmentChange(); validateField('assessment3')">
             <span class="field-error" *ngIf="fieldErrors['assessment3']">{{ fieldErrors['assessment3'] }}</span>
           </div>
         </div>

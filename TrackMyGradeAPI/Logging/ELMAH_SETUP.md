@@ -86,7 +86,7 @@ Errors are lost on restart. Suitable for development only.
 
 ### XML File (recommended for this hosting model)
 ```xml
-<errorLog type="Elmah.XmlFileErrorLog, Elmah" logPath="~/App_Data/errors"/>
+<errorLog type="Elmah.XmlFileErrorLog, Elmah" logPath="App_Data\errors"/>
 ```
 Persists errors to XML files on disk. Works in self-hosted OWIN with no extra infrastructure.
 
@@ -109,9 +109,8 @@ ELMAH is a flexible error logging framework that allows you to log, view, and fi
 
 ## Installation
 
-The ELMAH NuGet packages have been added to the project:
-- `ELMAH` - Core error logging framework
-- `elmah.io` - Optional cloud-based error logging
+The ELMAH NuGet package has been added to the project:
+- `ELMAH` v1.2.2 — Core error logging framework
 
 ## Configuration
 
@@ -138,37 +137,41 @@ The main configuration is in `web.config`:
 
 ## Accessing the Error Log
 
-### Local Access
+> ⚠️ **OWIN Self-Hosted Mode**: This application runs as a self-hosted OWIN console process.
+> The `/elmah.axd` web viewer requires IIS HTTP handlers and **does not work** in this
+> hosting model. Switch to `XmlFileErrorLog` or `SqlErrorLog` (see Storage Options below)
+> for persistent, inspectable error storage.
 
-To view logged errors, navigate to:
+### If Deployed Under IIS
+
+Navigate to:
 ```
 http://localhost:PORT/elmah.axd
 ```
 
 This page displays:
-- List of all logged errors
-- Error details (stack trace, request info, etc.)
-- Error filtering and searching capabilities
-- Option to delete errors
+- List of all logged errors with full stack traces and request details
 
 ### Security
 
-Currently, remote access is disabled. To allow remote access:
+Remote access is disabled by default (`allowRemoteAccess="0"`). To enable under IIS:
 
 ```xml
-<security allowRemoteAccess="true"/>
+<security allowRemoteAccess="1"/>
 ```
 
-**Warning**: Limit access to authorized users only to prevent exposing sensitive errors.
+**Warning**: Restrict access to Admin role only via the `<location path="elmah.axd">` authorization section in `web.config`.
 
 ## Using ELMAH in Code
 
 ### Automatic Logging
 
-Unhandled exceptions are automatically logged via:
-1. `Global.asax.cs` - Application_Error event
-2. Web API Exception Handlers - registered in WebApiConfig
-3. ELMAH modules in web.config
+In OWIN self-hosted mode, only Web API pipeline exceptions are captured automatically:
+1. **Web API Exception Handlers** — `ElmahExceptionLogger` registered in `WebApiConfig.cs`
+
+The following do **not** apply in this hosting model:
+- `Global.asax.cs Application_Error` — does not fire in OWIN self-host
+- ELMAH HTTP modules (`ErrorLogModule`) — only active under IIS
 
 ### Manual Logging
 
@@ -196,7 +199,7 @@ ErrorLoggingConfig.LogErrorWithMessage("Custom error message", exception);
 ### In-Memory Storage (Current)
 
 ```xml
-<errorLog type="Elmah.MemoryErrorLog, Elmah" size="100"/>
+<errorLog type="Elmah.MemoryErrorLog, Elmah" size="500"/>
 ```
 
 **Pros**: No database required, fast
@@ -274,10 +277,10 @@ These ensure API errors are properly logged and formatted.
 
 ## Best Practices
 
-1. **Monitor Errors Regularly**: Check `/elmah.axd` regularly to monitor application health
+1. **Monitor Errors Regularly**: Switch from `MemoryErrorLog` to `XmlFileErrorLog` or `SqlErrorLog` so errors persist across restarts and can be reviewed offline
 2. **Configure Email Alerts**: For production, enable email notifications for critical errors
-3. **Use SQL Storage**: For production, use SQL Server storage instead of in-memory
-4. **Secure Access**: Restrict access to `/elmah.axd` to authorized users only
+3. **Use Persistent Storage**: For production, use `XmlFileErrorLog` or `SqlErrorLog` instead of in-memory storage
+4. **Secure Access**: When deploying under IIS, restrict `/elmah.axd` to `Admin` role only via the `<location>` authorization block in `web.config`
 5. **Filter Errors Appropriately**: Exclude expected errors (404, 401) to focus on real issues
 6. **Review Stack Traces**: Use detailed error information to fix bugs quickly
 

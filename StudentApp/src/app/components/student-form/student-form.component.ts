@@ -98,39 +98,91 @@ export class StudentFormComponent implements OnInit {
     this.calculateValues();
   }
 
-  clearFieldError(field: string): void {
+  filterLetters(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Enter',
+                         'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                         'Home', 'End', 'Escape'];
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) return;
+    if (!/^[a-zA-Z '\-]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  filterDigits(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Enter',
+                         'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Escape'];
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) return;
+    if (!/^\d$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  validateField(field: string): void {
     delete this.fieldErrors[field];
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    switch (field) {
+      case 'firstName':
+        if (!this.firstName.trim()) {
+          this.fieldErrors['firstName'] = 'First name is required';
+        } else if (!/^[a-zA-Z '\-]+$/.test(this.firstName)) {
+          this.fieldErrors['firstName'] = 'First name must contain only letters';
+        } else if (this.firstName.length < 2 || this.firstName.length > 50) {
+          this.fieldErrors['firstName'] = 'First name must be between 2 and 50 characters';
+        }
+        break;
+      case 'lastName':
+        if (!this.lastName.trim()) {
+          this.fieldErrors['lastName'] = 'Last name is required';
+        } else if (!/^[a-zA-Z '\-]+$/.test(this.lastName)) {
+          this.fieldErrors['lastName'] = 'Last name must contain only letters';
+        } else if (this.lastName.length < 2 || this.lastName.length > 50) {
+          this.fieldErrors['lastName'] = 'Last name must be between 2 and 50 characters';
+        }
+        break;
+      case 'email':
+        if (!this.email.trim()) {
+          this.fieldErrors['email'] = 'Email is required';
+        } else if (!emailPattern.test(this.email)) {
+          this.fieldErrors['email'] = 'Email must be a valid email address';
+        }
+        break;
+      case 'phone':
+        if (!this.phone.trim()) {
+          this.fieldErrors['phone'] = 'Phone is required';
+        } else if (!/^\d{8}$/.test(this.phone)) {
+          this.fieldErrors['phone'] = 'Phone must be exactly 8 digits';
+        }
+        break;
+      case 'grade':
+        if (this.grade === null) {
+          this.fieldErrors['grade'] = 'Please select a grade';
+        } else if (this.grade < 1 || this.grade > 12) {
+          this.fieldErrors['grade'] = 'Grade must be between 1 and 12';
+        }
+        break;
+      case 'assessment1':
+        if (this.assessment1 === null || this.assessment1 < 0 || this.assessment1 > 20) {
+          this.fieldErrors['assessment1'] = 'Assessment 1 must be between 0 and 20';
+        }
+        break;
+      case 'assessment2':
+        if (this.assessment2 === null || this.assessment2 < 0 || this.assessment2 > 20) {
+          this.fieldErrors['assessment2'] = 'Assessment 2 must be between 0 and 20';
+        }
+        break;
+      case 'assessment3':
+        if (this.assessment3 === null || this.assessment3 < 0 || this.assessment3 > 20) {
+          this.fieldErrors['assessment3'] = 'Assessment 3 must be between 0 and 20';
+        }
+        break;
+    }
   }
 
   validate(): boolean {
     this.fieldErrors = {};
-
-    if (!this.firstName || this.firstName.length < 2 || this.firstName.length > 50) {
-      this.fieldErrors['firstName'] = 'First name must be between 2 and 50 characters';
-    }
-    if (!this.lastName || this.lastName.length < 2 || this.lastName.length > 50) {
-      this.fieldErrors['lastName'] = 'Last name must be between 2 and 50 characters';
-    }
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!this.email || !emailPattern.test(this.email)) {
-      this.fieldErrors['email'] = 'Email must be a valid email address';
-    }
-    if (!this.phone || !/^\d{8}$/.test(this.phone)) {
-      this.fieldErrors['phone'] = 'Phone must be exactly 8 digits';
-    }
-    if (this.grade === null || this.grade < 1 || this.grade > 12) {
-      this.fieldErrors['grade'] = 'Grade must be between 1 and 12';
-    }
-    if (this.assessment1 === null || this.assessment1 < 0 || this.assessment1 > 20) {
-      this.fieldErrors['assessment1'] = 'Assessment 1 must be between 0 and 20';
-    }
-    if (this.assessment2 === null || this.assessment2 < 0 || this.assessment2 > 20) {
-      this.fieldErrors['assessment2'] = 'Assessment 2 must be between 0 and 20';
-    }
-    if (this.assessment3 === null || this.assessment3 < 0 || this.assessment3 > 20) {
-      this.fieldErrors['assessment3'] = 'Assessment 3 must be between 0 and 20';
-    }
-
+    ['firstName', 'lastName', 'email', 'phone', 'grade', 'assessment1', 'assessment2', 'assessment3']
+      .forEach(f => this.validateField(f));
     return Object.keys(this.fieldErrors).length === 0;
   }
 

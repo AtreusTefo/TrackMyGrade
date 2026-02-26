@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { extractErrors } from '../../services/error.util';
+import { extractFieldErrors } from '../../services/error.util';
 
 @Component({
   selector: 'app-register',
@@ -20,7 +20,8 @@ export class RegisterComponent implements OnInit {
   subject: string = '';
   password: string = '';
   confirmPassword: string = '';
-  errors: string[] = [];
+  fieldErrors: { [key: string]: string } = {};
+  serverErrors: string[] = [];
   isSubmitting = false;
 
   constructor(
@@ -34,37 +35,102 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  validate(): boolean {
-    this.errors = [];
-
-    if (!this.firstName || this.firstName.length < 2 || this.firstName.length > 50) {
-      this.errors.push('First name must be between 2 and 50 characters');
-    }
-    if (!this.lastName || this.lastName.length < 2 || this.lastName.length > 50) {
-      this.errors.push('Last name must be between 2 and 50 characters');
-    }
+  validateField(field: string): void {
+    delete this.fieldErrors[field];
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!this.email || !emailPattern.test(this.email)) {
-      this.errors.push('Email must be a valid email address');
-    }
-    if (!this.phone || !/^\d{8}$/.test(this.phone)) {
-      this.errors.push('Phone must be exactly 8 digits');
-    }
-    if (!this.subject || this.subject.length > 100) {
-      this.errors.push('Subject is required and must not exceed 100 characters');
-    }
-    if (!this.password || this.password.length < 6 || this.password.length > 20) {
-      this.errors.push('Password must be between 6 and 20 characters');
-    }
-    if (this.password !== this.confirmPassword) {
-      this.errors.push('Passwords do not match');
-    }
 
-    return this.errors.length === 0;
+    switch (field) {
+      case 'firstName':
+        if (!this.firstName.trim()) {
+          this.fieldErrors['firstName'] = 'First name is required';
+        } else if (!/^[a-zA-Z '\-]+$/.test(this.firstName)) {
+          this.fieldErrors['firstName'] = 'First name must contain only letters';
+        } else if (this.firstName.length < 2 || this.firstName.length > 50) {
+          this.fieldErrors['firstName'] = 'First name must be between 2 and 50 characters';
+        }
+        break;
+      case 'lastName':
+        if (!this.lastName.trim()) {
+          this.fieldErrors['lastName'] = 'Last name is required';
+        } else if (!/^[a-zA-Z '\-]+$/.test(this.lastName)) {
+          this.fieldErrors['lastName'] = 'Last name must contain only letters';
+        } else if (this.lastName.length < 2 || this.lastName.length > 50) {
+          this.fieldErrors['lastName'] = 'Last name must be between 2 and 50 characters';
+        }
+        break;
+      case 'email':
+        if (!this.email.trim()) {
+          this.fieldErrors['email'] = 'Email is required';
+        } else if (!emailPattern.test(this.email)) {
+          this.fieldErrors['email'] = 'Email must be a valid email address';
+        }
+        break;
+      case 'phone':
+        if (!this.phone.trim()) {
+          this.fieldErrors['phone'] = 'Phone is required';
+        } else if (!/^\d{8}$/.test(this.phone)) {
+          this.fieldErrors['phone'] = 'Phone must be exactly 8 digits';
+        }
+        break;
+      case 'subject':
+        if (!this.subject.trim()) {
+          this.fieldErrors['subject'] = 'Subject is required';
+        } else if (this.subject.length > 100) {
+          this.fieldErrors['subject'] = 'Subject must not exceed 100 characters';
+        }
+        break;
+      case 'password':
+        if (!this.password) {
+          this.fieldErrors['password'] = 'Password is required';
+        } else if (this.password.length < 6 || this.password.length > 20) {
+          this.fieldErrors['password'] = 'Password must be between 6 and 20 characters';
+        }
+        if (this.confirmPassword) {
+          delete this.fieldErrors['confirmPassword'];
+          if (this.password !== this.confirmPassword) {
+            this.fieldErrors['confirmPassword'] = 'Passwords do not match';
+          }
+        }
+        break;
+      case 'confirmPassword':
+        if (!this.confirmPassword) {
+          this.fieldErrors['confirmPassword'] = 'Please confirm your password';
+        } else if (this.password !== this.confirmPassword) {
+          this.fieldErrors['confirmPassword'] = 'Passwords do not match';
+        }
+        break;
+    }
+  }
+
+  validate(): boolean {
+    this.fieldErrors = {};
+    ['firstName', 'lastName', 'email', 'phone', 'subject', 'password', 'confirmPassword']
+      .forEach(f => this.validateField(f));
+    return Object.keys(this.fieldErrors).length === 0;
+  }
+
+  filterLetters(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Enter',
+                         'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                         'Home', 'End', 'Escape'];
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) return;
+    if (!/^[a-zA-Z '\-]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  filterDigits(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Enter',
+                         'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Escape'];
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) return;
+    if (!/^\d$/.test(event.key)) {
+      event.preventDefault();
+    }
   }
 
   onSubmit(): void {
     this.isSubmitting = true;
+    this.serverErrors = [];
 
     if (!this.validate()) {
       this.isSubmitting = false;
@@ -86,7 +152,9 @@ export class RegisterComponent implements OnInit {
         this.router.navigate(['/login']);
       },
       error: (error) => {
-        this.errors = extractErrors(error);
+        const { fieldErrors, generalErrors } = extractFieldErrors(error);
+        this.fieldErrors = fieldErrors;
+        this.serverErrors = generalErrors;
         this.isSubmitting = false;
       }
     });
