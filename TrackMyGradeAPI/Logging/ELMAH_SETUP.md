@@ -129,7 +129,7 @@ The main configuration is in `web.config`:
   <!-- Error filtering: excludes 404 errors from logging -->
   <errorFilter>
     <test>
-      <eq binding="HttpStatusCode" value="404" type="Int32"/>
+      <equal binding="HttpStatusCode" value="404" type="Int32"/>
     </test>
   </errorFilter>
 </elmah>
@@ -242,22 +242,40 @@ ELMAH allows you to exclude certain errors from logging. Current filter excludes
 ```xml
 <errorFilter>
   <test>
-    <eq binding="HttpStatusCode" value="404" type="Int32"/>
+    <equal binding="HttpStatusCode" value="404" type="Int32"/>
   </test>
 </errorFilter>
 ```
+
+**Important:** Use `<equal>` not `<eq>`. ELMAH's assertion syntax requires `<equal>` for equality tests.
 
 To filter other error types, modify the `<test>` element. Examples:
 
 ```xml
 <!-- Exclude 401 Unauthorized -->
-<eq binding="HttpStatusCode" value="401" type="Int32"/>
+<equal binding="HttpStatusCode" value="401" type="Int32"/>
 
 <!-- Exclude specific exception types -->
 <regex binding="Exception.Type" pattern="NullReferenceException"/>
 
 <!-- Exclude by message -->
 <regex binding="Exception.Message" pattern="timeout"/>
+
+<!-- Multiple conditions (AND) -->
+<test>
+  <and>
+    <equal binding="HttpStatusCode" value="404" type="Int32"/>
+    <regex binding="Context.Request.Path" pattern="/api/"/>
+  </and>
+</test>
+
+<!-- Multiple conditions (OR) -->
+<test>
+  <or>
+    <equal binding="HttpStatusCode" value="404" type="Int32"/>
+    <equal binding="HttpStatusCode" value="401" type="Int32"/>
+  </or>
+</test>
 ```
 
 ## Exception Handlers
@@ -286,17 +304,55 @@ These ensure API errors are properly logged and formatted.
 
 ## Troubleshooting
 
+### Configuration Error: "AssertionFactory does not have a method named assert_eq"
+
+**Error Message:**
+```
+Parser Error Message: Elmah.Assertions.AssertionFactory does not have a method named assert_eq.
+Source File: web.config Line: 41
+```
+
+**Cause:** Incorrect ELMAH error filter syntax. Using `<eq>` instead of `<equal>`.
+
+**Solution:** Change the error filter assertion from `<eq>` to `<equal>`:
+
+```xml
+<!-- ❌ WRONG -->
+<errorFilter>
+  <test>
+    <eq binding="HttpStatusCode" value="404" type="Int32"/>
+  </test>
+</errorFilter>
+
+<!-- ✅ CORRECT -->
+<errorFilter>
+  <test>
+    <equal binding="HttpStatusCode" value="404" type="Int32"/>
+  </test>
+</errorFilter>
+```
+
+**Valid ELMAH Assertions:**
+- `<equal>` - Equality check
+- `<greater>` - Greater than
+- `<lesser>` - Less than
+- `<is-type>` - Type check
+- `<regex>` - Regular expression match
+- `<and>`, `<or>`, `<not>` - Logical operators
+
 ### ELMAH page not loading
 
 - Ensure `modules` and `handlers` are configured in web.config
 - Check that the path matches: `path="elmah.axd"`
 - Verify IIS/IIS Express permissions
+- **Note**: `/elmah.axd` does NOT work in OWIN self-hosted mode (only IIS)
 
 ### Errors not appearing
 
 - Check error filters in web.config
 - Ensure error log type is properly configured
 - Check application event logs for ELMAH startup errors
+- Verify `ErrorLoggingConfig.LogError()` is being called in catch blocks
 
 ### Storage issues
 

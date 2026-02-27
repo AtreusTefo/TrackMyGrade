@@ -110,6 +110,49 @@ The backend uses the following NuGet packages:
 - `PUT /api/students/{id}` - Update student
 - `DELETE /api/students/{id}` - Delete student
 
+## 📮 Postman Integration
+
+**TrackMyGrade API is now fully integrated with Postman!**
+
+### Quick Start with Postman
+
+1. **Import the Collection**
+   - File: `TrackMyGradeAPI.postman_collection.json`
+   - Contains all API endpoints with automated tests
+
+2. **Import the Environment**
+   - File: `TrackMyGradeAPI.postman_environment.json`
+   - Pre-configured for `http://localhost:5000`
+
+3. **Start Testing**
+   - Run "Register Teacher" first
+   - Teacher ID is automatically saved
+   - All subsequent requests use saved authentication
+
+### Features
+
+✅ **Complete API Coverage** - All endpoints (Teachers & Students)  
+✅ **Automated Tests** - Response validation for each request  
+✅ **Smart Authentication** - Auto-saves and applies teacher ID header  
+✅ **Test Scenarios** - Validation and error handling tests  
+✅ **Environment Variables** - Easy configuration management  
+✅ **Pre-Request Scripts** - Automated setup for each request  
+
+### Documentation
+
+For detailed instructions, see: **[POSTMAN_INTEGRATION_GUIDE.md](POSTMAN_INTEGRATION_GUIDE.md)**
+
+### Newman CLI (Optional)
+
+Run tests from command line:
+```powershell
+# Install Newman
+npm install -g newman
+
+# Run the collection
+.\TrackMyGradeAPI\run-postman-tests.ps1
+```
+
 ## Frontend Setup (Angular 18)
 
 ### Prerequisites

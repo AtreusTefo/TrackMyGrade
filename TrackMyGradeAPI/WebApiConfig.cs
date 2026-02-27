@@ -25,14 +25,16 @@ namespace TrackMyGradeAPI
             config.Services.Replace(typeof(IExceptionHandler), new ElmahExceptionHandler());
             config.Services.Add(typeof(IExceptionLogger), new ElmahExceptionLogger());
 
-            // Web API routes
+            // Web API routes - Attribute routes MUST come first
             config.MapHttpAttributeRoutes();
 
-            config.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );
+            // Note: Conventional routes are not needed when using attribute routing
+            // Commenting out to prevent route conflicts
+            // config.Routes.MapHttpRoute(
+            //     name: "DefaultApi",
+            //     routeTemplate: "api/{controller}/{id}",
+            //     defaults: new { id = RouteParameter.Optional }
+            // );
 
             // Register Swagger / Swagger UI
             SwaggerConfig.Register(config);
