@@ -1,0 +1,732 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "TrackMyGrade API",
+		"description": "Complete API collection for TrackMyGrade - Student Grade Management System.\n\n## Getting Started\n1. Import this collection into Postman\n2. Import the environment file (TrackMyGradeAPI.postman_environment.json)\n3. Start the API: Run TrackMyGradeAPI.exe or use start-api.ps1\n4. Run the requests in order:\n   - First register a teacher\n   - The teacherId will be saved automatically\n   - Then test student CRUD operations\n\n## Authentication\nThe API uses a simple teacher ID header for authentication:\n- Header: `X-TeacherId`\n- Value: Teacher ID from registration/login response\n- This is automatically set after registration/login",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Teachers",
+			"item": [
+				{
+					"name": "Register Teacher",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test that registration was successful",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Parse response",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    // Validate response structure",
+									"    pm.test(\"Response has id\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"    });",
+									"    ",
+									"    pm.test(\"Response has email\", function () {",
+									"        pm.expect(jsonData).to.have.property('email');",
+									"    });",
+									"    ",
+									"    pm.test(\"Response has token\", function () {",
+									"        pm.expect(jsonData).to.have.property('token');",
+									"    });",
+									"    ",
+									"    // Save teacher ID to environment for subsequent requests",
+									"    pm.environment.set(\"teacherId\", jsonData.id);",
+									"    pm.environment.set(\"authToken\", jsonData.token);",
+									"    ",
+									"    console.log(\"Teacher registered successfully with ID: \" + jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@school.com\",\n  \"phone\": \"12345678\",\n  \"subject\": \"Mathematics\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/teachers/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"teachers",
+								"register"
+							]
+						},
+						"description": "Register a new teacher account. This will return a teacher ID and token that will be automatically saved for subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Login Teacher",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test that login was successful",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"Response has id\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"    });",
+									"    ",
+									"    pm.test(\"Response has token\", function () {",
+									"        pm.expect(jsonData).to.have.property('token');",
+									"    });",
+									"    ",
+									"    // Save teacher ID to environment",
+									"    pm.environment.set(\"teacherId\", jsonData.id);",
+									"    pm.environment.set(\"authToken\", jsonData.token);",
+									"    ",
+									"    console.log(\"Teacher logged in successfully with ID: \" + jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@school.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/teachers/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"teachers",
+								"login"
+							]
+						},
+						"description": "Authenticate a teacher and receive an auth token."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Teacher by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"Teacher has firstName\", function () {",
+									"        pm.expect(jsonData).to.have.property('firstName');",
+									"    });",
+									"    ",
+									"    pm.test(\"Teacher has email\", function () {",
+									"        pm.expect(jsonData).to.have.property('email');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/teachers/{{teacherId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"teachers",
+								"{{teacherId}}"
+							]
+						},
+						"description": "Get a teacher's profile by their ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Teacher management endpoints - registration, login, and profile retrieval."
+		},
+		{
+			"name": "Students",
+			"item": [
+				{
+					"name": "Get All Students",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure teacherId is set",
+									"if (!pm.environment.get(\"teacherId\")) {",
+									"    console.warn(\"teacherId not set. Please register or login first.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"Response is an array\", function () {",
+									"        pm.expect(jsonData).to.be.an('array');",
+									"    });",
+									"    ",
+									"    if (jsonData.length > 0) {",
+									"        pm.test(\"First student has required fields\", function () {",
+									"            pm.expect(jsonData[0]).to.have.property('id');",
+									"            pm.expect(jsonData[0]).to.have.property('firstName');",
+									"            pm.expect(jsonData[0]).to.have.property('total');",
+									"            pm.expect(jsonData[0]).to.have.property('average');",
+									"            pm.expect(jsonData[0]).to.have.property('percentage');",
+									"            pm.expect(jsonData[0]).to.have.property('performanceLevel');",
+									"        });",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-TeacherId",
+								"value": "{{teacherId}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"students"
+							]
+						},
+						"description": "Get all students belonging to the authenticated teacher."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Student",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure teacherId is set",
+									"if (!pm.environment.get(\"teacherId\")) {",
+									"    console.warn(\"teacherId not set. Please register or login first.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"Student created with ID\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"    });",
+									"    ",
+									"    pm.test(\"Student has calculated total\", function () {",
+									"        pm.expect(jsonData).to.have.property('total');",
+									"        pm.expect(jsonData.total).to.be.a('number');",
+									"    });",
+									"    ",
+									"    pm.test(\"Student has calculated average\", function () {",
+									"        pm.expect(jsonData).to.have.property('average');",
+									"    });",
+									"    ",
+									"    pm.test(\"Student has percentage\", function () {",
+									"        pm.expect(jsonData).to.have.property('percentage');",
+									"    });",
+									"    ",
+									"    pm.test(\"Student has performance level\", function () {",
+									"        pm.expect(jsonData).to.have.property('performanceLevel');",
+									"    });",
+									"    ",
+									"    // Save student ID for subsequent tests",
+									"    pm.environment.set(\"lastStudentId\", jsonData.id);",
+									"    ",
+									"    console.log(\"Student created with ID: \" + jsonData.id);",
+									"    console.log(\"Performance: \" + jsonData.performanceLevel + \" (\" + jsonData.percentage + \"%)\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-TeacherId",
+								"value": "{{teacherId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Smith\",\n  \"email\": \"alice.smith@student.com\",\n  \"phone\": \"98765432\",\n  \"grade\": 10,\n  \"assessment1\": 18,\n  \"assessment2\": 16,\n  \"assessment3\": 19\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"students"
+							]
+						},
+						"description": "Create a new student. Assessment scores must be between 0-20. The API will automatically calculate total, average, percentage, and performance level."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure teacherId is set",
+									"if (!pm.environment.get(\"teacherId\")) {",
+									"    console.warn(\"teacherId not set. Please register or login first.\");",
+									"}",
+									"",
+									"// Ensure student ID is set",
+									"if (!pm.environment.get(\"lastStudentId\")) {",
+									"    console.warn(\"lastStudentId not set. Create a student first.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"Student has all required fields\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"        pm.expect(jsonData).to.have.property('firstName');",
+									"        pm.expect(jsonData).to.have.property('lastName');",
+									"        pm.expect(jsonData).to.have.property('email');",
+									"        pm.expect(jsonData).to.have.property('assessment1');",
+									"        pm.expect(jsonData).to.have.property('assessment2');",
+									"        pm.expect(jsonData).to.have.property('assessment3');",
+									"        pm.expect(jsonData).to.have.property('total');",
+									"        pm.expect(jsonData).to.have.property('average');",
+									"        pm.expect(jsonData).to.have.property('percentage');",
+									"        pm.expect(jsonData).to.have.property('performanceLevel');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-TeacherId",
+								"value": "{{teacherId}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/students/{{lastStudentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"students",
+								"{{lastStudentId}}"
+							]
+						},
+						"description": "Get a specific student by ID. The student must belong to the authenticated teacher."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Student",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure teacherId is set",
+									"if (!pm.environment.get(\"teacherId\")) {",
+									"    console.warn(\"teacherId not set. Please register or login first.\");",
+									"}",
+									"",
+									"// Ensure student ID is set",
+									"if (!pm.environment.get(\"lastStudentId\")) {",
+									"    console.warn(\"lastStudentId not set. Create a student first.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"Student updated successfully\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"    });",
+									"    ",
+									"    pm.test(\"Metrics recalculated\", function () {",
+									"        pm.expect(jsonData).to.have.property('total');",
+									"        pm.expect(jsonData).to.have.property('average');",
+									"        pm.expect(jsonData).to.have.property('percentage');",
+									"        pm.expect(jsonData).to.have.property('performanceLevel');",
+									"    });",
+									"    ",
+									"    console.log(\"Student updated. New performance: \" + jsonData.performanceLevel);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-TeacherId",
+								"value": "{{teacherId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Smith\",\n  \"email\": \"alice.smith@student.com\",\n  \"phone\": \"98765432\",\n  \"grade\": 10,\n  \"assessment1\": 20,\n  \"assessment2\": 19,\n  \"assessment3\": 20\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students/{{lastStudentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"students",
+								"{{lastStudentId}}"
+							]
+						},
+						"description": "Update an existing student's information and scores. Metrics will be recalculated automatically."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Student",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure teacherId is set",
+									"if (!pm.environment.get(\"teacherId\")) {",
+									"    console.warn(\"teacherId not set. Please register or login first.\");",
+									"}",
+									"",
+									"// Ensure student ID is set",
+									"if (!pm.environment.get(\"lastStudentId\")) {",
+									"    console.warn(\"lastStudentId not set. Create a student first.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    console.log(\"Student deleted successfully\");",
+									"    ",
+									"    // Clear the student ID from environment",
+									"    pm.environment.unset(\"lastStudentId\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-TeacherId",
+								"value": "{{teacherId}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/students/{{lastStudentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"students",
+								"{{lastStudentId}}"
+							]
+						},
+						"description": "Delete a student by ID. The student must belong to the authenticated teacher."
+					},
+					"response": []
+				}
+			],
+			"description": "Student management endpoints - CRUD operations for students with automatic grade calculation."
+		},
+		{
+			"name": "Test Scenarios",
+			"item": [
+				{
+					"name": "Create Student - Invalid Scores (>20)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response contains validation error\", function () {",
+									"    var responseText = pm.response.text();",
+									"    pm.expect(responseText.toLowerCase()).to.include('validation');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-TeacherId",
+								"value": "{{teacherId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Invalid\",\n  \"lastName\": \"Student\",\n  \"email\": \"invalid@student.com\",\n  \"phone\": \"12345678\",\n  \"grade\": 10,\n  \"assessment1\": 25,\n  \"assessment2\": 16,\n  \"assessment3\": 19\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"students"
+							]
+						},
+						"description": "Test validation - should fail because assessment1 is > 20"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Student - Negative Scores",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response contains validation error\", function () {",
+									"    var responseText = pm.response.text();",
+									"    pm.expect(responseText.toLowerCase()).to.include('validation');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-TeacherId",
+								"value": "{{teacherId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Invalid\",\n  \"lastName\": \"Student\",\n  \"email\": \"invalid2@student.com\",\n  \"phone\": \"12345678\",\n  \"grade\": 10,\n  \"assessment1\": -5,\n  \"assessment2\": 16,\n  \"assessment3\": 19\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"students"
+							]
+						},
+						"description": "Test validation - should fail because assessment1 is negative"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Student - Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-TeacherId",
+								"value": "{{teacherId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Incomplete\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"students"
+							]
+						},
+						"description": "Test validation - should fail because required fields are missing"
+					},
+					"response": []
+				}
+			],
+			"description": "Test scenarios to verify validation and error handling."
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		}
+	]
+}

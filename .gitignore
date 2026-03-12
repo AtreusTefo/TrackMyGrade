@@ -1,0 +1,22 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.cache
+
+# Build output
+bin/
+obj/
+
+# Node / Angular
+node_modules/
+.angular/
+dist/
+package-lock.json
+
+# SQLite database files
+*.db
+
+# OS files
+Thumbs.db
+.DS_Store

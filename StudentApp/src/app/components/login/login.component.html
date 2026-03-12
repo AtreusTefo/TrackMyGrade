@@ -1,0 +1,64 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Teacher Login</h2>
+    
+    <div *ngIf="serverErrors.length > 0" class="error-banner">
+      <ul>
+        <li *ngFor="let error of serverErrors">{{ error }}</li>
+      </ul>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Enter your email"
+          autocomplete="email"
+          [class.input-error]="fieldErrors['email']"
+          [attr.aria-invalid]="!!fieldErrors['email']"
+          aria-describedby="email-error"
+          (input)="validateField('email')"
+          (blur)="validateField('email')">
+        <div class="field-error-container">
+          <span id="email-error" class="field-error" *ngIf="fieldErrors['email']">{{ fieldErrors['email'] }}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <div class="password-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            [class.input-error]="fieldErrors['password']"
+            [attr.aria-invalid]="!!fieldErrors['password']"
+            aria-describedby="password-error"
+            (input)="validateField('password')"
+            (blur)="validateField('password')">
+          <button type="button" class="toggle-password" (click)="showPassword = !showPassword" tabindex="-1">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <div class="field-error-container">
+          <span id="password-error" class="field-error" *ngIf="fieldErrors['password']">{{ fieldErrors['password'] }}</span>
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Logging in...' : 'Login' }}
+      </button>
+    </form>
+
+    <p class="register-link">
+      Don't have an account? <a routerLink="/register">Register here</a>
+    </p>
+  </div>
+</div>

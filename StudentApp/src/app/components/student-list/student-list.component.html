@@ -1,0 +1,64 @@
+<div class="container">
+  <div class="header">
+    <h1>Students</h1>
+    <a routerLink="/create" class="btn btn-primary">Add Student</a>
+  </div>
+
+  <div *ngIf="errors.length > 0" class="error-banner">
+    <ul>
+      <li *ngFor="let error of errors">{{ error }}</li>
+    </ul>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    Loading students...
+  </div>
+
+  <div *ngIf="!isLoading" class="table-container">
+    <table #studentsTable class="students-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of students">
+          <td>{{ student.id }}</td>
+          <td>{{ student.firstName }}</td>
+          <td>{{ student.lastName }}</td>
+          <td class="actions-cell">
+            <a [routerLink]="['/detail', student.id]" class="btn btn-info">View</a>
+            <a [routerLink]="['/edit', student.id]" class="btn btn-warning">Edit</a>
+            <button (click)="openDeleteModal(student.id, student.firstName, student.lastName)" class="btn btn-danger">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal" (click)="closeDeleteModal()" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="deleteModalTitle">Delete Student</h2>
+      <button class="modal-close" (click)="closeDeleteModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>
+        Are you sure you want to delete
+        <strong>{{ studentToDelete?.firstName }} {{ studentToDelete?.lastName }}</strong>?
+      </p>
+      <p class="modal-warning">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting">Cancel</button>
+      <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="isDeleting">
+        {{ isDeleting ? 'Deleting...' : 'Delete' }}
+      </button>
+    </div>
+  </div>
+</div>
