@@ -12,26 +12,26 @@ namespace TrackMyGradeAPI.Mapping
             get
             {
                 if (_mapper == null)
-                {
-                    lock (_lock)
-                    {
-                        if (_mapper == null)
-                            Initialize();
-                    }
-                }
+                    Initialize();
                 return _mapper;
             }
         }
 
         public static void Initialize()
         {
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile<MappingProfile>();
-            });
+            if (_mapper != null) return;
 
-            config.AssertConfigurationIsValid();
-            _mapper = config.CreateMapper();
+            lock (_lock)
+            {
+                if (_mapper != null) return;
+
+                var config = new MapperConfiguration(cfg =>
+                    cfg.AddMaps(typeof(MappingProfile).Assembly));
+
+                config.AssertConfigurationIsValid();
+                config.CompileMappings();
+                _mapper = config.CreateMapper();
+            }
         }
     }
 }

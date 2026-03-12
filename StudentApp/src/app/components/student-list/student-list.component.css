@@ -81,6 +81,7 @@ h1 {
 .students-table td {
   padding: 1rem;
   border-bottom: 1px solid #dee2e6;
+  text-align: left;
 }
 
 .student-row:hover {

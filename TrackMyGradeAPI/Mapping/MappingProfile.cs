@@ -12,7 +12,8 @@ namespace TrackMyGradeAPI.Mapping
             CreateMap<TeacherRegisterDto, Teacher>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Token, opt => opt.Ignore());
-            CreateMap<Teacher, TeacherResponseDto>();
+            CreateMap<Teacher, TeacherResponseDto>()
+                .ForSourceMember(src => src.Password, opt => opt.DoNotValidate());
 
             // Student mappings
             CreateMap<StudentCreateDto, Student>()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.Http.Dependencies;
+using AutoMapper;
 using FluentValidation;
 using TrackMyGradeAPI.Controllers;
 using TrackMyGradeAPI.Data;
@@ -28,24 +29,24 @@ namespace TrackMyGradeAPI.Infrastructure
     public class SimpleDependencyScope : IDependencyScope
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IMapper _mapper;
         private bool _disposed;
 
         public SimpleDependencyScope()
         {
             _dbContext = new ApplicationDbContext();
+            _mapper = AutoMapperConfig.Mapper;
         }
 
         public object GetService(Type serviceType)
         {
-            var mapper = AutoMapperConfig.Mapper;
-
             if (serviceType == typeof(TeachersController))
                 return new TeachersController(
-                    new TeacherService(_dbContext, mapper));
+                    new TeacherService(_dbContext, _mapper));
 
             if (serviceType == typeof(StudentsController))
                 return new StudentsController(
-                    new StudentService(_dbContext, mapper));
+                    new StudentService(_dbContext, _mapper));
 
             if (serviceType == typeof(IValidator<StudentCreateDto>))
                 return new StudentCreateValidator();

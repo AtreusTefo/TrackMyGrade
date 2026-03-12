@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StudentService } from '../../services/student.service';
 import { Student } from '../../models';
 import { extractErrors } from '../../services/error.util';
-import DataTable from 'datatables.net-dt';
+import DataTable, { Api } from 'datatables.net-dt';
 
 @Component({
   selector: 'app-student-list',
@@ -22,10 +22,9 @@ export class StudentListComponent implements OnInit, OnDestroy {
   showDeleteModal = false;
   studentToDelete: { id: number; firstName: string; lastName: string } | null = null;
   isDeleting = false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private dtInstance: any = null;
+  private dtInstance: Api<any> | null = null;
 
-  constructor(private studentService: StudentService) { }
+  constructor(private studentService: StudentService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.loadStudents();
@@ -39,7 +38,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.students = data;
         this.isLoading = false;
-        setTimeout(() => this.initDataTable());
+        this.cdr.detectChanges();
+        this.initDataTable();
       },
       error: (error) => {
         this.errors = extractErrors(error);
@@ -52,8 +52,9 @@ export class StudentListComponent implements OnInit, OnDestroy {
     if (!this.tableEl) return;
     this.dtInstance = new DataTable(this.tableEl.nativeElement, {
       pageLength: 10,
+      lengthMenu: [5, 10, 25, 50],
       order: [[0, 'asc']],
-      columnDefs: [{ orderable: false, searchable: false, targets: 3 }],
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
       language: { emptyTable: 'No students found.' }
     });
   }
