@@ -17,7 +17,8 @@
   <div *ngIf="!isLoading && student" class="detail-card">
     <div class="detail-section">
       <h2>{{ student.firstName }} {{ student.lastName }}</h2>
-      
+      <p class="student-number">{{ student.studentNumber }}</p>
+
       <div class="detail-row">
         <div class="detail-item">
           <label>Email:</label>
@@ -30,6 +31,10 @@
       </div>
 
       <div class="detail-row">
+        <div class="detail-item">
+          <label>Omang No. / Passport:</label>
+          <p>{{ student.omangOrPassport }}</p>
+        </div>
         <div class="detail-item">
           <label>Grade:</label>
           <p>{{ student.grade }}</p>

@@ -50,6 +50,7 @@ namespace TrackMyGradeAPI.Services
         {
             var student = _mapper.Map<Student>(request);
             student.TeacherId = teacherId;
+            student.StudentNumber = GenerateStudentNumber();
 
             _dbContext.Students.Add(student);
             _dbContext.SaveChanges();
@@ -78,6 +79,26 @@ namespace TrackMyGradeAPI.Services
 
             _dbContext.Students.Remove(student);
             _dbContext.SaveChanges();
+        }
+
+        private string GenerateStudentNumber()
+        {
+            int year = DateTime.Now.Year;
+            string prefix = $"STU-{year}-";
+
+            var existing = _dbContext.Students
+                .Where(s => s.StudentNumber != null && s.StudentNumber.StartsWith(prefix))
+                .Select(s => s.StudentNumber)
+                .ToList();
+
+            int maxSeq = 0;
+            foreach (var num in existing)
+            {
+                if (num.Length > prefix.Length && int.TryParse(num.Substring(prefix.Length), out int seq))
+                    maxSeq = Math.Max(maxSeq, seq);
+            }
+
+            return $"{prefix}{(maxSeq + 1):D4}";
         }
     }
 }

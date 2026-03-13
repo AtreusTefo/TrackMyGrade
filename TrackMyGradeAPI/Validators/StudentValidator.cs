@@ -34,6 +34,12 @@ namespace TrackMyGradeAPI.Validators
                 .NotEmpty().WithMessage("Phone is required")
                 .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits");
 
+            RuleFor(x => x.OmangOrPassport)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Omang No. or Passport is required")
+                .Matches(@"^[a-zA-Z0-9]+$").WithMessage("Omang No. or Passport must contain only letters and digits")
+                .Length(9).WithMessage("Omang No. or Passport must be exactly 9 characters");
+
             RuleFor(x => x.Grade)
                 .InclusiveBetween(1, 12).WithMessage("Grade must be between 1 and 12");
 

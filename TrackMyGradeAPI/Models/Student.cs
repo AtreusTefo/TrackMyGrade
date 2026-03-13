@@ -15,11 +15,13 @@ namespace TrackMyGradeAPI.Models
     public class Student
     {
         public int Id { get; set; }
+        public string StudentNumber { get; set; }   // e.g. STU-2026-0001
         public int TeacherId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
+        public string OmangOrPassport { get; set; }
         public int Grade { get; set; }
         public int Assessment1 { get; set; } // 0-20
         public int Assessment2 { get; set; } // 0-20

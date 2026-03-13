@@ -18,11 +18,13 @@ namespace TrackMyGradeAPI.Mapping
             // Student mappings
             CreateMap<StudentCreateDto, Student>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.StudentNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.TeacherId, opt => opt.Ignore())
                 .ForMember(dest => dest.Teacher, opt => opt.Ignore());
 
             CreateMap<StudentUpdateDto, Student>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.StudentNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.TeacherId, opt => opt.Ignore())
                 .ForMember(dest => dest.Teacher, opt => opt.Ignore());
 

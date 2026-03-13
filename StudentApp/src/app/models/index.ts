@@ -10,10 +10,12 @@ export interface Teacher {
 
 export interface Student {
   id: number;
+  studentNumber: string;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
+  omangOrPassport: string;
   grade: number;
   assessment1: number;
   assessment2: number;
@@ -43,6 +45,7 @@ export interface StudentCreate {
   lastName: string;
   email: string;
   phone: string;
+  omangOrPassport: string;
   grade: number;
   assessment1: number;
   assessment2: number;
@@ -54,6 +57,7 @@ export interface StudentUpdate {
   lastName: string;
   email: string;
   phone: string;
+  omangOrPassport: string;
   grade: number;
   assessment1: number;
   assessment2: number;

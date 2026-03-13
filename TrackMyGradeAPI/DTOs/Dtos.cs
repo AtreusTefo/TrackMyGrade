@@ -56,6 +56,8 @@ namespace TrackMyGradeAPI.DTOs
         public string Email { get; set; }
         /// <summary>Student's phone number.</summary>
         public string Phone { get; set; }
+        /// <summary>Student's Omang number (9-digit national ID) or 9-character passport number.</summary>
+        public string OmangOrPassport { get; set; }
         /// <summary>Academic grade / year (e.g. 10).</summary>
         public int Grade { get; set; }
         /// <summary>Score for Assessment 1 (0–20).</summary>
@@ -75,8 +77,10 @@ namespace TrackMyGradeAPI.DTOs
     /// <summary>Full student record including computed performance metrics.</summary>
     public class StudentResponseDto
     {
-        /// <summary>Unique student identifier.</summary>
+        /// <summary>Database primary key.</summary>
         public int Id { get; set; }
+        /// <summary>System-generated unique student number (e.g. STU-2026-0001).</summary>
+        public string StudentNumber { get; set; }
         /// <summary>Student's first name.</summary>
         public string FirstName { get; set; }
         /// <summary>Student's last name.</summary>
@@ -85,6 +89,8 @@ namespace TrackMyGradeAPI.DTOs
         public string Email { get; set; }
         /// <summary>Student's phone number.</summary>
         public string Phone { get; set; }
+        /// <summary>Student's Omang number or passport number.</summary>
+        public string OmangOrPassport { get; set; }
         /// <summary>Academic grade / year.</summary>
         public int Grade { get; set; }
         /// <summary>Score for Assessment 1 (0–20).</summary>

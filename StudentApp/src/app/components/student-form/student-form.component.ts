@@ -20,6 +20,7 @@ export class StudentFormComponent implements OnInit {
   lastName = '';
   email = '';
   phone = '';
+  omangOrPassport = '';
   grade: number | null = null;
   assessment1: number | null = null;
   assessment2: number | null = null;
@@ -60,6 +61,7 @@ export class StudentFormComponent implements OnInit {
         this.lastName = student.lastName;
         this.email = student.email;
         this.phone = student.phone;
+        this.omangOrPassport = student.omangOrPassport;
         this.grade = student.grade;
         this.assessment1 = student.assessment1;
         this.assessment2 = student.assessment2;
@@ -154,6 +156,15 @@ export class StudentFormComponent implements OnInit {
           this.fieldErrors['phone'] = 'Phone must be exactly 8 digits';
         }
         break;
+      case 'omangOrPassport':
+        if (!this.omangOrPassport.trim()) {
+          this.fieldErrors['omangOrPassport'] = 'Omang No. or Passport is required';
+        } else if (!/^[a-zA-Z0-9]+$/.test(this.omangOrPassport)) {
+          this.fieldErrors['omangOrPassport'] = 'Omang No. or Passport must contain only letters and digits';
+        } else if (this.omangOrPassport.length !== 9) {
+          this.fieldErrors['omangOrPassport'] = 'Omang No. or Passport must be exactly 9 characters';
+        }
+        break;
       case 'grade':
         if (this.grade === null) {
           this.fieldErrors['grade'] = 'Please select a grade';
@@ -181,7 +192,7 @@ export class StudentFormComponent implements OnInit {
 
   validate(): boolean {
     this.fieldErrors = {};
-    ['firstName', 'lastName', 'email', 'phone', 'grade', 'assessment1', 'assessment2', 'assessment3']
+    ['firstName', 'lastName', 'email', 'phone', 'omangOrPassport', 'grade', 'assessment1', 'assessment2', 'assessment3']
       .forEach(f => this.validateField(f));
     return Object.keys(this.fieldErrors).length === 0;
   }
@@ -200,6 +211,7 @@ export class StudentFormComponent implements OnInit {
       lastName: this.lastName,
       email: this.email,
       phone: this.phone,
+      omangOrPassport: this.omangOrPassport,
       grade: this.grade!,
       assessment1: this.assessment1!,
       assessment2: this.assessment2!,

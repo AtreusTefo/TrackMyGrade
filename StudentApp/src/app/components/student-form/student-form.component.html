@@ -89,6 +89,20 @@
             <span class="field-error" *ngIf="fieldErrors['grade']">{{ fieldErrors['grade'] }}</span>
           </div>
         </div>
+
+        <div class="form-group">
+          <label for="omangOrPassport">Omang No. / Passport:</label>
+          <input
+            type="text"
+            id="omangOrPassport"
+            [(ngModel)]="omangOrPassport"
+            name="omangOrPassport"
+            placeholder="9-character Omang or passport"
+            maxlength="9"
+            [class.input-error]="fieldErrors['omangOrPassport']"
+            (input)="validateField('omangOrPassport')">
+          <span class="field-error" *ngIf="fieldErrors['omangOrPassport']">{{ fieldErrors['omangOrPassport'] }}</span>
+        </div>
       </div>
 
       <div class="form-section">
