@@ -86,7 +86,30 @@
 
     <div class="actions">
       <a [routerLink]="['/edit', student.id]" class="btn btn-warning">Edit Student</a>
-      <button (click)="deleteStudent()" class="btn btn-danger">Delete Student</button>
+      <button (click)="openDeleteModal()" class="btn btn-danger">Delete Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal" (click)="closeDeleteModal()" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="deleteModalTitle">Delete Student</h2>
+      <button class="modal-close" (click)="closeDeleteModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>
+        Are you sure you want to delete
+        <strong>{{ student?.firstName }} {{ student?.lastName }}</strong>?
+      </p>
+      <p class="modal-warning">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting">Cancel</button>
+      <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="isDeleting">
+        {{ isDeleting ? 'Deleting...' : 'Delete' }}
+      </button>
     </div>
   </div>
 </div>

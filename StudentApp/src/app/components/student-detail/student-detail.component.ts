@@ -16,6 +16,8 @@ export class StudentDetailComponent implements OnInit {
   student: Student | null = null;
   errors: string[] = [];
   isLoading = true;
+  showDeleteModal = false;
+  isDeleting = false;
 
   constructor(
     private studentService: StudentService,
@@ -44,17 +46,29 @@ export class StudentDetailComponent implements OnInit {
     });
   }
 
-  deleteStudent(): void {
-    if (this.student && confirm(`Are you sure you want to delete ${this.student.firstName} ${this.student.lastName}?`)) {
-      this.studentService.deleteStudent(this.student.id).subscribe({
-        next: () => {
-          this.router.navigate(['/']);
-        },
-        error: (error) => {
-          this.errors = extractErrors(error);
-        }
-      });
-    }
+  openDeleteModal(): void {
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+  }
+
+  confirmDelete(): void {
+    if (!this.student) return;
+    this.isDeleting = true;
+    this.studentService.deleteStudent(this.student.id).subscribe({
+      next: () => {
+        this.isDeleting = false;
+        this.closeDeleteModal();
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        this.errors = extractErrors(error);
+        this.isDeleting = false;
+        this.closeDeleteModal();
+      }
+    });
   }
 
   getPerformanceLevelClass(level: string): string {
