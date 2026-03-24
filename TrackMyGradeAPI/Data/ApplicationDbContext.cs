@@ -85,6 +85,24 @@ namespace TrackMyGradeAPI.Data
                           AND    name      = N'OmangOrPassport')
                       ALTER TABLE dbo.Students
                           ADD OmangOrPassport NVARCHAR(9) NOT NULL DEFAULT ''");
+
+                // Add Password column for student login (teacher sets this when creating a student)
+                context.Database.ExecuteSqlCommand(
+                    @"IF NOT EXISTS (
+                          SELECT 1 FROM sys.columns
+                          WHERE  object_id = OBJECT_ID(N'dbo.Students')
+                          AND    name      = N'Password')
+                      ALTER TABLE dbo.Students
+                          ADD Password NVARCHAR(100) NULL");
+
+                // Add Token column for student authentication
+                context.Database.ExecuteSqlCommand(
+                    @"IF NOT EXISTS (
+                          SELECT 1 FROM sys.columns
+                          WHERE  object_id = OBJECT_ID(N'dbo.Students')
+                          AND    name      = N'Token')
+                      ALTER TABLE dbo.Students
+                          ADD Token NVARCHAR(100) NULL");
             }
         }
     }

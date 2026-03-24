@@ -1,0 +1,152 @@
+<div class="container">
+  <div *ngIf="errors.length > 0" class="error-banner">
+    <ul>
+      <li *ngFor="let error of errors">{{ error }}</li>
+    </ul>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">Loading your profile...</div>
+
+  <div *ngIf="!isLoading && student" class="dashboard">
+    <!-- Profile Section -->
+    <div class="section profile-section">
+      <h2>My Profile</h2>
+      <div class="profile-grid">
+        <div class="profile-item">
+          <label>Student Number:</label>
+          <p>{{ student.studentNumber }}</p>
+        </div>
+        <div class="profile-item">
+          <label>Name:</label>
+          <p>{{ student.firstName }} {{ student.lastName }}</p>
+        </div>
+        <div class="profile-item">
+          <label>Email:</label>
+          <p>{{ student.email }}</p>
+        </div>
+        <div class="profile-item">
+          <label>Phone:</label>
+          <p>{{ student.phone }}</p>
+        </div>
+        <div class="profile-item">
+          <label>Omang / Passport:</label>
+          <p>{{ student.omangOrPassport }}</p>
+        </div>
+        <div class="profile-item">
+          <label>Grade:</label>
+          <p>{{ student.grade }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marks Section -->
+    <div class="section marks-section">
+      <h2>My Marks</h2>
+      <div class="marks-grid">
+        <div class="mark-card">
+          <div class="mark-label">Assessment 1</div>
+          <div class="mark-value">{{ student.assessment1 }}/20</div>
+        </div>
+        <div class="mark-card">
+          <div class="mark-label">Assessment 2</div>
+          <div class="mark-value">{{ student.assessment2 }}/20</div>
+        </div>
+        <div class="mark-card">
+          <div class="mark-label">Assessment 3</div>
+          <div class="mark-value">{{ student.assessment3 }}/20</div>
+        </div>
+      </div>
+
+      <div class="performance-grid">
+        <div class="perf-item">
+          <label>Total:</label>
+          <span class="perf-value">{{ student.total }}/60</span>
+        </div>
+        <div class="perf-item">
+          <label>Average:</label>
+          <span class="perf-value">{{ student.average.toFixed(2) }}</span>
+        </div>
+        <div class="perf-item">
+          <label>Percentage:</label>
+          <span class="perf-value">{{ student.percentage.toFixed(2) }}%</span>
+        </div>
+        <div class="perf-item">
+          <label>Performance:</label>
+          <span class="performance-badge" [ngClass]="getPerformanceLevelClass(student.performanceLevel)">
+            {{ student.performanceLevel }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Assessments Section -->
+    <div class="section submit-section">
+      <h2>Submit Assessments</h2>
+
+      <div *ngIf="submitSuccess" class="success-banner">
+        Assessments submitted successfully!
+      </div>
+
+      <div *ngIf="submitErrors.length > 0" class="error-banner">
+        <ul>
+          <li *ngFor="let error of submitErrors">{{ error }}</li>
+        </ul>
+      </div>
+
+      <form (ngSubmit)="onSubmitAssessments()" novalidate class="assessments-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="assessment1">Assessment 1 (0-20):</label>
+            <input
+              type="number"
+              id="assessment1"
+              [(ngModel)]="assessment1"
+              name="assessment1"
+              min="0"
+              max="20"
+              [class.input-error]="fieldErrors['assessment1']"
+              (input)="validateField('assessment1')">
+            <span class="field-error" *ngIf="fieldErrors['assessment1']">{{ fieldErrors['assessment1'] }}</span>
+          </div>
+          <div class="form-group">
+            <label for="assessment2">Assessment 2 (0-20):</label>
+            <input
+              type="number"
+              id="assessment2"
+              [(ngModel)]="assessment2"
+              name="assessment2"
+              min="0"
+              max="20"
+              [class.input-error]="fieldErrors['assessment2']"
+              (input)="validateField('assessment2')">
+            <span class="field-error" *ngIf="fieldErrors['assessment2']">{{ fieldErrors['assessment2'] }}</span>
+          </div>
+          <div class="form-group">
+            <label for="assessment3">Assessment 3 (0-20):</label>
+            <input
+              type="number"
+              id="assessment3"
+              [(ngModel)]="assessment3"
+              name="assessment3"
+              min="0"
+              max="20"
+              [class.input-error]="fieldErrors['assessment3']"
+              (input)="validateField('assessment3')">
+            <span class="field-error" *ngIf="fieldErrors['assessment3']">{{ fieldErrors['assessment3'] }}</span>
+          </div>
+        </div>
+
+        <div class="live-calc">
+          <span>Total: <strong>{{ total }}/60</strong></span>
+          <span>Average: <strong>{{ average.toFixed(2) }}</strong></span>
+          <span>Percentage: <strong>{{ percentage.toFixed(2) }}%</strong></span>
+          <span>Level: <strong [ngClass]="getPerformanceLevelClass(performanceLevel)">{{ performanceLevel }}</strong></span>
+        </div>
+
+        <button type="submit" [disabled]="isSubmitting" class="btn btn-primary">
+          {{ isSubmitting ? 'Submitting...' : 'Submit Assessments' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

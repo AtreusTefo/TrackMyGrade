@@ -1,0 +1,76 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.login-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+}
+
+h2 { text-align: center; color: #333; margin-bottom: 2rem; }
+
+.error-banner {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #f5c6cb;
+}
+.error-banner ul { margin: 0; padding-left: 1.5rem; }
+.error-banner li { margin: 0.25rem 0; }
+
+.form-group { margin-bottom: 1rem; }
+
+label { display: block; margin-bottom: 0.5rem; color: #333; font-weight: 500; }
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+input:focus {
+  outline: none;
+  border-color: #11998e;
+  box-shadow: 0 0 0 3px rgba(17, 153, 142, 0.1);
+}
+input.input-error { border-color: #dc3545; }
+
+.field-error-container { min-height: 1.25rem; }
+.field-error { display: block; color: #dc3545; font-size: 0.8rem; margin-top: 0.25rem; }
+
+.password-wrapper { position: relative; display: flex; align-items: center; }
+.password-wrapper input { flex: 1; padding-right: 3.5rem; }
+.toggle-password {
+  position: absolute; right: 0.75rem; width: auto; margin-top: 0;
+  padding: 0.25rem 0.5rem; background: none; border: none;
+  color: #11998e; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+}
+.toggle-password:hover { color: #0d7a71; text-decoration: underline; background: none; }
+
+button[type="submit"] {
+  width: 100%; padding: 0.75rem; background-color: #11998e;
+  color: white; border: none; border-radius: 4px;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  margin-top: 1rem; transition: background-color 0.3s;
+}
+button[type="submit"]:hover:not(:disabled) { background-color: #0d7a71; }
+button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.register-link { text-align: center; margin-top: 1rem; color: #666; }
+.register-link a { color: #11998e; text-decoration: none; font-weight: 600; }
+.register-link a:hover { text-decoration: underline; }

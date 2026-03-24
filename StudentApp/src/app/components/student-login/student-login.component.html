@@ -1,6 +1,6 @@
 <div class="login-container">
   <div class="login-card">
-    <h2>Teacher Login</h2>
+    <h2>Student Login</h2>
     
     <div *ngIf="serverErrors.length > 0" class="error-banner">
       <ul>
@@ -58,10 +58,10 @@
     </form>
 
     <p class="register-link">
-      Don't have an account? <a routerLink="/register">Register here</a>
+      Your teacher has created your account. Use the email and password they provided.
     </p>
     <p class="register-link">
-      Are you a student? <a routerLink="/student-login">Student Login</a>
+      Are you a teacher? <a routerLink="/login">Teacher Login</a>
     </p>
   </div>
 </div>

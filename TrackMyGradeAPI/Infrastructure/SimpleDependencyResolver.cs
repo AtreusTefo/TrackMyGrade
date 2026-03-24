@@ -48,6 +48,10 @@ namespace TrackMyGradeAPI.Infrastructure
                 return new StudentsController(
                     new StudentService(_dbContext, _mapper));
 
+            if (serviceType == typeof(StudentAuthController))
+                return new StudentAuthController(
+                    new StudentAuthService(_dbContext, _mapper));
+
             if (serviceType == typeof(IValidator<StudentCreateDto>))
                 return new StudentCreateValidator();
 
@@ -59,6 +63,12 @@ namespace TrackMyGradeAPI.Infrastructure
 
             if (serviceType == typeof(IValidator<TeacherLoginDto>))
                 return new TeacherLoginValidator();
+
+            if (serviceType == typeof(IValidator<StudentLoginDto>))
+                return new StudentLoginValidator();
+
+            if (serviceType == typeof(IValidator<StudentSubmitAssessmentsDto>))
+                return new StudentSubmitAssessmentsValidator();
 
             return null;
         }

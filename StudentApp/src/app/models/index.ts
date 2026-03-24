@@ -50,6 +50,7 @@ export interface StudentCreate {
   assessment1: number;
   assessment2: number;
   assessment3: number;
+  password: string;
 }
 
 export interface StudentUpdate {
@@ -59,6 +60,39 @@ export interface StudentUpdate {
   phone: string;
   omangOrPassport: string;
   grade: number;
+  assessment1: number;
+  assessment2: number;
+  assessment3: number;
+  password?: string;
+}
+
+// ── Student login interfaces ─────────────────────────────────────
+
+export interface StudentLogin {
+  email: string;
+  password: string;
+}
+
+export interface StudentAuthResponse {
+  id: number;
+  studentNumber: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  omangOrPassport: string;
+  grade: number;
+  assessment1: number;
+  assessment2: number;
+  assessment3: number;
+  total: number;
+  average: number;
+  percentage: number;
+  performanceLevel: string;
+  token: string;
+}
+
+export interface StudentSubmitAssessments {
   assessment1: number;
   assessment2: number;
   assessment3: number;

@@ -15,22 +15,28 @@ namespace TrackMyGradeAPI.Mapping
             CreateMap<Teacher, TeacherResponseDto>()
                 .ForSourceMember(src => src.Password, opt => opt.DoNotValidate());
 
-            // Student mappings
+            // Student mappings (teacher-managed)
             CreateMap<StudentCreateDto, Student>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.StudentNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.TeacherId, opt => opt.Ignore())
-                .ForMember(dest => dest.Teacher, opt => opt.Ignore());
+                .ForMember(dest => dest.Teacher, opt => opt.Ignore())
+                .ForMember(dest => dest.Token, opt => opt.Ignore());
 
             CreateMap<StudentUpdateDto, Student>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.StudentNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.TeacherId, opt => opt.Ignore())
-                .ForMember(dest => dest.Teacher, opt => opt.Ignore());
+                .ForMember(dest => dest.Teacher, opt => opt.Ignore())
+                .ForMember(dest => dest.Password, opt => opt.Ignore())
+                .ForMember(dest => dest.Token, opt => opt.Ignore());
 
             // Total, Average, Percentage, PerformanceLevel are computed properties on Student
             // with matching names on StudentResponseDto — AutoMapper convention maps them automatically.
             CreateMap<Student, StudentResponseDto>();
+
+            // Student auth response (includes token)
+            CreateMap<Student, StudentAuthResponseDto>();
         }
     }
 }

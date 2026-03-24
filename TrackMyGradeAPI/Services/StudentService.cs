@@ -64,7 +64,11 @@ namespace TrackMyGradeAPI.Services
             if (student == null)
                 throw new Exception("Student not found");
 
+            // Preserve existing password if the teacher did not supply a new one
+            var existingPassword = student.Password;
             _mapper.Map(request, student);
+            if (string.IsNullOrEmpty(request.Password))
+                student.Password = existingPassword;
 
             _dbContext.SaveChanges();
 

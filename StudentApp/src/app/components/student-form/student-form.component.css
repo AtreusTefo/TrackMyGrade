@@ -200,6 +200,30 @@ select:focus {
   background-color: #5a6268;
 }
 
+.password-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.password-wrapper input {
+  flex: 1;
+}
+
+.toggle-password {
+  padding: 0.5rem 0.75rem;
+  background: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.toggle-password:hover {
+  background: #dee2e6;
+}
+
 @media (max-width: 600px) {
   .container {
     padding: 1rem;

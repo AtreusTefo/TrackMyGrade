@@ -25,6 +25,8 @@ export class StudentFormComponent implements OnInit {
   assessment1: number | null = null;
   assessment2: number | null = null;
   assessment3: number | null = null;
+  password = '';
+  showPassword = false;
 
   fieldErrors: { [key: string]: string } = {};
   serverErrors: string[] = [];
@@ -187,12 +189,23 @@ export class StudentFormComponent implements OnInit {
           this.fieldErrors['assessment3'] = 'Assessment 3 must be between 0 and 20';
         }
         break;
+      case 'password':
+        if (!this.isEditMode) {
+          if (!this.password) {
+            this.fieldErrors['password'] = 'Password is required';
+          } else if (this.password.length < 6 || this.password.length > 20) {
+            this.fieldErrors['password'] = 'Password must be between 6 and 20 characters';
+          }
+        } else if (this.password && (this.password.length < 6 || this.password.length > 20)) {
+          this.fieldErrors['password'] = 'Password must be between 6 and 20 characters';
+        }
+        break;
     }
   }
 
   validate(): boolean {
     this.fieldErrors = {};
-    ['firstName', 'lastName', 'email', 'phone', 'omangOrPassport', 'grade', 'assessment1', 'assessment2', 'assessment3']
+    ['firstName', 'lastName', 'email', 'phone', 'omangOrPassport', 'grade', 'assessment1', 'assessment2', 'assessment3', 'password']
       .forEach(f => this.validateField(f));
     return Object.keys(this.fieldErrors).length === 0;
   }
@@ -215,7 +228,8 @@ export class StudentFormComponent implements OnInit {
       grade: this.grade!,
       assessment1: this.assessment1!,
       assessment2: this.assessment2!,
-      assessment3: this.assessment3!
+      assessment3: this.assessment3!,
+      password: this.password || undefined
     };
 
     if (this.isEditMode && this.studentId) {

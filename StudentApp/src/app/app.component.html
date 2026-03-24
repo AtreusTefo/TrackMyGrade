@@ -3,10 +3,15 @@
     <div class="navbar-brand">
       <h1>{{ title }}</h1>
     </div>
-    <nav *ngIf="isAuthenticated" class="navbar-menu">
+    <nav *ngIf="isTeacherAuthenticated" class="navbar-menu">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
       <span class="user-info">Welcome, {{ currentTeacher?.firstName }}</span>
-      <button (click)="logout()" class="btn-logout">Logout</button>
+      <button (click)="logoutTeacher()" class="btn-logout">Logout</button>
+    </nav>
+    <nav *ngIf="isStudentAuthenticated" class="navbar-menu">
+      <a routerLink="/student-dashboard" routerLinkActive="active">My Dashboard</a>
+      <span class="user-info">Welcome, {{ currentStudent?.firstName }}</span>
+      <button (click)="logoutStudent()" class="btn-logout">Logout</button>
     </nav>
   </div>
 </header>

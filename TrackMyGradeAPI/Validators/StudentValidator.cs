@@ -54,7 +54,25 @@ namespace TrackMyGradeAPI.Validators
         }
     }
 
-    public class StudentCreateValidator : StudentBaseValidator<StudentCreateDto> { }
+    public class StudentCreateValidator : StudentBaseValidator<StudentCreateDto>
+    {
+        public StudentCreateValidator()
+        {
+            RuleFor(x => x.Password)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Password is required")
+                .Length(6, 20).WithMessage("Password must be between 6 and 20 characters");
+        }
+    }
 
-    public class StudentUpdateValidator : StudentBaseValidator<StudentUpdateDto> { }
+    public class StudentUpdateValidator : StudentBaseValidator<StudentUpdateDto>
+    {
+        public StudentUpdateValidator()
+        {
+            // Password is optional on update — only validate length if provided
+            RuleFor(x => x.Password)
+                .Length(6, 20).WithMessage("Password must be between 6 and 20 characters")
+                .When(x => !string.IsNullOrEmpty(x.Password));
+        }
+    }
 }

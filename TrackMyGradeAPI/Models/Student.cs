@@ -26,6 +26,8 @@ namespace TrackMyGradeAPI.Models
         public int Assessment1 { get; set; } // 0-20
         public int Assessment2 { get; set; } // 0-20
         public int Assessment3 { get; set; } // 0-20
+        public string Password { get; set; } // Plain text for now
+        public string Token { get; set; } // Simple token
 
         // Navigation property
         public Teacher Teacher { get; set; }
