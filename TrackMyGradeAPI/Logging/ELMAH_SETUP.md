@@ -8,11 +8,11 @@ This application is **self-hosted via OWIN** (`Microsoft.Owin.SelfHost`). This h
 
 | Feature | IIS-Hosted | Self-Hosted OWIN (this app) |
 |---|---|---|
-| HTTP Modules (`ErrorLogModule`) | ✅ Run automatically | ❌ Do not run |
-| `HttpContext.Current` | ✅ Available | ❌ Always `null` |
-| `/elmah.axd` viewer | ✅ Works | ❌ Not available |
-| `Global.asax Application_Error` | ✅ Fires | ❌ Does not fire |
-| Explicit `ErrorLog.GetDefault(null).Log(...)` | ✅ Works | ✅ Works |
+| HTTP Modules (`ErrorLogModule`) |  Run automatically |  Do not run |
+| `HttpContext.Current` |  Available |  Always `null` |
+| `/elmah.axd` viewer |  Works |  Not available |
+| `Global.asax Application_Error` |  Fires |  Does not fire |
+| Explicit `ErrorLog.GetDefault(null).Log(...)` |  Works |  Works |
 
 All logging in this app is **explicit and programmatic** — there is no automatic capture.
 
@@ -317,14 +317,14 @@ Source File: web.config Line: 41
 **Solution:** Change the error filter assertion from `<eq>` to `<equal>`:
 
 ```xml
-<!-- ❌ WRONG -->
+<!--  WRONG -->
 <errorFilter>
   <test>
     <eq binding="HttpStatusCode" value="404" type="Int32"/>
   </test>
 </errorFilter>
 
-<!-- ✅ CORRECT -->
+<!--  CORRECT -->
 <errorFilter>
   <test>
     <equal binding="HttpStatusCode" value="404" type="Int32"/>

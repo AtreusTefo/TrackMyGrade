@@ -4,11 +4,11 @@
 
 This project is now fully integrated with Postman for easy API testing. The Postman collection includes:
 
-- ✅ All API endpoints (Teachers & Students)
-- ✅ Automated test scripts for response validation
-- ✅ Pre-request scripts for authentication
-- ✅ Environment variables for easy configuration
-- ✅ Test scenarios for validation testing
+-  All API endpoints (Teachers & Students)
+-  Automated test scripts for response validation
+-  Pre-request scripts for authentication
+-  Environment variables for easy configuration
+-  Test scenarios for validation testing
 
 ---
 
@@ -56,7 +56,7 @@ The API will start on: **http://localhost:5000**
 2. Go to: **Teachers > Register Teacher**
 3. Click **Send**
 
-✅ The teacher ID and token will be **automatically saved** to your environment variables
+ The teacher ID and token will be **automatically saved** to your environment variables
 
 ### Step 2: Test Student Operations
 
@@ -105,25 +105,25 @@ This is **automatically handled** by the Postman collection using environment va
 
 ---
 
-## ✅ Automated Tests
+##  Automated Tests
 
 Each request includes automated tests that verify:
 
 ### Registration/Login
-- ✅ Status code is 200
-- ✅ Response contains ID and token
-- ✅ Environment variables are set automatically
+-  Status code is 200
+-  Response contains ID and token
+-  Environment variables are set automatically
 
 ### Student Operations
-- ✅ Status codes (200, 201, 400)
-- ✅ Response structure validation
-- ✅ Calculated fields (total, average, percentage, performanceLevel)
-- ✅ Data integrity
+-  Status codes (200, 201, 400)
+-  Response structure validation
+-  Calculated fields (total, average, percentage, performanceLevel)
+-  Data integrity
 
 ### Validation Tests
-- ✅ Invalid scores (> 20)
-- ✅ Negative scores
-- ✅ Missing required fields
+-  Invalid scores (> 20)
+-  Negative scores
+-  Missing required fields
 
 ---
 
