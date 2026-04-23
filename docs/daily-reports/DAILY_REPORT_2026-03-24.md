@@ -160,28 +160,28 @@ and removed to prevent confusion and eliminate unreachable code paths.
 
 ## 2. What Was Completed
 
-| # | Feature / Task | Status |
-|---|----------------|--------|
-| 1 | `Student` model updated with `Password` and `Token` fields | ✅ Done |
-| 2 | Idempotent DB migration for `Password` and `Token` columns | ✅ Done |
-| 3 | `TeacherId` correctly enforced as non-nullable (INT NOT NULL) | ✅ Done |
-| 4 | `StudentLoginDto`, `StudentAuthResponseDto`, `StudentSubmitAssessmentsDto` DTOs | ✅ Done |
-| 5 | `Password` added to `StudentDtoBase` (create/update) | ✅ Done |
-| 6 | `POST /api/student-auth/login` endpoint | ✅ Done |
-| 7 | `GET /api/student-auth/profile` endpoint (token-protected) | ✅ Done |
-| 8 | `PUT /api/student-auth/submit-assessments` endpoint (token-protected) | ✅ Done |
-| 9 | FluentValidation — login, create (password required), update (password optional), submit | ✅ Done |
-| 10 | AutoMapper — password flows through on create; preserved on update when blank | ✅ Done |
-| 11 | `StudentAuthService` registered in DI container | ✅ Done |
-| 12 | Angular `StudentLoginComponent` with inline validation and error handling | ✅ Done |
-| 13 | Angular `StudentDashboardComponent` with profile view and assessment submission | ✅ Done |
-| 14 | Angular `StudentAuthService` with token management and localStorage persistence | ✅ Done |
-| 15 | Password field added to teacher's student form (required on create, optional on edit) | ✅ Done |
-| 16 | `studentAuthGuard` route guard protecting student dashboard | ✅ Done |
-| 17 | All dead self-registration code removed from backend and frontend | ✅ Done |
-| 18 | Navigation links corrected across all auth pages | ✅ Done |
-| 19 | Backend compiles with **zero errors** | ✅ Verified |
-| 20 | Frontend builds with **zero errors** | ✅ Verified |
+| # | Feature / Task |
+|---|----------------|
+| 1 | `Student` model updated with `Password` and `Token` fields
+| 2 | Idempotent DB migration for `Password` and `Token` columns |
+| 3 | `TeacherId` correctly enforced as non-nullable (INT NOT NULL) |
+| 4 | `StudentLoginDto`, `StudentAuthResponseDto`, `StudentSubmitAssessmentsDto` DTOs |
+| 5 | `Password` added to `StudentDtoBase` (create/update) |
+| 6 | `POST /api/student-auth/login` endpoint |
+| 7 | `GET /api/student-auth/profile` endpoint (token-protected) |
+| 8 | `PUT /api/student-auth/submit-assessments` endpoint (token-protected) |  Done |
+| 9 | FluentValidation — login, create (password required), update (password optional), submit |  Done |
+| 10 | AutoMapper — password flows through on create; preserved on update when blank |
+| 11 | `StudentAuthService` registered in DI container |  Done |
+| 12 | Angular `StudentLoginComponent` with inline validation and error handling |  Done |
+| 13 | Angular `StudentDashboardComponent` with profile view and assessment submission |  Done |
+| 14 | Angular `StudentAuthService` with token management and localStorage persistence |  Done |
+| 15 | Password field added to teacher's student form (required on create, optional on edit) |  Done |
+| 16 | `studentAuthGuard` route guard protecting student dashboard |  Done |
+| 17 | All dead self-registration code removed from backend and frontend |  Done |
+| 18 | Navigation links corrected across all auth pages |  Done |
+| 19 | Backend compiles with **zero errors** |  Verified |
+| 20 | Frontend builds with **zero errors** |  Verified |
 
 ---
 

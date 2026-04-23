@@ -4,10 +4,10 @@ Get the TrackMyGrade application running in 5 minutes!
 
 ## Prerequisites Checklist
 
-- [ ] Visual Studio 2019+ (.NET Framework 4.8)
-- [ ] Node.js 18+ and npm 9+
-- [ ] Angular CLI: `npm install -g @angular/cli`
-- [ ] Git (optional)
+- Visual Studio 2019+ (.NET Framework 4.8)
+- Node.js 18+ and npm 9+
+- Angular CLI: `npm install -g @angular/cli`
+- Git (optional)
 
 ## Backend Setup (5 minutes)
 
@@ -31,7 +31,7 @@ Update-Package
 Debug > Start Debugging (F5)
 ```
 
-✅ **Backend running at:** `http://localhost:5000`
+**Backend running at:** `http://localhost:5000`
 
 **Expected Output:**
 ```
@@ -57,12 +57,12 @@ npm install
 npm start
 ```
 
-✅ **Frontend running at:** `http://localhost:4200`
+**Frontend running at:** `http://localhost:4200`
 
 **Expected Output:**
 ```
-✔ Build successful
-✔ Compiled successfully.
+Build successful
+Compiled successfully.
 
 Application bundle generated successfully. 1.2 MB
 ```

@@ -1,6 +1,6 @@
-# 🚀 POSTMAN TESTING WORKFLOW - QUICK GUIDE
+# POSTMAN TESTING WORKFLOW - QUICK GUIDE
 
-## ⚠️ IMPORTANT: Request Order Matters!
+## IMPORTANT: Request Order Matters!
 
 You **MUST** follow this sequence for the API to work correctly:
 
@@ -14,17 +14,17 @@ Step 3: Update/Get/Delete Student
 
 ---
 
-## 📋 Complete Testing Workflow
+## Complete Testing Workflow
 
 ### Phase 1: Teacher Setup
 
-#### 1️⃣ Register Teacher
+#### 1. Register Teacher
 ```
 Request: Teachers → Register Teacher
 Method: POST /api/teachers/register
 Expected: 200 OK
 
-✅ What Happens:
+What Happens:
 - Teacher account created
 - teacherId saved to environment (e.g., "1")
 - authToken saved to environment
@@ -47,13 +47,13 @@ Expected: 200 OK
 
 ### Phase 2: Student Creation (REQUIRED!)
 
-#### 2️⃣ Create Student
+#### 2. Create Student
 ```
 Request: Students → Create Student
 Method: POST /api/students
 Expected: 201 Created
 
-✅ What Happens:
+What Happens:
 - Student record created
 - lastStudentId saved to environment (e.g., "1")
 - Grades automatically calculated
@@ -78,7 +78,7 @@ Expected: 201 Created
 }
 ```
 
-**⚠️ CRITICAL:** 
+**CRITICAL:** 
 - This step sets the `lastStudentId` variable
 - Without this, Update/Get/Delete Student will fail with 404!
 
@@ -86,56 +86,56 @@ Expected: 201 Created
 
 ### Phase 3: Student Operations
 
-#### 3️⃣ Get All Students
+#### 3. Get All Students
 ```
 Request: Students → Get All Students
 Method: GET /api/students
 Expected: 200 OK
 
-✅ What Happens:
+What Happens:
 - Returns all students for the teacher
 - Verify your created student is in the list
 ```
 
-#### 4️⃣ Get Student by ID
+#### 4. Get Student by ID
 ```
 Request: Students → Get Student by ID
 Method: GET /api/students/{{lastStudentId}}
 Expected: 200 OK
 
-✅ What Happens:
+What Happens:
 - Returns specific student details
 - Uses lastStudentId from environment
 ```
 
-#### 5️⃣ Update Student
+#### 5. Update Student
 ```
 Request: Students → Update Student
 Method: PUT /api/students/{{lastStudentId}}
 Expected: 200 OK
 
-✅ What Happens:
+What Happens:
 - Updates student information
 - Recalculates grades automatically
 - Uses lastStudentId from environment
 ```
 
-**⚠️ REQUIRES:** Step 2 (Create Student) must be run first!
+**REQUIRES:** Step 2 (Create Student) must be run first!
 
-#### 6️⃣ Delete Student
+#### 6. Delete Student
 ```
 Request: Students → Delete Student
 Method: DELETE /api/students/{{lastStudentId}}
 Expected: 200 OK
 
-✅ What Happens:
+What Happens:
 - Deletes the student
 - Clears lastStudentId from environment
 ```
 
 ---
 
-## ❌ Common Errors & Solutions
+## Common Errors & Solutions
 
 ### Error: 404 - "{{lastStudentId}}" in URL
 
@@ -148,7 +148,7 @@ Reason: Variable not replaced
 
 **Solution:**
 ```
-✅ Run "Create Student" first!
+Run "Create Student" first!
 This sets the lastStudentId variable.
 ```
 
@@ -161,7 +161,7 @@ Error: "Phone must be exactly 8 digits"
 
 **Solution:**
 ```
-✅ Use 8-digit phone numbers:
+Use 8-digit phone numbers:
 Valid: "12345678"
 Invalid: "1234567890"
 ```
@@ -175,7 +175,7 @@ Error: "Assessment must be between 0 and 20"
 
 **Solution:**
 ```
-✅ Use scores 0-20:
+Use scores 0-20:
 Valid: 18, 16, 19
 Invalid: 25, -5, 100
 ```
@@ -190,13 +190,13 @@ Variables not working
 
 **Solution:**
 ```
-✅ Select environment:
+Select environment:
 Top right dropdown → "TrackMyGrade - Local"
 ```
 
 ---
 
-## 🔍 How to Check Variables
+## How to Check Variables
 
 ### View Environment Variables
 
@@ -208,70 +208,70 @@ Top right dropdown → "TrackMyGrade - Local"
 
 | After Step | Variable | Value | Status |
 |------------|----------|-------|--------|
-| Register Teacher | `teacherId` | `1` | ✅ |
-| Register Teacher | `authToken` | `guid-string` | ✅ |
-| Create Student | `lastStudentId` | `1` | ✅ |
+| Register Teacher | `teacherId` | `1` |  |
+| Register Teacher | `authToken` | `guid-string` |  |
+| Create Student | `lastStudentId` | `1` |  |
 
 ### Quick Check with Eye Icon
 
 1. Click **environment dropdown** (top right)
-2. Click **eye icon (👁️)**
+2. Click **eye icon**
 3. Verify all variables have values
 
 ---
 
-## 📝 Request Order Reference
+## Request Order Reference
 
-### ✅ CORRECT Order
+### CORRECT Order
 
 ```
 1. Register Teacher
-2. Create Student      ← Sets lastStudentId
+2. Create Student      <- Sets lastStudentId
 3. Get All Students
-4. Get Student by ID   ← Uses lastStudentId
-5. Update Student      ← Uses lastStudentId
-6. Delete Student      ← Uses lastStudentId
+4. Get Student by ID   <- Uses lastStudentId
+5. Update Student      <- Uses lastStudentId
+6. Delete Student      <- Uses lastStudentId
 ```
 
-### ❌ WRONG Order (Will Fail!)
+### WRONG Order (Will Fail!)
 
 ```
 1. Register Teacher
-2. Update Student      ← FAILS! No lastStudentId yet
+2. Update Student      <- FAILS! No lastStudentId yet
 ```
 
 **Error:** 404 Not Found - `{{lastStudentId}}` not replaced
 
 ---
 
-## 🎯 Testing Checklist
+## Testing Checklist
 
 ### Pre-Testing
-- [ ] API is running (port 5001)
-- [ ] Swagger loads: http://localhost:5001/swagger
-- [ ] Postman collection imported
-- [ ] Environment "TrackMyGrade - Local" selected
+- API is running (port 5001)
+- Swagger loads: http://localhost:5001/swagger
+- Postman collection imported
+- Environment "TrackMyGrade - Local" selected
 
 ### Test Execution
-- [ ] Register Teacher (200 OK)
-- [ ] Check: teacherId variable set
-- [ ] Create Student (201 Created)
-- [ ] Check: lastStudentId variable set
-- [ ] Get All Students (200 OK)
-- [ ] Get Student by ID (200 OK)
-- [ ] Update Student (200 OK)
-- [ ] Delete Student (200 OK)
+- Register Teacher (200 OK)
+- Check: teacherId variable set
+- Create Student (201 Created)
+- Check: lastStudentId variable set
+- Get All Students (200 OK)
+- Get Student by ID (200 OK)
+- Update Student (200 OK)
+- Delete Student (200 OK)
 
 ### Validation
-- [ ] All requests return expected status codes
-- [ ] Environment variables populated correctly
-- [ ] Student grades calculated automatically
-- [ ] Phone numbers are 8 digits
-- [ ] Assessment scores are 0-20
+- All requests return expected status codes
+- Environment variables populated correctly
+- Student grades calculated automatically
+- Phone numbers are 8 digits
+- Assessment scores are 0-20
 
 ---
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Issue: Update Student returns 404
 
@@ -300,14 +300,14 @@ Run "Create Student" again to create a new one
 **This means Postman is NOT replacing the variable.**
 
 **Causes:**
-1. ❌ Environment not selected
-2. ❌ Variable not set (student not created)
-3. ❌ Wrong environment selected
+1.  Environment not selected
+2.  Variable not set (student not created)
+3.  Wrong environment selected
 
 **Solutions:**
-1. ✅ Select "TrackMyGrade - Local" environment
-2. ✅ Run "Create Student" to set the variable
-3. ✅ Verify variable in environment editor
+1.  Select "TrackMyGrade - Local" environment
+2.  Run "Create Student" to set the variable
+3.  Verify variable in environment editor
 
 ---
 
@@ -369,7 +369,7 @@ Test different scenarios without modifying original
 │  (Uses lastStudentId)    │
 └────────────┬─────────────┘
              │
-             ├─→ Student updated ✅
+             ├─→ Student updated 
              │
              ↓
 ┌──────────────────────────┐
@@ -385,16 +385,16 @@ Test different scenarios without modifying original
 
 ---
 
-## ✅ Success Criteria
+##  Success Criteria
 
 **After following this workflow, you should see:**
 
-✅ All requests return expected status codes  
-✅ No `{{variable}}` syntax in URLs  
-✅ Environment variables populated  
-✅ Students created, updated, and deleted successfully  
-✅ Automatic grade calculations working  
-✅ No validation errors  
+ All requests return expected status codes  
+ No `{{variable}}` syntax in URLs  
+ Environment variables populated  
+ Students created, updated, and deleted successfully  
+ Automatic grade calculations working  
+ No validation errors  
 
 ---
 

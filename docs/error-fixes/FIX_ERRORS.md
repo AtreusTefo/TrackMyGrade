@@ -17,7 +17,7 @@ This document records every error encountered during development, its root cause
 
 ## 1. TS2792 — Cannot find module '@angular/router'
 
-**Date:** 2026-03-13  
+**Date:** 2026-03-13
 **File affected:** `StudentApp/src/app/components/student-detail/student-detail.component.ts`
 
 ### Error Message
@@ -93,8 +93,8 @@ Confirmed by comparing results:
 
 | Compiler | Command | Result |
 |---|---|---|
-| VS built-in language service | (IntelliSense) | ❌ 6 TS2792 errors |
-| Workspace TypeScript 5.5.4 | `tsc --noEmit` | ✅ 0 errors |
+| VS built-in language service | (IntelliSense) |  6 TS2792 errors |
+| Workspace TypeScript 5.5.4 | `tsc --noEmit` |  0 errors |
 
 ### Fix
 
