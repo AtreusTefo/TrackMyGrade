@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from './services/auth.service';
+import { TeacherAuthService } from './services/teacher-auth.service';
 import { StudentAuthService } from './services/student-auth.service';
 
 @Component({
@@ -19,13 +19,13 @@ export class AppComponent implements OnInit {
   currentStudent: any = null;
 
   constructor(
-    private authService: AuthService,
+    private teacherAuthService: TeacherAuthService,
     private studentAuthService: StudentAuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.authService.currentTeacher$.subscribe(teacher => {
+    this.teacherAuthService.currentTeacher$.subscribe(teacher => {
       this.currentTeacher = teacher;
       this.isTeacherAuthenticated = !!teacher;
     });
@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
   }
 
   logoutTeacher(): void {
-    this.authService.logout();
+    this.teacherAuthService.logout();
     this.router.navigate(['/login']);
   }
 

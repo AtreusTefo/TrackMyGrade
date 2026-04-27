@@ -24,7 +24,7 @@ export class StudentLoginComponent implements OnInit {
     private studentAuthService: StudentAuthService,
     private router: Router
   ) { }
-
+  
   ngOnInit(): void {
     if (this.studentAuthService.isAuthenticated()) {
       this.router.navigate(['/student-dashboard']);

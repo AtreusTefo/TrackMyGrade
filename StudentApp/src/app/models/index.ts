@@ -1,3 +1,12 @@
+export interface Admin {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    token: string;
+}
+
 export interface Teacher {
   id: number;
   firstName: string;
@@ -24,6 +33,11 @@ export interface Student {
   average: number;
   percentage: number;
   performanceLevel: string;
+}
+
+export interface AdminLogin {
+    email: string;
+    password: string;
 }
 
 export interface TeacherRegister {

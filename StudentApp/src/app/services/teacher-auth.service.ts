@@ -6,7 +6,7 @@ import { Teacher, TeacherRegister, TeacherLogin } from '../models';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class TeacherAuthService {
   private apiUrl = 'http://localhost:5000/api/teachers';
   private currentTeacher = new BehaviorSubject<Teacher | null>(this.getStoredTeacher());
   public currentTeacher$ = this.currentTeacher.asObservable();
