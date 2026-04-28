@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AdminAuthService } from '../../services/admin-auth.service';
 import { extractFieldErrors } from '../../services/error.util';
 
 @Component({
@@ -68,12 +68,12 @@ export class AdminLoginComponent implements OnInit {
         }
 
         this.adminAuthService.login({ email: this.email, password: this.password }).subscribe({
-            next: (response) => {
+            next: (response: any) => {
                 this.isSubmitting = false;
                 this.adminAuthService.setCurrentAdmin(response);
                 this.router.navigate(['/admin-dashboard']);
             },
-            error: (error) => {
+            error: (error: any) => {
                 const { fieldErrors, generalErrors } = extractFieldErrors(error);
 
                 if (error.status !== 0 && generalErrors.length > 0) {

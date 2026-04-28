@@ -1,5 +1,7 @@
 import { Routes, CanActivateFn, Router } from '@angular/router';
-import { LoginComponent } from './components/teacher-login/teacher-login.component';
+import { AdminLoginComponent } from './components/admin-login/admin-login.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { TeacherLoginComponent } from './components/teacher-login/teacher-login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { StudentListComponent } from './components/student-list/student-list.component';
 import { StudentFormComponent } from './components/student-form/student-form.component';
@@ -29,9 +31,12 @@ const studentAuthGuard: CanActivateFn = (route, state) => {
 };
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/list', pathMatch: 'full' },
+    { path: '', redirectTo: '/list', pathMatch: 'full' },
+   // Admin routes
+  { path: 'admin', component: AdminLoginComponent },
+  { path: 'admin-dashboard', component: AdminDashboardComponent },
   // Teacher routes
-  { path: 'login', component: LoginComponent },
+  { path: 'login', component: TeacherLoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'list', component: StudentListComponent, canActivate: [authGuard] },
   { path: 'create', component: StudentFormComponent, canActivate: [authGuard] },

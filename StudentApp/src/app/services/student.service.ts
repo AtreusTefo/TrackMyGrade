@@ -12,11 +12,11 @@ export class StudentService {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    private teacherAuthService: TeacherAuthService
   ) { }
 
   private getHeaders(): HttpHeaders {
-    const teacher = this.authService.getCurrentTeacher();
+    const teacher = this.teacherAuthService.getCurrentTeacher();
     let headers = new HttpHeaders();
     if (teacher?.id != null) {
       headers = headers.set('X-TeacherId', teacher.id.toString());

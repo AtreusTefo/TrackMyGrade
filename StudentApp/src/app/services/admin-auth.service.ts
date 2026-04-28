@@ -13,7 +13,7 @@ export class AdminAuthService {
 
     constructor(private http: HttpClient) { }
 
-    login(data: StudentLogin): Observable<Admin> {
+    login(data: AdminLogin): Observable<Admin> {
         return this.http.post<Admin>(`${this.apiUrl}/login`, data);
     }
 
@@ -36,7 +36,8 @@ export class AdminAuthService {
     }
 
     setCurrentAdmin(admin: any): void {
-        const normalized: Admin = {
+        // Build as a loose object first to avoid TS complaining about extra properties on Admin
+        const normalizedAny: any = {
             id: admin.id ?? admin.Id ?? 0,
             firstName: admin.firstName ?? admin.FirstName ?? '',
             lastName: admin.lastName ?? admin.LastName ?? '',
@@ -45,6 +46,8 @@ export class AdminAuthService {
             omangOrPassport: admin.omangOrPassport ?? admin.OmangOrPassport ?? '',
             token: admin.token ?? admin.Token ?? ''
         };
+
+        const normalized: Admin = normalizedAny;
         localStorage.setItem('admin', JSON.stringify(normalized));
         localStorage.setItem('adminToken', normalized.token);
         this.currentAdmin.next(normalized);

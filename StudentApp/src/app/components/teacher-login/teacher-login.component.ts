@@ -6,13 +6,13 @@ import { TeacherAuthService } from '../../services/teacher-auth.service';
 import { extractFieldErrors } from '../../services/error.util';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-teacher-login',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  templateUrl: './teacher-login.component.html',
+  styleUrls: ['./teacher-login.component.css']
 })
-export class LoginComponent implements OnInit {
+export class TeacherLoginComponent implements OnInit {
   email: string = '';
   password: string = '';
   showPassword = false;
