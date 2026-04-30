@@ -1,0 +1,41 @@
+<div class="hero-container">
+  <div class="animated-background">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">Welcome to <span class="highlight">TrackMyGrade</span></h1>
+    <p class="hero-subtitle">The modern way to manage student performance and grades efficiently.</p>
+    
+    <div class="role-cards-container">
+      <!-- Student Card -->
+      <div class="role-card student-card" routerLink="/student-login">
+        <div class="card-icon">🎓</div>
+        <h2>Student Access</h2>
+        <p>View your grades, assignments, and track your progress.</p>
+        <button class="btn-primary">Student Login</button>
+      </div>
+      
+      <!-- Teacher Card -->
+      <div class="role-card teacher-card" routerLink="/login">
+        <div class="card-icon">📚</div>
+        <h2>Teacher Portal</h2>
+        <p>Manage your classes, grade assignments, and monitor student success.</p>
+        <div class="button-group">
+          <button class="btn-primary">Teacher Login</button>
+          <button class="btn-secondary" routerLink="/register">Register</button>
+        </div>
+      </div>
+      
+      <!-- Admin Card -->
+      <div class="role-card admin-card" routerLink="/admin">
+        <div class="card-icon">⚙️</div>
+        <h2>Administration</h2>
+        <p>System configuration, user management, and overall analytics.</p>
+        <button class="btn-primary">Admin Login</button>
+      </div>
+    </div>
+  </div>
+</div>

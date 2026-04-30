@@ -20,7 +20,7 @@ export class AdminLoginComponent implements OnInit {
     fieldErrors: { [key: string]: string } = {};
     serverErrors: string[] = [];
     isSubmitting = false;
-
+    
     constructor(
         private adminAuthService: AdminAuthService,
         private router: Router

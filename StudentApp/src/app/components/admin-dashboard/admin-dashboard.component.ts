@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AdminAuthService } from '../../services/admin-auth.service';
+import { AdminApiService } from '../../services/admin-api.service';
 import { extractFieldErrors } from '../../services/error.util';
+import { TabType, AuditLogDto } from '../../models';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -105,7 +106,7 @@ export class AdminDashboardComponent implements OnInit {
     loadTeachers(): void {
         this.loading = true; this.error = '';
         this.adminApi.getAllTeachers().subscribe({
-            next: data => { this.teachers = data; this.loading = false; },
+            next: (data: any) => { this.teachers = data; this.loading = false; },
             error: () => { this.error = 'Failed to load teachers.'; this.loading = false; }
         });
     }
@@ -120,7 +121,7 @@ export class AdminDashboardComponent implements OnInit {
     toggleTeacherForm(): void {
         this.showTeacherForm = !this.showTeacherForm;
         if (this.showTeacherForm && this.subjects.length === 0) {
-            this.adminApi.getSubjects().subscribe({ next: data => this.subjects = data });
+            this.adminApi.getSubjects().subscribe({ next: (data: any) => this.subjects = data });
         }
         if (!this.showTeacherForm) {
             this.resetNewTeacher();
@@ -151,13 +152,13 @@ export class AdminDashboardComponent implements OnInit {
             return;
         }
         if (!/^\d{8}$/.test(this.newTeacher.phone)) {
-            this.error = 'Phone must be exactly 8 digits.';
+            this.error = 'Phone must be exactly 8 digits.'; 
             return;
         }
         this.submittingTeacher = true;
         this.loading = true; this.error = '';
         this.adminApi.createTeacher(this.newTeacher).subscribe({
-            next: teacher => {
+            next: (teacher: any) => {
                 this.teachers = [...this.teachers, teacher];
                 this.showTeacherForm = false;
                 this.resetNewTeacher();
@@ -165,7 +166,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.submittingTeacher = false;
                 this.showSuccess(`Teacher account created. Share email "${teacher.email}" so they can activate their account.`);
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message
                     || (err?.error?.errors ? JSON.stringify(err.error.errors) : null)
                     || 'Failed to create teacher.';
@@ -181,12 +182,10 @@ export class AdminDashboardComponent implements OnInit {
 
     // ─── Create Student ───────────────────────────────────────────────────────
 
-    // ─── Create Student ───────────────────────────────────────────────────────
-
     loadStudents(): void {
         this.loading = true; this.error = '';
         this.adminApi.getAllStudents().subscribe({
-            next: data => { this.students = data; this.loading = false; },
+            next: (data: any) => { this.students = data; this.loading = false; },
             error: () => { this.error = 'Failed to load students.'; this.loading = false; }
         });
     }
@@ -199,7 +198,7 @@ export class AdminDashboardComponent implements OnInit {
     toggleStudentForm(): void {
         this.showStudentForm = !this.showStudentForm;
         if (this.showStudentForm && this.grades.length === 0) {
-            this.adminApi.getGrades().subscribe({ next: data => this.grades = data });
+            this.adminApi.getGrades().subscribe({ next: (data: any) => this.grades = data });
         }
         if (!this.showStudentForm) {
             this.resetNewStudent();
@@ -230,13 +229,13 @@ export class AdminDashboardComponent implements OnInit {
             return;
         }
         if (!/^\d{8}$/.test(this.newStudent.phone)) {
-            this.error = 'Phone must be exactly 8 digits.';
+            this.error = 'Phone must be exactly 8 digits.'; 
             return;
-        }
+        }   
         this.submittingStudent = true;
         this.loading = true; this.error = '';
         this.adminApi.createStudent(this.newStudent).subscribe({
-            next: student => {
+            next: (student: any) => {
                 this.students = [...this.students, student];
                 this.showStudentForm = false;
                 this.resetNewStudent();
@@ -244,7 +243,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.submittingStudent = false;
                 this.showSuccess(`Student account created (ID: ${student.studentUniqueId}). Share their Unique ID and email so they can activate.`);
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message || 'Failed to create student.';
                 this.loading = false;
                 this.submittingStudent = false;
@@ -263,7 +262,7 @@ export class AdminDashboardComponent implements OnInit {
         this.teacherToAssignId = 0;
         // Ensure teachers are loaded for the dropdown
         if (this.teachers.length === 0) {
-            this.adminApi.getAllTeachers().subscribe({ next: data => this.teachers = data });
+            this.adminApi.getAllTeachers().subscribe({ next: (data: any) => this.teachers = data });
         }
     }
 
@@ -291,7 +290,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.assigningInProgress = false;
                 this.showSuccess('Teacher assigned successfully.');
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message || 'Failed to assign teacher.';
                 this.assigningInProgress = false;
             }
@@ -311,7 +310,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.unassigningInProgress = false;
                 this.showSuccess('Teacher unassigned successfully.');
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message || 'Failed to unassign teacher.';
                 this.unassigningInProgress = false;
             }
@@ -322,7 +321,7 @@ export class AdminDashboardComponent implements OnInit {
     loadAuditLogs(): void {
         this.loading = true; this.error = '';
         this.adminApi.getAuditLogs(1, 50).subscribe({
-            next: data => {
+            next: (data: any) => {
                 this.auditLogs = data;
                 this.applyAuditFilter();
                 this.loading = false;
@@ -365,7 +364,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.resettingTeacherId = null;
                 this.showSuccess(`Password reset for ${teacher.firstName} ${teacher.lastName}. They must re-activate their account.`);
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message || 'Failed to reset password.';
                 this.resettingTeacherId = null;
             }
@@ -381,7 +380,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.resettingStudentId = null;
                 this.showSuccess(`Password reset for ${student.firstName} ${student.lastName}. They must re-activate their account.`);
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message || 'Failed to reset password.';
                 this.resettingStudentId = null;
             }
@@ -422,17 +421,17 @@ export class AdminDashboardComponent implements OnInit {
         this.importingTeachers = true;
         const payload = this.bulkTeacherPreview;
         this.adminApi.bulkImportTeachers(payload).subscribe({
-            next: result => {
+            next: (result: any) => {
                 this.bulkTeacherResult = result;
                 this.importingTeachers = false;
                 if (result.successCount > 0) {
                     this.showSuccess(`Bulk import: ${result.successCount} teacher(s) created.`);
                     // Reload teacher list
-                    this.adminApi.getAllTeachers().subscribe({ next: data => this.teachers = data });
+                    this.adminApi.getAllTeachers().subscribe({ next: (data: any) => this.teachers = data });
                 }
                 this.bulkTeacherPreview = [];
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message || 'Bulk import failed.';
                 this.importingTeachers = false;
             }
@@ -478,17 +477,17 @@ export class AdminDashboardComponent implements OnInit {
         this.importingStudents = true;
         const payload = this.bulkStudentPreview;
         this.adminApi.bulkImportStudents(payload).subscribe({
-            next: result => {
+            next: (result: any) => {
                 this.bulkStudentResult = result;
                 this.importingStudents = false;
                 if (result.successCount > 0) {
                     this.showSuccess(`Bulk import: ${result.successCount} student(s) created.`);
                     // Reload student list
-                    this.adminApi.getAllStudents().subscribe({ next: data => this.students = data });
+                    this.adminApi.getAllStudents().subscribe({ next: (data: any) => this.students = data });
                 }
                 this.bulkStudentPreview = [];
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message || 'Bulk import failed.';
                 this.importingStudents = false;
             }
@@ -576,7 +575,7 @@ export class AdminDashboardComponent implements OnInit {
     // ─── Edit Teacher ─────────────────────────────────────────────────────────
     openEditTeacher(teacher: any): void {
         if (this.subjects.length === 0) {
-            this.adminApi.getSubjects().subscribe({ next: data => this.subjects = data });
+            this.adminApi.getSubjects().subscribe({ next: (data: any) => this.subjects = data });
         }
         this.editTeacherTarget = teacher;
         this.editTeacher = {
@@ -604,7 +603,7 @@ export class AdminDashboardComponent implements OnInit {
         }
         this.savingEdit = true; this.editError = '';
         this.adminApi.updateTeacher(this.editTeacherTarget.teacherId, this.editTeacher).subscribe({
-            next: updated => {
+            next: (updated: any) => {
                 this.teachers = this.teachers.map(t =>
                     t.teacherId === this.editTeacherTarget.teacherId ? { ...t, ...updated } : t
                 );
@@ -612,7 +611,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.editTeacherTarget = null;
                 this.showSuccess('Teacher updated successfully.');
             },
-            error: err => {
+            error: (err: any) => {
                 this.editError = err?.error?.message || 'Failed to update teacher.';
                 this.savingEdit = false;
             }
@@ -623,7 +622,7 @@ export class AdminDashboardComponent implements OnInit {
 
     openEditStudent(student: any): void {
         if (this.grades.length === 0) {
-            this.adminApi.getGrades().subscribe({ next: data => this.grades = data });
+            this.adminApi.getGrades().subscribe({ next: (data: any) => this.grades = data });
         }
         this.editStudentTarget = student;
         this.editStudent = {
@@ -651,7 +650,7 @@ export class AdminDashboardComponent implements OnInit {
         }
         this.savingEdit = true; this.editError = '';
         this.adminApi.updateStudent(this.editStudentTarget.id, this.editStudent).subscribe({
-            next: updated => {
+            next: (updated: any) => {
                 this.students = this.students.map(s =>
                     s.id === this.editStudentTarget.id ? { ...s, ...updated } : s
                 );
@@ -659,7 +658,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.editStudentTarget = null;
                 this.showSuccess('Student updated successfully.');
             },
-            error: err => {
+            error: (err: any) => {
                 this.editError = err?.error?.message || 'Failed to update student.';
                 this.savingEdit = false;
             }
@@ -702,7 +701,7 @@ export class AdminDashboardComponent implements OnInit {
                     this.students = this.students.filter(s => s.id !== id);
                 }
             },
-            error: err => {
+            error: (err: any) => {
                 this.error = err?.error?.message || 'Delete failed.';
                 this.deleteTarget = null;
                 this.deleteInProgress = false;

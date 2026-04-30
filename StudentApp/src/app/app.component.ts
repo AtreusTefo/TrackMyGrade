@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { AdminAuthService } from './services/admin-auth.service';
 import { TeacherAuthService } from './services/teacher-auth.service';
 import { StudentAuthService } from './services/student-auth.service';
 
@@ -12,19 +13,26 @@ import { StudentAuthService } from './services/student-auth.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'TrackMyGrade';
+    title = 'TrackMyGrade';
+  isAdminAuthenticated = false;
   isTeacherAuthenticated = false;
   isStudentAuthenticated = false;
+  currentAdmin: any = null;
   currentTeacher: any = null;
   currentStudent: any = null;
 
-  constructor(
+    constructor(
+    private adminAuthService: AdminAuthService,
     private teacherAuthService: TeacherAuthService,
     private studentAuthService: StudentAuthService,
     private router: Router
   ) {}
 
-  ngOnInit(): void {
+    ngOnInit(): void {
+    this.adminAuthService.currentAdmin$.subscribe(admin => {
+      this.currentTeacher = admin;
+      this.isAdminAuthenticated = !!admin;
+    });
     this.teacherAuthService.currentTeacher$.subscribe(teacher => {
       this.currentTeacher = teacher;
       this.isTeacherAuthenticated = !!teacher;
@@ -35,9 +43,14 @@ export class AppComponent implements OnInit {
     });
   }
 
+  logoutAdmin(): void {
+    this.adminAuthService.logout();
+    this.router.navigate(['/admin-login']);
+  }
+
   logoutTeacher(): void {
     this.teacherAuthService.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/teacher-login']);
   }
 
   logoutStudent(): void {

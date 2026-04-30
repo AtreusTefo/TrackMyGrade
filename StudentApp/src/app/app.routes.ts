@@ -8,6 +8,7 @@ import { StudentFormComponent } from './components/student-form/student-form.com
 import { StudentDetailComponent } from './components/student-detail/student-detail.component';
 import { StudentLoginComponent } from './components/student-login/student-login.component';
 import { StudentDashboardComponent } from './components/student-dashboard/student-dashboard.component';
+import { HomeComponent } from './components/home/home.component';
 import { TeacherAuthService } from './services/teacher-auth.service';
 import { StudentAuthService } from './services/student-auth.service';
 import { inject } from '@angular/core';
@@ -31,8 +32,9 @@ const studentAuthGuard: CanActivateFn = (route, state) => {
 };
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/list', pathMatch: 'full' },
-   // Admin routes
+  // Home Page
+  { path: '', component: HomeComponent, pathMatch: 'full' },
+  // Admin routes
   { path: 'admin', component: AdminLoginComponent },
   { path: 'admin-dashboard', component: AdminDashboardComponent },
   // Teacher routes
@@ -45,5 +47,5 @@ export const routes: Routes = [
   // Student routes (login only — accounts created by teachers)
   { path: 'student-login', component: StudentLoginComponent },
   { path: 'student-dashboard', component: StudentDashboardComponent, canActivate: [studentAuthGuard] },
-  { path: '**', redirectTo: '/list' }
+  { path: '**', redirectTo: '/studentlist' }
 ];

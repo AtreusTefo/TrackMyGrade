@@ -111,3 +111,15 @@ export interface StudentSubmitAssessments {
   assessment2: number;
   assessment3: number;
 }
+
+export type TabType = 'teachers' | 'students' | 'auditLogs';
+
+export interface AuditLogDto {
+  id: number;
+  entityType: string;
+  entityName: string;
+  entityId: number;
+  action: string;
+  timestamp: string;
+  details: string;
+}
