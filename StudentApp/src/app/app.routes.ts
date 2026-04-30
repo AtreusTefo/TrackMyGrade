@@ -2,6 +2,7 @@ import { Routes, CanActivateFn, Router } from '@angular/router';
 import { AdminLoginComponent } from './components/admin-login/admin-login.component';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import { TeacherLoginComponent } from './components/teacher-login/teacher-login.component';
+import { TeacherDashboardComponent } from './components/teacher-dashboard/teacher-dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { StudentListComponent } from './components/student-list/student-list.component';
 import { StudentFormComponent } from './components/student-form/student-form.component';
@@ -13,18 +14,18 @@ import { TeacherAuthService } from './services/teacher-auth.service';
 import { StudentAuthService } from './services/student-auth.service';
 import { inject } from '@angular/core';
 
-const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(TeacherAuthService);
-  const router = inject(Router);
+const teacherauthGuard: CanActivateFn = (route, state) => {
+  const authService: TeacherAuthService = inject(TeacherAuthService);
+  const router: Router = inject(Router);
   if (authService.isAuthenticated()) {
     return true;
   }
-  return router.createUrlTree(['/login']);
+  return router.createUrlTree(['/teacher-login']);
 };
 
 const studentAuthGuard: CanActivateFn = (route, state) => {
-  const studentAuthService = inject(StudentAuthService);
-  const router = inject(Router);
+  const studentAuthService: StudentAuthService = inject(StudentAuthService);
+  const router: Router = inject(Router);
   if (studentAuthService.isAuthenticated()) {
     return true;
   }
@@ -34,18 +35,22 @@ const studentAuthGuard: CanActivateFn = (route, state) => {
 export const routes: Routes = [
   // Home Page
   { path: '', component: HomeComponent, pathMatch: 'full' },
+
   // Admin routes
   { path: 'admin', component: AdminLoginComponent },
   { path: 'admin-dashboard', component: AdminDashboardComponent },
+
   // Teacher routes
-  { path: 'login', component: TeacherLoginComponent },
+  { path: 'teacher-login', component: TeacherLoginComponent },
+  { path: 'teacher-dashboard', component: TeacherDashboardComponent, canActivate: [teacherauthGuard] },
   { path: 'register', component: RegisterComponent },
-  { path: 'list', component: StudentListComponent, canActivate: [authGuard] },
-  { path: 'create', component: StudentFormComponent, canActivate: [authGuard] },
-  { path: 'edit/:id', component: StudentFormComponent, canActivate: [authGuard] },
-  { path: 'detail/:id', component: StudentDetailComponent, canActivate: [authGuard] },
+  { path: 'list', component: StudentListComponent, canActivate: [teacherauthGuard] },
+  { path: 'create', component: StudentFormComponent, canActivate: [teacherauthGuard] },
+  { path: 'edit/:id', component: StudentFormComponent, canActivate: [teacherauthGuard] },
+  { path: 'detail/:id', component: StudentDetailComponent, canActivate: [teacherauthGuard] },
+
   // Student routes (login only — accounts created by teachers)
   { path: 'student-login', component: StudentLoginComponent },
   { path: 'student-dashboard', component: StudentDashboardComponent, canActivate: [studentAuthGuard] },
-  { path: '**', redirectTo: '/studentlist' }
+  { path: '**', redirectTo: '/' }
 ];

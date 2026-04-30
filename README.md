@@ -1,56 +1,73 @@
 # TrackMyGrade - Setup and Build Instructions
 
 ## Overview
-TrackMyGrade is a full-stack web application built with ASP.NET Framework (backend) and Angular 18 (frontend) that allows teachers to manage and track student assessments with automatic calculations.
+TrackMyGrade is a full-stack web application built with ASP.NET Framework 4.8 (backend) and Angular 18 (frontend). It supports three user roles — **Admin**, **Teacher**, and **Student** — enabling teachers to manage student records and assessments with automatic performance calculations, students to log in and view their own results, and admins to oversee the entire system.
+
+---
 
 ## Project Structure
 
 ```
 TrackMyGrade/
-├── TrackMyGradeAPI/          # Backend ASP.NET Framework API
-│   ├── Controllers/          # REST API endpoints
-│   ├── Data/                 # EF6 DbContext and SQL Server LocalDB configuration
-│   ├── DTOs/                 # Data Transfer Objects (with shared StudentDtoBase)
-│   ├── Handlers/             # Exception handler and validation filter
-│   ├── Infrastructure/       # DI resolver and Swagger configuration
-│   ├── Logging/              # ELMAH error logging configuration
-│   ├── Mapping/              # AutoMapper profiles
-│   ├── Models/               # Database entities
-│   ├── Services/             # Business logic layer
-│   ├── Validators/           # FluentValidation rules (centralized base validators)
-│   ├── Program.cs            # Console entry point (OWIN self-host)
-│   ├── Startup.cs            # OWIN startup and middleware pipeline
-│   ├── WebApiConfig.cs       # CORS, routing and API configuration
-│   ├── web.config            # Web/OWIN host configuration
-│   └── Global.asax.cs        # Web project marker (startup logic in Startup.cs)
+├── TrackMyGradeAPI/                  # Backend ASP.NET Framework API
+│   ├── Application/
+│   │   ├── DTOs/                     # Data Transfer Objects (StudentDto, TeacherDto, etc.)
+│   │   ├── Mapping/                  # AutoMapper profile
+│   │   ├── Services/                 # Business logic (TeacherService, StudentService, etc.)
+│   │   └── Validators/               # FluentValidation validators
+│   ├── Handlers/                     # ELMAH exception handler & logger
+│   ├── Infrastructure/
+│   │   ├── Data/                     # ApplicationDbContext (EF6, SQL Server LocalDB)
+│   │   └── SwaggerConfig.cs          # Swashbuckle setup
+│   ├── Logging/                      # ErrorLoggingConfig (ELMAH)
+│   ├── Models/                       # Database entities: Teacher, Student
+│   ├── Presentation/
+│   │   └── Controllers/              # TeachersController, StudentsController, StudentAuthController
+│   ├── Program.cs                    # Console entry point (OWIN self-host)
+│   ├── Startup.cs                    # OWIN middleware pipeline
+│   ├── WebApiConfig.cs               # CORS, routing, JSON camelCase config
+│   ├── web.config                    # OWIN host configuration
+│   └── Global.asax.cs                # Application lifecycle hooks
 │
-├── StudentApp/               # Frontend Angular 18 SPA
+├── StudentApp/                       # Frontend Angular 18 SPA
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── components/   # Angular standalone components
-│   │   │   ├── services/     # API communication services
-│   │   │   ├── models/       # TypeScript interfaces
-│   │   │   ├── app.routes.ts # Routing configuration
-│   │   │   └── app.component.ts
-│   │   ├── main.ts           # Bootstrap entry point
-│   │   ├── index.html        # HTML template
-│   │   └── styles.css        # Global styles
-│   ├── angular.json          # Angular CLI configuration
-│   ├── tsconfig.json         # TypeScript configuration
-│   └── package.json          # Node dependencies
+│   │   │   ├── components/
+│   │   │   │   ├── home/             # Landing page (HomeComponent)
+│   │   │   │   ├── teacher-login/    # TeacherLoginComponent
+│   │   │   │   ├── register/         # RegisterComponent
+│   │   │   │   ├── teacher-dashboard/
+│   │   │   │   ├── student-list/     # StudentListComponent
+│   │   │   │   ├── student-form/     # StudentFormComponent (create + edit)
+│   │   │   │   ├── student-detail/   # StudentDetailComponent
+│   │   │   │   ├── student-login/    # StudentLoginComponent
+│   │   │   │   ├── student-dashboard/
+│   │   │   │   ├── admin-login/      # AdminLoginComponent
+│   │   │   │   └── admin-dashboard/  # AdminDashboardComponent
+│   │   │   ├── services/             # TeacherAuthService, StudentAuthService, etc.
+│   │   │   ├── models/               # TypeScript interfaces (index.ts)
+│   │   │   ├── app.routes.ts         # Routes + CanActivateFn guards
+│   │   │   └── app.component.ts/html # Root shell + navbar
+│   │   ├── main.ts                   # Angular bootstrap
+│   │   ├── index.html                # HTML entry point
+│   │   └── styles.css                # Global styles
+│   ├── angular.json
+│   ├── tsconfig.json                 # moduleResolution: "bundler"
+│   └── package.json
 │
-├── docs/                     # Project documentation
-│   ├── PROJECT_REQUIREMENTS.md
-│   ├── POSTMAN_INTEGRATION_GUIDE.md
-│   ├── QUICK_START.md
-│   ├── DELIVERABLES.md
-│   ├── IMPLEMENTATION_REPORT.md
-│   ├── FILE_INVENTORY.md
-│   └── DAILY_REPORT_2026-03-11.md
+├── docs/
+│   ├── architecture/ARCHITECTURE.md
+│   ├── project/
+│   │   ├── PROJECT_REQUIREMENTS.md
+│   │   ├── DELIVERABLES.md
+│   │   └── AGILE_HIERACHY.md
+│   └── error-fixes/FIX_ERRORS.md
 │
 ├── TrackMyGradeAPI.postman_collection.json
 └── TrackMyGradeAPI.postman_environment.json
 ```
+
+---
 
 ## Backend Setup (ASP.NET Framework)
 
@@ -59,107 +76,97 @@ TrackMyGrade/
 - SQL Server LocalDB (included with Visual Studio)
 - NuGet Package Manager
 
-### Dependencies
-The backend uses the following NuGet packages:
-- `EntityFramework` v6.4.4 - ORM for database access (with SQL Server LocalDB)
-- `AutoMapper` v10.1.1 - Object-to-object mapping
-- `FluentValidation` v11.8.1 - Model validation
-- `Microsoft.AspNet.WebApi` v5.2.9 - REST API framework
-- `Microsoft.AspNet.WebApi.Cors` v5.2.9 - CORS support
-- `Microsoft.AspNet.WebApi.Owin` v5.2.9 - OWIN integration
-- `Microsoft.Owin` v4.2.2 - OWIN abstractions
-- `Microsoft.Owin.SelfHost` v4.2.2 - Self-hosting support
-- `ELMAH` v1.2.2 - Error logging and monitoring
-- `Swashbuckle.Core` v5.6.0 - Swagger/OpenAPI documentation
+### NuGet Dependencies
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `EntityFramework` | 6.4.4 | ORM — SQL Server LocalDB |
+| `AutoMapper` | 10.1.1 | Object-to-object mapping |
+| `FluentValidation` | 11.8.1 | Server-side model validation |
+| `Microsoft.AspNet.WebApi` | 5.2.9 | REST API framework |
+| `Microsoft.AspNet.WebApi.Cors` | 5.2.9 | CORS support |
+| `Microsoft.AspNet.WebApi.Owin` | 5.2.9 | OWIN integration |
+| `Microsoft.Owin` | 4.2.2 | OWIN abstractions |
+| `Microsoft.Owin.SelfHost` | 4.2.2 | Self-hosting |
+| `ELMAH` | 1.2.2 | Error logging |
+| `Swashbuckle.Core` | 5.6.0 | Swagger/OpenAPI docs |
 
 ### Build Instructions
 
-1. **Open the project in Visual Studio**
-   ```bash
-   cd TrackMyGradeAPI
+1. **Open in Visual Studio**
+   ```
+   Open TrackMyGradeAPI/TrackMyGradeAPI.csproj
    ```
 
 2. **Restore NuGet packages**
    ```
-   Right-click on project > Restore NuGet Packages
-   OR use Package Manager Console:
-   Update-Package
+   Right-click project → Restore NuGet Packages
+   OR in Package Manager Console: Update-Package
    ```
 
 3. **Build the project**
    ```
-   Build > Build Solution (Ctrl+Shift+B)
+   Build → Build Solution  (Ctrl+Shift+B)
    ```
 
-4. **Create and seed the database**
-   - The database initializes automatically when the application starts
-   - `ApplicationDbContext.Initialize()` is called from `Startup.cs` using EF6's `CreateDatabaseIfNotExists` initializer
-   - The `TrackMyGrade` database is created in SQL Server LocalDB (`(localdb)\MSSQLLocalDB`) — no external setup required
+4. **Database initialization**
+   - The `TrackMyGrade` database is created automatically in SQL Server LocalDB on first run
+   - `ApplicationDbContext.Initialize()` is called from `Startup.cs`
+   - No external database setup required
 
 5. **Run the API**
    ```
-   Debug > Start Debugging (F5)
-   Default URL: http://localhost:5000
+   Debug → Start Debugging (F5)
+   OR: cd TrackMyGradeAPI && .\start-api.ps1
    ```
+   - API: `http://localhost:5000`
    - Swagger UI: `http://localhost:5000/swagger`
-   - The API is a self-hosted OWIN console application — it runs in a terminal window, not IIS
 
-### API Endpoints
+---
 
-#### Teacher Endpoints
-- `POST /api/teachers/register` - Register a new teacher
-- `POST /api/teachers/login` - Teacher login
-- `GET /api/teachers/{id}` - Get teacher profile
+## API Endpoints Reference
 
-#### Student Endpoints
-- `GET /api/students` - Get all students (for authenticated teacher)
-- `GET /api/students/{id}` - Get student details
-- `POST /api/students` - Create new student
-- `PUT /api/students/{id}` - Update student
-- `DELETE /api/students/{id}` - Delete student
+### Teacher Endpoints
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/teachers/register` | Register a new teacher |
+| POST | `/api/teachers/login` | Teacher login — returns token |
+| GET | `/api/teachers/{id}` | Get teacher profile by ID |
+
+### Student Endpoints (Teacher-scoped — requires `X-TeacherId` header)
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/students` | List all students for the teacher |
+| GET | `/api/students/{id}` | Get student details |
+| POST | `/api/students` | Create new student |
+| PUT | `/api/students/{id}` | Update student |
+| DELETE | `/api/students/{id}` | Delete student |
+
+### Student Auth Endpoints (Student self-service)
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/student-auth/login` | Student login |
+| GET | `/api/student-auth/profile` | Get own profile (`X-StudentToken` header) |
+| PUT | `/api/student-auth/submit-assessments` | Submit own scores (`X-StudentToken` header) |
+
+---
 
 ## Postman Integration
 
-**TrackMyGrade API is now fully integrated with Postman!**
+**TrackMyGrade API is fully integrated with Postman.**
 
-### Quick Start with Postman
+### Quick Start
 
-1. **Import the Collection**
-   - File: `TrackMyGradeAPI.postman_collection.json`
-   - Contains all API endpoints with automated tests
-
-2. **Import the Environment**
-   - File: `TrackMyGradeAPI.postman_environment.json`
-   - Pre-configured for `http://localhost:5000`
-
-3. **Start Testing**
-   - Run "Register Teacher" first
-   - Teacher ID is automatically saved
-   - All subsequent requests use saved authentication
-
-### Features
-
-**Complete API Coverage** - All endpoints (Teachers & Students)  
-**Automated Tests** - Response validation for each request  
-**Smart Authentication** - Auto-saves and applies teacher ID header  
-**Test Scenarios** - Validation and error handling tests  
-**Environment Variables** - Easy configuration management  
-**Pre-Request Scripts** - Automated setup for each request  
-
-### Documentation
-
-For detailed instructions, see: **[POSTMAN_INTEGRATION_GUIDE.md](docs/POSTMAN_INTEGRATION_GUIDE.md)**
+1. **Import Collection**: `TrackMyGradeAPI.postman_collection.json`
+2. **Import Environment**: `TrackMyGradeAPI.postman_environment.json` (pre-configured for `http://localhost:5000`)
+3. **Start Testing**: Run "Register Teacher" first — teacher ID is auto-saved for subsequent requests
 
 ### Newman CLI (Optional)
-
-Run tests from command line:
 ```powershell
-# Install Newman
 npm install -g newman
-
-# Run the collection
 .\TrackMyGradeAPI\run-postman-tests.ps1
 ```
+
+---
 
 ## Frontend Setup (Angular 18)
 
@@ -169,141 +176,131 @@ npm install -g newman
 
 ### Installation
 
-1. **Navigate to frontend directory**
-   ```bash
-   cd StudentApp
-   ```
+```bash
+cd StudentApp
+npm install
+npm start          # Dev server at http://localhost:4200
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### Production Build
+```bash
+ng build --configuration production
+# Output: dist/StudentApp/browser/
+```
 
-3. **Start development server**
-   ```bash
-   npm start
-   OR
-   ng serve
-   ```
-   - Default URL: http://localhost:4200
-   - Application will auto-reload on file changes
+---
 
-4. **Build for production**
-   ```bash
-   npm run build
-   OR
-   ng build --configuration production
-   ```
-   - Output: `dist/StudentApp/browser/`
+## Application Routes
 
-### Key Features
+| URL | Component | Role Required |
+|-----|-----------|--------------|
+| `/` | `HomeComponent` | Public — landing page |
+| `/login` | `TeacherLoginComponent` | Public |
+| `/register` | `RegisterComponent` | Public |
+| `/list` | `StudentListComponent` | Teacher (auth guard) |
+| `/create` | `StudentFormComponent` | Teacher (auth guard) |
+| `/edit/:id` | `StudentFormComponent` | Teacher (auth guard) |
+| `/detail/:id` | `StudentDetailComponent` | Teacher (auth guard) |
+| `/student-login` | `StudentLoginComponent` | Public |
+| `/student-dashboard` | `StudentDashboardComponent` | Student (student auth guard) |
+| `/admin` | `AdminLoginComponent` | Public |
+| `/admin-dashboard` | `AdminDashboardComponent` | Admin |
+| `**` | — | Redirects to `/` |
 
-#### Authentication
-- **Login**: Email and password authentication (plain text, demo only)
-- **Registration**: Teachers can register with personal and subject information
-- **Session Management**: Simple token-based (stored in localStorage)
-- **Password Toggle**: Show/hide password visibility on login and register forms
-- **Accessibility**: `aria-describedby` and `aria-invalid` attributes on form inputs
+---
 
-#### Student Management
-- **List View**: Table display of all students with key metrics
-- **Create**: Form to add new students with 3 assessments
-- **Edit**: Update existing student information
-- **Delete**: Remove students with confirmation
-- **Detail**: Comprehensive view of individual student performance
+## Key Features
 
-#### Automatic Calculations
-- **Total Score**: Sum of 3 assessments (max 60)
-- **Average**: Total divided by 3
-- **Percentage**: (Total / 60) * 100
-- **Performance Level**: 
-  - Excellent: > 75%
-  - Good: 56-75%
-  - Satisfactory: 50-55%
-  - Needs Support: < 50%
+### Authentication
+- **Teacher**: Register + login; session persisted in `localStorage` via `TeacherAuthService`
+- **Student**: Login with email/password set by teacher; session via `StudentAuthService`
+- **Admin**: Separate login via `AdminAuthService`
+- **Guards**: `authGuard` (teacher), `studentAuthGuard` (student) — `CanActivateFn` style
 
-#### UI/UX Features
-- Responsive design for mobile and desktop
-- Inline form validation with error messages (blur-triggered)
-- Credential errors shown inline below the relevant field (not in banner)
-- Global error banner for server failures
-- Color-coded performance badges
-- Clean, modern interface with gradient accents
-- `fadeInError` animation for smooth error appearance
-- Fixed-height error containers prevent layout shift
+### Student Management
+- **Create**: Form with `OmangOrPassport`, grade, three assessments, initial password
+- **Auto StudentNumber**: Generated in the format `STU-YYYY-NNNN`
+- **List**: DataTables table with performance badge, search, pagination
+- **Edit / Delete**: With confirmation dialog
+
+### Calculations (computed on `Student` entity — not stored)
+```
+Total       = Assessment1 + Assessment2 + Assessment3  (max 60)
+Average     = Total / 3
+Percentage  = (Total / 60) × 100
+Performance = < 50% → Needs Support | 50-55% → Satisfactory
+              56-75% → Good         | > 75%  → Excellent
+```
+
+### Student Self-Service Portal
+- Students log in independently at `/student-login`
+- Dashboard shows full profile, scores, and colour-coded performance
+- Students may submit their own scores via the API
+
+### Admin Dashboard
+- Tabbed interface: Teachers | Students | Audit Logs
+- Audit log records all create/update/delete actions with timestamps
+
+---
 
 ## Configuration
 
-### Backend CORS Configuration
-CORS is configured in `WebApiConfig.cs`:
+### Backend CORS
 ```csharp
-var cors = new EnableCorsAttribute("http://localhost:4200", "*", "*");
-config.EnableCors(cors);
+// WebApiConfig.cs
+new EnableCorsAttribute("http://localhost:4200", "*", "*")
 ```
-- Allows requests from Angular app (localhost:4200)
-- Permits all HTTP methods and headers
 
-### Swagger UI
-Swashbuckle is configured in `Infrastructure/SwaggerConfig.cs` and registered from `WebApiConfig.cs`:
-- **Swagger JSON**: `http://localhost:5000/swagger/docs/v1`
-- **Swagger UI**: `http://localhost:5000/swagger`
+### JSON Serialization
+Configured for camelCase output in `WebApiConfig.cs`:
+```csharp
+config.Formatters.JsonFormatter.SerializerSettings.ContractResolver =
+    new CamelCasePropertyNamesContractResolver();
+```
 
-XML doc comments from the compiled `TrackMyGradeAPI.XML` are loaded automatically if present.
-
-### Error Logging (ELMAH)
-ELMAH is configured in `Logging/ErrorLoggingConfig.cs` and initialized from `Startup.cs`:
-- Unhandled exceptions and Web API errors are captured by `ElmahExceptionHandler` and `ElmahExceptionLogger` in `Handlers/`
-- See `Logging/ELMAH_SETUP.md` for full configuration details
-
-### Frontend API Base URL
-In `StudentService` and `AuthService`:
+### Frontend API Base URLs
+Defined per service in `services/`:
 ```typescript
 private apiUrl = 'http://localhost:5000/api/...';
 ```
-Change this URL when deploying to production.
+Change the base URL when deploying to production.
+
+### TypeScript Configuration
+`tsconfig.json` uses `"moduleResolution": "bundler"` — required for Angular 18 with `.NET Framework` backend. Do **not** revert to `"node"`.
+
+---
 
 ## Running the Full Application
 
-### Development Mode
-
-**Terminal 1 - Backend API**
-```bash
+**Terminal 1 — Backend API**
+```powershell
 cd TrackMyGradeAPI
-# Open in Visual Studio and press F5
-# OR run the PowerShell helper script:
-.\start-api.ps1
+.\start-api.ps1       # OR open in Visual Studio and press F5
 ```
 
-**Terminal 2 - Frontend**
+**Terminal 2 — Frontend**
 ```bash
 cd StudentApp
 npm start
 ```
 
-Then navigate to `http://localhost:4200` in your browser.
+Navigate to `http://localhost:4200`.
 
-### Step-by-Step Usage
+---
 
-1. **Register**: Go to Register page and create a teacher account
-2. **Login**: Login with your credentials
-3. **Add Students**: Create student records with assessments
-4. **View List**: See all students in a table view
-5. **Edit/Delete**: Manage student information
-6. **View Details**: Check individual student performance metrics
-
-## Data Model
+## Data Models
 
 ### Teacher Entity
 ```json
 {
   "id": 1,
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john@example.com",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "smith@school.com",
   "phone": "12345678",
   "subject": "Mathematics",
   "password": "password123",
-  "token": "unique-token-guid"
+  "token": "unique-guid-token"
 }
 ```
 
@@ -311,58 +308,45 @@ Then navigate to `http://localhost:4200` in your browser.
 ```json
 {
   "id": 1,
+  "studentNumber": "STU-2026-0001",
   "teacherId": 1,
-  "firstName": "Jane",
-  "lastName": "Smith",
-  "email": "jane@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@school.com",
   "phone": "87654321",
-  "grade": 9,
+  "omangOrPassport": "AB1234567",
+  "grade": 10,
   "assessment1": 18,
   "assessment2": 19,
   "assessment3": 17,
-  "total": 54,
-  "average": 18.0,
-  "percentage": 90.0,
-  "performanceLevel": "Excellent"
+  "password": "student123",
+  "token": "student-guid-token"
 }
 ```
 
+*(Calculated fields `total`, `average`, `percentage`, `performanceLevel` are computed by the entity and included in response DTOs.)*
+
+---
+
 ## Troubleshooting
 
-For a **comprehensive troubleshooting guide** with detailed root-cause analysis and solutions,
-see [`TrackMyGradeAPI/TROUBLESHOOTING.md`](TrackMyGradeAPI/TROUBLESHOOTING.md).
+For a comprehensive guide, see [`TrackMyGradeAPI/TROUBLESHOOTING.md`](TrackMyGradeAPI/TROUBLESHOOTING.md).
 
-### Quick Reference — Known Errors
+### Quick Reference
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `Failed to listen on prefix 'http://localhost:5000/'` | Port 5000 already in use by a previous instance | Kill old process: `Get-Process -Name TrackMyGradeAPI \| Stop-Process -Force` |
-| Student form stuck on `Saving...` when creating a new student | Backend originally returned PascalCase JSON which didn't match Angular's camelCase models; this made `teacher.id` undefined and threw inside `StudentService.getHeaders()` before `subscribe()`, leaving `isSubmitting` `true` | Configure camelCase JSON in `WebApiConfig.cs`; normalize teacher objects in `AuthService`; guard `teacher?.id` in `getHeaders()`; wrap `onSubmit()` in `try/catch` and always reset `isSubmitting`; ensure Angular uses `moduleResolution: "bundler"` with workspace TypeScript |
+| `Failed to listen on prefix 'http://localhost:5000/'` | Port 5000 already in use | `Get-Process -Name TrackMyGradeAPI \| Stop-Process -Force` |
+| Student form stuck on `Saving...` | `teacher.id` was undefined; `isSubmitting` left `true` | Ensure camelCase JSON in `WebApiConfig.cs`; guard `teacher?.id` in `getHeaders()`; always reset `isSubmitting` in `finally` |
+| TS2792 — Cannot find module `@angular/router` | `moduleResolution: "node"` incompatible with Angular 18 | Set `"moduleResolution": "bundler"` in `tsconfig.json` |
+| CORS error in browser | Backend not running or wrong port | Ensure API is running on port 5000; check `WebApiConfig.cs` |
+| Login/registration fails | Wrong API base URL | Verify `apiUrl` in service files matches `http://localhost:5000` |
 
-### Backend won't start
-- Ensure port 5000 is available (`netstat -ano | findstr ":5000"`)
-- Check that .NET Framework 4.8 is installed
-- Verify all NuGet packages are restored (`dotnet restore`)
-- Kill any previous instances before restarting
-
-### Frontend shows CORS error
-- Ensure backend is running on http://localhost:5000
-- Check CORS configuration in WebApiConfig.cs
-- Clear browser cache and localStorage
-
-### API calls fail
-- Check browser Network tab in DevTools
-- Verify API base URL matches backend port
-- Ensure teacher header (X-TeacherId) is sent
-
-### Login/Registration fails
-- Check backend is running and responding
-- Verify email format and validation rules
-- Check browser console for detailed errors
+---
 
 ## Technology Stack
 
-**Backend**
+### Backend
 - C# with .NET Framework 4.8
 - ASP.NET Web API 5.2
 - Entity Framework 6.4 with SQL Server LocalDB
@@ -372,29 +356,26 @@ see [`TrackMyGradeAPI/TROUBLESHOOTING.md`](TrackMyGradeAPI/TROUBLESHOOTING.md).
 - ELMAH for error logging
 - Swashbuckle 5.6 for Swagger/OpenAPI docs
 
-**Frontend**
+### Frontend
 - Angular 18 (Standalone Components)
-- TypeScript 5.2
+- TypeScript 5.2 (`moduleResolution: "bundler"`)
 - RxJS 7.8
-- Responsive CSS (no external UI frameworks)
 - Template-driven forms
-
-## Future Enhancements
-
-1. **Database**: Migrate from LocalDB to a full SQL Server or PostgreSQL instance
-2. **Authentication**: Implement JWT with refresh tokens
-3. **Authorization**: Add role-based access control
-4. **Reporting**: Export to PDF/CSV
-5. **Analytics**: Performance dashboards and charts
-6. **Testing**: Unit and integration tests
-7. **CI/CD**: GitHub Actions or Azure DevOps pipeline
-8. **Containerization**: Docker and Kubernetes deployment
-
-## Support and Contributions
-
-For issues or questions, refer to the detailed PRD in [`docs/PROJECT_REQUIREMENTS.md`](docs/PROJECT_REQUIREMENTS.md).
+- Vanilla CSS (responsive, no external UI frameworks)
 
 ---
 
-**Last Updated**: March 2026
-**Version**: 1.1.0
+## Future Enhancements
+
+1. **Authentication**: JWT with refresh tokens; bcrypt password hashing
+2. **Authorization**: Server-side RBAC enforced on all endpoints
+3. **Database**: Migrate to full SQL Server or PostgreSQL
+4. **Reporting**: Export to PDF/CSV
+5. **Testing**: Unit and integration test suites (backend + frontend)
+6. **CI/CD**: GitHub Actions pipeline
+7. **Containerization**: Docker + Kubernetes deployment
+
+---
+
+**Last Updated**: April 2026
+**Version**: 1.3.0

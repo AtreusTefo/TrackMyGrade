@@ -2,646 +2,515 @@
 
 ## High-Level Architecture Overview
 
-TrackMyGrade follows a **Clean Architecture with Separation of Concerns (SoC)** pattern, ensuring the backend API and frontend are completely decoupled and independently deployable.
+TrackMyGrade follows a **Clean Architecture with Separation of Concerns (SoC)** pattern, with the backend and frontend completely decoupled and independently runnable.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Angular 18 SPA                          │
-│        (Standalone Components - No Module Required)         │
-├─────────────────────────────────────────────────────────────┤
-│  Login    Register    StudentList    StudentForm    Detail  │
-│  Components - Services - Models - Routing - Styles         │
-├─────────────────────────────────────────────────────────────┤
-│              HttpClient with CORS Support                   │
-├─────────────────────────────────────────────────────────────┤
-│  HTTP Calls (JSON) to REST API on port 5000               │
-└─────────────────────────────────────────────────────────────┘
-                        ⬇️ HTTP/JSON
-┌─────────────────────────────────────────────────────────────┐
-│             ASP.NET Framework Web API                       │
-│      (Self-hosted via OWIN/Katana on port 5000)           │
-├─────────────────────────────────────────────────────────────┤
-│  Presentation Layer                                         │
-│  • TeachersController (Register, Login, Profile)           │
-│  • StudentsController (CRUD operations)                    │
-│  • Input validation via FluentValidation                   │
-├─────────────────────────────────────────────────────────────┤
-│  Business Logic Layer                                       │
-│  • TeacherService (Authentication logic)                   │
-│  • StudentService (CRUD + Calculations)                    │
-├─────────────────────────────────────────────────────────────┤
-│  Data Access Layer                                          │
-│  • ApplicationDbContext (EF Core)                          │
-│  • Database: SQLite In-Memory                              │
-├─────────────────────────────────────────────────────────────┤
-│  Cross-cutting Concerns                                     │
-│  • AutoMapper (DTO ↔ Entity mapping)                       │
-│  • CORS (Enable Angular to call API)                       │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                      Angular 18 SPA                              │
+│         (Standalone Components — No NgModule Required)           │
+├──────────────────────────────────────────────────────────────────┤
+│  Home  | TeacherLogin | Register | StudentList | StudentForm     │
+│  StudentDetail | StudentLogin | StudentDashboard                 │
+│  AdminLogin | AdminDashboard                                     │
+├──────────────────────────────────────────────────────────────────┤
+│    Services: TeacherAuthService | StudentAuthService             │
+│             AdminAuthService | StudentService | AdminApiService  │
+├──────────────────────────────────────────────────────────────────┤
+│              HttpClient  ·  CORS  ·  X-TeacherId Header          │
+└──────────────────────────────────────────────────────────────────┘
+                          ⬇️ HTTP/JSON
+┌──────────────────────────────────────────────────────────────────┐
+│              ASP.NET Web API 5.2 (.NET Framework 4.8)            │
+│         (Self-hosted via OWIN/Katana on port 5000)              │
+├──────────────────────────────────────────────────────────────────┤
+│  Presentation/Controllers/                                       │
+│  • TeachersController      (register, login, profile)           │
+│  • StudentsController      (full CRUD, X-TeacherId scoped)      │
+│  • StudentAuthController   (student login, profile, submit)     │
+├──────────────────────────────────────────────────────────────────┤
+│  Application/Services/                                           │
+│  • TeacherService         • StudentService                      │
+│  • StudentAuthService     • AdminService                        │
+│  • AuditLogService        • AssessmentSubmissionService         │
+│  • EmailService           • ExportService                       │
+├──────────────────────────────────────────────────────────────────┤
+│  Application/Validators/    (FluentValidation)                  │
+│  • TeacherValidator  • StudentValidator  • StudentAuthValidator  │
+│  • AdminValidator    • StudentAssessmentValidator               │
+├──────────────────────────────────────────────────────────────────┤
+│  Application/Mapping/       (AutoMapper)                        │
+│  • MappingProfile                                               │
+├──────────────────────────────────────────────────────────────────┤
+│  Infrastructure/Data/       (EF6)                               │
+│  • ApplicationDbContext → SQL Server LocalDB                    │
+├──────────────────────────────────────────────────────────────────┤
+│  Cross-Cutting Concerns                                          │
+│  • ELMAH error logging    • Swagger (Swashbuckle 5.6)          │
+│  • CORS                   • SimpleDependencyResolver (DI)       │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-## Detailed Architecture Layers
+---
 
-### 1. Frontend Layer (Angular 18)
+## Backend Layer Breakdown
 
-#### Components (Standalone)
+### Folder Structure
+
 ```
-LoginComponent
-├─ Handles teacher authentication
-├─ Validates email & password
-└─ Stores token in localStorage
-
-RegisterComponent
-├─ Teacher registration form
-├─ Validates all fields (FluentValidation rules mirrored)
-└─ Redirects to login on success
-
-StudentListComponent
-├─ Displays all students in table
-├─ Shows calculated metrics
-├─ Provides action buttons (View, Edit, Delete)
-└─ Handles deletion with confirmation
-
-StudentFormComponent
-├─ Shared component for Create & Edit
-├─ Real-time calculation display
-├─ Validates input before submission
-└─ Updates URL on save
-
-StudentDetailComponent
-├─ Full student information view
-├─ Performance analysis
-├─ Edit and Delete shortcuts
+TrackMyGradeAPI/
+├── Application/
+│   ├── DTOs/           # Data Transfer Objects
+│   ├── Mapping/        # AutoMapper profile
+│   ├── Services/       # Business logic interfaces + implementations
+│   └── Validators/     # FluentValidation validators
+├── Handlers/           # ELMAH exception handler & logger
+├── Infrastructure/
+│   ├── Data/           # ApplicationDbContext (EF6)
+│   └── SwaggerConfig.cs
+├── Logging/            # ErrorLoggingConfig (ELMAH)
+├── Models/             # Database entities: Teacher, Student
+├── Presentation/
+│   └── Controllers/    # TeachersController, StudentsController, StudentAuthController
+├── Program.cs          # OWIN self-host entry point
+├── Startup.cs          # OWIN middleware pipeline
+└── WebApiConfig.cs     # CORS, routing, JSON config
 ```
 
-#### Services
-```
-AuthService
-├─ register(data) → Observable<Teacher>
-├─ login(data) → Observable<Teacher>
-├─ logout() → void
-├─ getCurrentTeacher() → Teacher | null
-├─ getToken() → string | null
-├─ isAuthenticated() → boolean
-└─ Manages currentTeacher$ BehaviorSubject
+---
 
-StudentService
-├─ getAllStudents() → Observable<Student[]>
-├─ getStudentById(id) → Observable<Student>
-├─ createStudent(data) → Observable<Student>
-├─ updateStudent(id, data) → Observable<Student>
-├─ deleteStudent(id) → Observable<any>
-└─ Passes X-TeacherId header on all requests
+### 1. Presentation Layer — Controllers
+
+#### TeachersController (`/api/teachers`)
+```
+POST  /api/teachers/register   → Register(TeacherRegisterDto)   → TeacherResponseDto
+POST  /api/teachers/login      → Login(TeacherLoginDto)          → TeacherResponseDto
+GET   /api/teachers/{id}       → GetById(id)                     → TeacherResponseDto
 ```
 
-#### Routing
+#### StudentsController (`/api/students`)
+All endpoints read the `X-TeacherId` request header for teacher-scoped isolation.
 ```
-/login                        → LoginComponent (public)
-/register                     → RegisterComponent (public)
-/                            → StudentListComponent (guarded)
-/create                      → StudentFormComponent (guarded)
-/edit/:id                    → StudentFormComponent (guarded)
-/detail/:id                  → StudentDetailComponent (guarded)
-```
-
-#### Authentication Guard
-- Checks if user has valid token
-- Redirects unauthenticated users to /login
-- Tokens stored in localStorage
-
-#### Models (TypeScript Interfaces)
-```typescript
-Teacher {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  subject: string;
-  token: string;
-}
-
-Student {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  grade: number;
-  assessment1: number;
-  assessment2: number;
-  assessment3: number;
-  total: number;
-  average: number;
-  percentage: number;
-  performanceLevel: string;
-}
+GET    /api/students           → GetAll()        → IEnumerable<StudentResponseDto>
+GET    /api/students/{id}      → GetById(id)     → StudentResponseDto
+POST   /api/students           → Create(dto)     → StudentResponseDto  (201 Created)
+PUT    /api/students/{id}      → Update(id, dto) → StudentResponseDto
+DELETE /api/students/{id}      → Delete(id)      → 200 OK
 ```
 
-### 2. Presentation Layer (ASP.NET Web API Controllers)
-
-#### TeachersController
-```csharp
-[POST] /api/teachers/register
-├─ Input: TeacherRegisterDto
-├─ Validation: FluentValidation
-├─ Output: TeacherResponseDto (with token)
-└─ Stores in SQLite in-memory DB
-
-[POST] /api/teachers/login
-├─ Input: TeacherLoginDto
-├─ Validation: Credentials check
-├─ Output: TeacherResponseDto (with new token)
-└─ Regenerates token on each login
-
-[GET] /api/teachers/{id}
-├─ Input: Teacher ID
-├─ Output: TeacherResponseDto
-└─ Returns current teacher profile
+#### StudentAuthController (`/api/student-auth`)
+Student self-service endpoints. Profile and submit-assessments read the `X-StudentToken` header.
+```
+POST  /api/student-auth/login                  → Login(dto)                 → StudentAuthResponseDto
+GET   /api/student-auth/profile                → GetProfile()               → StudentAuthResponseDto
+PUT   /api/student-auth/submit-assessments     → SubmitAssessments(dto)     → StudentAuthResponseDto
 ```
 
-#### StudentsController
-```csharp
-[GET] /api/students
-├─ Query: X-TeacherId header
-├─ Output: List<StudentResponseDto>
-└─ Filters by teacher ID for isolation
+---
 
-[GET] /api/students/{id}
-├─ Input: Student ID
-├─ Validation: Ownership check (teacher must own)
-└─ Output: StudentResponseDto with calculated fields
+### 2. Application Layer — DTOs
 
-[POST] /api/students
-├─ Input: StudentCreateDto
-├─ Validation: FluentValidation rules
-├─ Process: Creates entity, calculates totals
-└─ Output: StudentResponseDto
+#### Request DTOs (Input)
+| DTO | Fields |
+|-----|--------|
+| `TeacherRegisterDto` | FirstName, LastName, Email, Phone, Subject, Password |
+| `TeacherLoginDto` | Email, Password |
+| `StudentDtoBase` (abstract) | FirstName, LastName, Email, Phone, OmangOrPassport, Grade, Assessment1-3, Password |
+| `StudentCreateDto` | extends `StudentDtoBase` |
+| `StudentUpdateDto` | extends `StudentDtoBase` |
+| `StudentLoginDto` | Email, Password |
+| `StudentSubmitAssessmentsDto` | Assessment1, Assessment2, Assessment3 |
+| `AuditLogDto` | Id, EntityType, EntityName, EntityId, Action, Timestamp, Details |
 
-[PUT] /api/students/{id}
-├─ Input: StudentUpdateDto
-├─ Validation: FluentValidation + ownership
-├─ Process: Updates all fields + recalculates
-└─ Output: StudentResponseDto
+#### Response DTOs (Output)
+| DTO | Fields |
+|-----|--------|
+| `TeacherResponseDto` | Id, FirstName, LastName, Email, Phone, Subject, Token |
+| `StudentResponseDto` | Id, StudentNumber, FirstName, LastName, Email, Phone, OmangOrPassport, Grade, Assessment1-3, Total, Average, Percentage, PerformanceLevel |
+| `StudentAuthResponseDto` | All fields in `StudentResponseDto` + Token |
 
-[DELETE] /api/students/{id}
-├─ Validation: Ownership check
-└─ Process: Removes student + cascades (if any FK exists)
-```
+---
 
-#### DTOs (Data Transfer Objects)
-```
-Request DTOs (Input)
-├─ TeacherRegisterDto (firstName, lastName, email, phone, subject, password)
-├─ TeacherLoginDto (email, password)
-├─ StudentCreateDto (firstName, lastName, email, phone, grade, assessment1-3)
-└─ StudentUpdateDto (same as create)
+### 3. Application Layer — Services
 
-Response DTOs (Output)
-├─ TeacherResponseDto (includes token)
-└─ StudentResponseDto (includes calculated fields)
+| Service | Key Methods |
+|---------|-------------|
+| `TeacherService` | `Register()`, `Login()`, `GetById()` |
+| `StudentService` | `GetAllByTeacher()`, `GetById()`, `Create()`, `Update()`, `Delete()` |
+| `StudentAuthService` | `Login()`, `GetProfile()`, `SubmitAssessments()` |
+| `AdminService` | Admin credential check and management |
+| `AuditLogService` | Records create/update/delete events |
+| `AssessmentSubmissionService` | Handles student self-assessment submission |
+| `EmailService` | (Planned) email notifications |
+| `ExportService` | (Planned) data export |
 
-Purpose: Decouple API contract from DB entities
-```
+---
 
-### 3. Business Logic Layer (Services)
+### 4. Application Layer — Validators (FluentValidation)
 
-#### TeacherService
-```csharp
-Register(TeacherRegisterDto)
-├─ Validates no duplicate email
-├─ Creates new Teacher entity
-├─ Generates unique token (Guid)
-├─ Hashes password (note: currently plain text)
-├─ Persists to DB
-└─ Returns mapped response
+#### TeacherValidator
+- `FirstName` / `LastName`: Required, 2–50 chars, letters only
+- `Email`: Required, valid format
+- `Phone`: Required, exactly 8 digits
+- `Subject`: Required, max 100 chars
+- `Password`: Required, 6–20 chars
 
-Login(TeacherLoginDto)
-├─ Finds teacher by email/password match
-├─ Regenerates token on each login
-├─ Throws UnauthorizedAccessException on failure
-└─ Returns updated teacher response
+#### StudentValidator
+- All fields from `TeacherValidator` base rules plus:
+- `OmangOrPassport`: Required, exactly 9 alphanumeric characters (`^[a-zA-Z0-9]{9}$`)
+- `Grade`: Required, 1–12
+- `Assessment1/2/3`: Required, 0–20
 
-GetById(int id)
-├─ Retrieves teacher profile
-└─ Used for profile endpoints
-```
+#### StudentAuthValidator
+- `Email`: Required, valid format
+- `Password`: Required, min 6 chars
 
-#### StudentService
-```csharp
-GetAllByTeacher(int teacherId)
-├─ Filters students by teacher
-└─ Maps to response DTOs
+---
 
-GetById(int id, int teacherId)
-├─ Validates ownership
-└─ Returns detailed student with calculations
-
-Create(StudentCreateDto, int teacherId)
-├─ Sets teacherId from context
-├─ Saves to DB
-├─ Calculations happen in entity
-└─ Returns mapped response
-
-Update(int id, StudentUpdateDto, int teacherId)
-├─ Validates ownership before update
-├─ Merges updated fields
-├─ DB auto-recalculates values
-└─ Returns updated response
-
-Delete(int id, int teacherId)
-├─ Validates ownership
-└─ Removes from DB
-```
-
-### 4. Data Access Layer (EF Core)
+### 5. Data Access Layer (EF6 + SQL Server LocalDB)
 
 #### ApplicationDbContext
 ```csharp
-DbSet<Teacher> Teachers
-DbSet<Student> Students
-
-OnModelCreating()
-├─ Configures relationships
-├─ Sets max lengths
-├─ Cascading delete rules
-└─ Seeds data if needed
-
-Initialize()
-├─ Called in Global.asax Application_Start
-├─ Creates database if not exists
-└─ Initializes schema
+DbSet<Teacher>  Teachers
+DbSet<Student>  Students
+// Additional DbSets: Admin, AuditLog (via AdminService / AuditLogService)
 ```
+
+- Database: `(localdb)\MSSQLLocalDB` — `TrackMyGrade` database
+- Schema initializes via `ApplicationDbContext.Initialize()` called from `Startup.cs`
+- EF6 migrations applied via Package Manager Console
 
 #### Database Schema
-```sql
-Teachers
-├─ Id (PK)
-├─ FirstName (string, required)
-├─ LastName (string, required)
-├─ Email (string, unique, required)
-├─ Phone (string, 8 digits)
-├─ Subject (string, max 100)
-├─ Password (string, plain text)
-└─ Token (string)
 
-Students
-├─ Id (PK)
-├─ TeacherId (FK → Teachers.Id)
-├─ FirstName (string, required)
-├─ LastName (string, required)
-├─ Email (string, required)
-├─ Phone (string, 8 digits)
-├─ Grade (int, 1-12)
-├─ Assessment1 (int, 0-20)
-├─ Assessment2 (int, 0-20)
-└─ Assessment3 (int, 0-20)
+**Teachers**
+| Column | Type | Constraints |
+|--------|------|-------------|
+| Id | INT | PK, IDENTITY |
+| FirstName | NVARCHAR(50) | NOT NULL |
+| LastName | NVARCHAR(50) | NOT NULL |
+| Email | NVARCHAR(255) | NOT NULL, UNIQUE |
+| Phone | NVARCHAR(8) | NOT NULL |
+| Subject | NVARCHAR(100) | NOT NULL |
+| Password | NVARCHAR(MAX) | NOT NULL (plain text) |
+| Token | NVARCHAR(MAX) | NULL |
 
-Relationships
-└─ One-to-Many: One Teacher has many Students
-   ├─ Cascade delete enabled
-   └─ Teacher entity not directly exposed in responses
-```
+**Students**
+| Column | Type | Constraints |
+|--------|------|-------------|
+| Id | INT | PK, IDENTITY |
+| StudentNumber | NVARCHAR(20) | NOT NULL, system-generated (STU-YYYY-NNNN) |
+| TeacherId | INT | FK → Teachers.Id, CASCADE DELETE |
+| FirstName | NVARCHAR(50) | NOT NULL |
+| LastName | NVARCHAR(50) | NOT NULL |
+| Email | NVARCHAR(255) | NOT NULL |
+| Phone | NVARCHAR(8) | NOT NULL |
+| OmangOrPassport | NVARCHAR(20) | NOT NULL |
+| Grade | INT | NOT NULL (1–12) |
+| Assessment1 | INT | NOT NULL (0–20) |
+| Assessment2 | INT | NOT NULL (0–20) |
+| Assessment3 | INT | NOT NULL (0–20) |
+| Password | NVARCHAR(MAX) | NOT NULL (plain text) |
+| Token | NVARCHAR(MAX) | NULL |
 
-### 5. Validation Layer (FluentValidation)
-
-#### Validators
+**Computed Properties (on `Student` entity — not stored columns)**
 ```csharp
-TeacherRegisterValidator
-├─ FirstName: Required, 2-50 chars
-├─ LastName: Required, 2-50 chars
-├─ Email: Required, valid format
-├─ Phone: Required, 8 digits only
-├─ Subject: Required, max 100 chars
-└─ Password: Required, 6-20 chars
-
-StudentCreateValidator / StudentUpdateValidator
-├─ FirstName: Required, 2-50 chars
-├─ LastName: Required, 2-50 chars
-├─ Email: Required, valid format
-├─ Phone: Required, 8 digits only
-├─ Grade: Required, 1-12
-├─ Assessments (1-3): Required, 0-20 range
+int    Total            => Assessment1 + Assessment2 + Assessment3
+double Average          => Total / 3.0
+double Percentage       => (Total / 60.0) * 100
+string PerformanceLevel => < 50% → "Needs Support" | ≤ 55% → "Satisfactory"
+                          | ≤ 75% → "Good" | > 75% → "Excellent"
 ```
 
-**Validation Flow**
-```
-Frontend (Client-side) → Backend Validation
-├─ Client validates before sending request
-├─ Backend validates again (never trust client)
-└─ Returns 400 BadRequest with error details if invalid
-```
+---
 
-### 6. Mapping Layer (AutoMapper)
+### 6. Cross-Cutting Concerns
 
-#### MappingProfile
+#### CORS
 ```csharp
-TeacherRegisterDto → Teacher (registration)
-Teacher → TeacherResponseDto (with token)
-
-StudentCreateDto → Student (creation)
-StudentUpdateDto → Student (update)
-Student → StudentResponseDto (response)
-├─ Maps calculated properties
-├─ Total: Assessment1 + Assessment2 + Assessment3
-├─ Average: Total / 3
-├─ Percentage: (Total / 60) * 100
-└─ PerformanceLevel: Computed based on percentage
-```
-
-**Benefits**
-- DTOs don't expose internal fields
-- Calculations happen automatically in mapping
-- Clean separation between API contract and DB schema
-
-### 7. Cross-Cutting Concerns
-
-#### CORS (Cross-Origin Resource Sharing)
-```csharp
+// WebApiConfig.cs
 EnableCorsAttribute("http://localhost:4200", "*", "*")
-├─ Allows Angular app to make requests
-├─ Permits all HTTP methods
-├─ Allows all headers
-└─ For production: specify exact origins & methods
 ```
 
-#### Error Handling
-```
-Frontend
-├─ Catches HttpClientError
-├─ Displays global error banner
-└─ Logs to console
+#### Error Handling & Logging (ELMAH)
+- `ElmahExceptionHandler` and `ElmahExceptionLogger` in `Handlers/`
+- Configured in `Logging/ErrorLoggingConfig.cs`
+- All controller actions log via `ErrorLoggingConfig.LogError(ex)`
 
-Backend
-├─ Try-catch in controllers
-├─ Returns BadRequest for validation errors
-├─ Returns 500 for unexpected errors
-└─ All errors return JSON
+#### Swagger
+- Swashbuckle 5.6 configured in `Infrastructure/SwaggerConfig.cs`
+- UI: `http://localhost:5000/swagger`
+- JSON: `http://localhost:5000/swagger/docs/v1`
+- XML doc comments loaded from `TrackMyGradeAPI.XML`
+
+#### Dependency Injection
+- `SimpleDependencyResolver` in `Infrastructure/` wires service interfaces to implementations
+
+---
+
+## Frontend Layer Breakdown
+
+### Folder Structure
+
+```
+StudentApp/src/app/
+├── components/
+│   ├── home/                  # Landing page (HomeComponent)
+│   ├── teacher-login/         # TeacherLoginComponent
+│   ├── register/              # RegisterComponent
+│   ├── teacher-dashboard/     # TeacherDashboardComponent
+│   ├── student-list/          # StudentListComponent
+│   ├── student-form/          # StudentFormComponent (create + edit)
+│   ├── student-detail/        # StudentDetailComponent
+│   ├── student-login/         # StudentLoginComponent
+│   ├── student-dashboard/     # StudentDashboardComponent
+│   ├── admin-login/           # AdminLoginComponent
+│   └── admin-dashboard/       # AdminDashboardComponent
+├── services/
+│   ├── teacher-auth.service.ts
+│   ├── student-auth.service.ts
+│   ├── admin-auth.service.ts  (admin-api.service.ts)
+│   ├── student.service.ts
+│   ├── error.util.ts
+│   └── index.ts
+├── models/
+│   └── index.ts               # TypeScript interfaces
+├── app.routes.ts              # All routes + guards
+└── app.component.ts/html/css  # Root shell with navbar
 ```
 
-#### Calculations Engine
-```csharp
-Student Model Computed Properties
-├─ Total = Assessment1 + Assessment2 + Assessment3
-├─ Average = Total / 3.0 (decimal for precision)
-├─ Percentage = (Total / 60.0) * 100
-└─ PerformanceLevel
-   ├─ < 50%: "Needs Support"
-   ├─ 50-55%: "Satisfactory"
-   ├─ 56-75%: "Good"
-   └─ > 75%: "Excellent"
+---
 
-Calculation Flow
-├─ Client: Real-time on form (for preview)
-├─ Backend: When student entity saves
-└─ Response: Included in StudentResponseDto
+### Angular Components
+
+#### HomeComponent (`/`)
+- Public landing page with animated gradient blobs background
+- Three role cards: Student Access → `/student-login`, Teacher Portal → `/login`, Administration → `/admin`
+
+#### TeacherLoginComponent (`/login`)
+- Email + password login form
+- Stores token + teacher in `localStorage` via `TeacherAuthService`
+- On success: redirects to `/list`
+
+#### RegisterComponent (`/register`)
+- Multi-field teacher registration form
+- Password and confirm-password fields
+- Redirects to `/login` on success
+
+#### StudentListComponent (`/list`) — Teacher guard
+- DataTables-powered table of all students
+- Columns: StudentNumber, Full Name, Email, Grade, Score, Performance badge
+- View, Edit, Delete actions
+
+#### StudentFormComponent (`/create`, `/edit/:id`) — Teacher guard
+- Shared create/edit mode component
+- Real-time score calculation preview (Total, Average, Percentage, Level)
+- OmangOrPassport, grade, and assessment validation
+
+#### StudentDetailComponent (`/detail/:id`) — Teacher guard
+- Full student profile with all fields and computed metrics
+- Performance badge and progress display
+- Edit and Delete shortcuts
+
+#### StudentLoginComponent (`/student-login`)
+- Email + password login for students
+- Stores token + student in `localStorage` via `StudentAuthService`
+
+#### StudentDashboardComponent (`/student-dashboard`) — Student guard
+- Personal profile display (name, email, grade, student number)
+- Assessment scores (1, 2, 3) and calculated metrics
+- Performance level badge
+
+#### AdminLoginComponent (`/admin`)
+- Admin email + password login
+- Stores admin session via `AdminAuthService`
+
+#### AdminDashboardComponent (`/admin-dashboard`) — Admin guard
+- Tabbed interface: Teachers | Students | Audit Logs
+- Reads from `AdminApiService`
+
+---
+
+### Angular Services
+
+| Service | Responsibilities |
+|---------|-----------------|
+| `TeacherAuthService` | register, login, logout, `isAuthenticated()`, `currentTeacher$` BehaviorSubject |
+| `StudentAuthService` | login, logout, `isAuthenticated()`, `currentStudent$` BehaviorSubject |
+| `AdminAuthService` | admin login, logout, `isAuthenticated()`, `currentAdmin$` BehaviorSubject |
+| `StudentService` | CRUD calls to `/api/students` with `X-TeacherId` header |
+| `AdminApiService` | reads teachers, students, audit logs via admin endpoints |
+| `error.util.ts` | shared error parsing utility |
+
+---
+
+### Route Guards
+
+| Guard | Type | Redirects to |
+|-------|------|-------------|
+| `authGuard` | `CanActivateFn` | `/login` if teacher not authenticated |
+| `studentAuthGuard` | `CanActivateFn` | `/student-login` if student not authenticated |
+| Admin guard | inline in routes | `/admin` if admin not authenticated |
+
+---
+
+### Angular Models (TypeScript Interfaces — `models/index.ts`)
+
+```typescript
+Admin              { id, firstName, lastName, email, phone, token }
+Teacher            { id, firstName, lastName, email, phone, subject, token }
+Student            { id, studentNumber, firstName, lastName, email, phone, omangOrPassport, grade,
+                     assessment1, assessment2, assessment3, total, average, percentage, performanceLevel }
+AdminLogin         { email, password }
+TeacherRegister    { firstName, lastName, email, phone, subject, password }
+TeacherLogin       { email, password }
+StudentCreate      { firstName, lastName, email, phone, omangOrPassport, grade,
+                     assessment1, assessment2, assessment3, password }
+StudentUpdate      { firstName, lastName, email, phone, omangOrPassport, grade,
+                     assessment1, assessment2, assessment3, password? }
+StudentLogin       { email, password }
+StudentAuthResponse{ id, studentNumber, firstName, lastName, email, phone, omangOrPassport,
+                     grade, assessment1-3, total, average, percentage, performanceLevel, token }
+StudentSubmitAssessments { assessment1, assessment2, assessment3 }
+AuditLogDto        { id, entityType, entityName, entityId, action, timestamp, details }
+TabType            'teachers' | 'students' | 'auditLogs'
 ```
+
+---
 
 ## Data Flow Examples
 
-### Example 1: User Registration & Login
-
+### Example 1: Teacher Registration & Login
 ```
-User clicks Register
+Teacher navigates to /register
   ↓
-[Angular] RegisterComponent validates input
+RegisterComponent validates form (Angular template-driven)
   ↓
-[Angular] AuthService.register() sends POST /api/teachers/register
+TeacherAuthService.register() → POST /api/teachers/register
   ↓
-[Backend] TeachersController receives request
+TeachersController → TeacherService.Register()
   ↓
-[Backend] Validates TeacherRegisterDto with TeacherRegisterValidator
+TeacherValidator checks all fields
   ↓
-[Backend] TeacherService.Register() creates Teacher entity
+Student entity saved to SQL Server LocalDB
   ↓
-[Backend] Generates token, saves to SQLite in-memory DB
+Returns TeacherResponseDto (200 OK)
   ↓
-[Backend] Maps Teacher → TeacherResponseDto
+Angular redirects to /login
   ↓
-[Backend] Returns 200 OK with TeacherResponseDto
+TeacherAuthService.login() → POST /api/teachers/login
   ↓
-[Angular] Stores teacher info and token in localStorage
+Token + profile stored in localStorage
   ↓
-[Angular] Router redirects to /login
-  ↓
-User logs in
-  ↓
-[Angular] LoginComponent calls AuthService.login()
-  ↓
-[Backend] Similar flow, validates credentials
-  ↓
-[Backend] Regenerates token on successful login
-  ↓
-[Angular] Sets currentTeacher$ BehaviorSubject
-  ↓
-Navbar shows teacher name, routes now guarded
+Navbar shows teacher name; guarded routes unlock
 ```
 
-### Example 2: Create & View Student
-
+### Example 2: Teacher Creates a Student
 ```
-User clicks "Add Student"
+Teacher navigates to /create
   ↓
-[Angular] Router navigates to /create
+StudentFormComponent validates all fields + calculates scores in real time
   ↓
-[Angular] StudentFormComponent loads (isEditMode = false)
+StudentService.createStudent() → POST /api/students  (X-TeacherId header)
   ↓
-User fills form → On assessment change: calculateValues()
+StudentsController → StudentService.Create()
   ↓
-Real-time display shows Total, Average, Percentage, Performance Level
+StudentValidator checks all fields
   ↓
-User clicks Submit
+StudentNumber generated (STU-YYYY-NNNN)
   ↓
-[Angular] Validates all fields locally
+Student saved to DB; calculated properties computed from entity
   ↓
-[Angular] StudentService.createStudent() sends POST /api/students
+Returns StudentResponseDto (201 Created)
   ↓
-  ⚠️ [Angular] Includes header: X-TeacherId: currentTeacher.id
-  ↓
-[Backend] StudentsController.Create() receives request
-  ↓
-[Backend] Validates StudentCreateDto with StudentCreateValidator
-  ↓
-[Backend] StudentService.Create() creates Student entity
-  ↓
-  ⚠️ [Backend] Sets TeacherId from header
-  ↓
-[Backend] Saves to DB, Entity calculates properties
-  ↓
-[Backend] Maps Student → StudentResponseDto (includes calculations)
-  ↓
-[Backend] Returns 201 Created with StudentResponseDto
-  ↓
-[Angular] Redirects to / (StudentListComponent)
-  ↓
-[Angular] StudentListComponent.ngOnInit() loads students
-  ↓
-[Angular] StudentService.getAllStudents() sends GET /api/students
-  ↓
-  ⚠️ [Angular] Includes header: X-TeacherId: currentTeacher.id
-  ↓
-[Backend] Returns filtered students for that teacher
-  ↓
-Table rendered with all students and their calculations
+Angular redirects to /list
 ```
 
-### Example 3: Edit Student
-
+### Example 3: Student Login & Dashboard
 ```
-User clicks Edit button on student row
+Student navigates to /student-login
   ↓
-[Angular] Router navigates to /edit/{id}
+StudentLoginComponent → StudentAuthService.login()
   ↓
-[Angular] StudentFormComponent loads (isEditMode = true)
+POST /api/student-auth/login  (email + password)
   ↓
-[Angular] StudentService.getStudentById() fetches current data
+StudentAuthController → StudentAuthService.Login()
   ↓
-Form populates with existing values
+Returns StudentAuthResponseDto with token
   ↓
-User modifies assessments
+Token + student stored in localStorage
   ↓
-Real-time calculation updates
+Angular navigates to /student-dashboard
   ↓
-User clicks Update
-  ↓
-[Angular] Validates and sends PUT /api/students/{id}
-  ↓
-[Backend] Validates StudentUpdateDto
-  ↓
-[Backend] StudentService.Update() merges changes
-  ↓
-[Backend] DB auto-recalculates properties
-  ↓
-Returns updated StudentResponseDto
-  ↓
-[Angular] Redirects to /detail/{id}
-  ↓
-StudentDetailComponent displays updated values
+StudentDashboardComponent displays profile, scores, performance level
 ```
 
-## Security Considerations (Current & Production)
+---
+
+## Security Considerations
 
 ### Current Implementation (Development)
 ```
-Basic auth (email/password)
-Simple tokens (GUID)
-Input validation
-CORS configured
+Basic auth (email/password comparison — plain text)
+Simple GUID tokens (no expiry)
+Teacher isolation via X-TeacherId header (not verified)
+Student isolation via X-StudentToken header (not verified)
 No HTTPS
-Plain text passwords
-No token expiration
-No authorization enforcement
 No rate limiting
 ```
 
 ### Production Recommendations
 ```
-Should implement:
-HTTPS/TLS encryption
-Password hashing (bcrypt, Argon2)
-JWT with expiration & refresh tokens
-Role-based access control (RBAC)
-Request signing & verification
-Rate limiting & DDoS protection
-API key management
-Audit logging
-SQL injection prevention (using parameterized queries)
-CORS whitelist (specific origins)
+Password hashing: bcrypt or Argon2
+Signed JWT with expiry and refresh tokens
+HTTPS/TLS
+Role-based access control (RBAC) enforced server-side
+Rate limiting and DDoS protection
+Audit logging (already partially implemented)
+SQL injection prevention (EF6 parameterized queries — already covered)
+CORS whitelist (specific origins only)
 ```
+
+---
 
 ## Performance Considerations
 
-### Database
-- In-memory SQLite: Very fast, no network latency
-- No query optimization needed for small datasets
-- All data fits in memory
-
-### Caching Strategy
-```
-Frontend
-├─ Cache student list in component
-└─ Invalidate on create/update/delete
-
-Backend
-├─ Context-level EF Core tracking optimization
-└─ No additional caching layer needed
-```
+- SQL Server LocalDB: persistent, low-latency for development datasets
+- EF6 change tracking optimized per-request via scoped DbContext
+- Angular: standalone components reduce bundle overhead
+- No additional caching layer needed for development scale
 
 ### Response Time Target
-- API responses: < 500ms (development)
-- Client rendering: < 100ms
+- API responses: < 500 ms (development)
+- Client rendering: < 100 ms
 - Total page load: < 2 seconds
+
+---
 
 ## Deployment Architecture
 
 ### Development
 ```
-Backend: Visual Studio IIS Express (port 5000)
+Backend:  OWIN self-hosted console app (port 5000)
 Frontend: Angular dev server (port 4200)
-Database: SQLite in-memory
+Database: SQL Server LocalDB  ((localdb)\MSSQLLocalDB)
 ```
 
-### Production (Example)
+### Production (Recommended)
 ```
-Backend
-├─ Host on IIS with Application Pool
-├─ SQL Server database
-├─ HTTPS enabled
-└─ Load balanced if needed
-
-Frontend
-├─ Serve from CDN or static host
-├─ Minified & bundled
-└─ Cache busting enabled
-
-Communication
-└─ Both use HTTPS with valid certificates
-```
-
-## Testing Strategy
-
-### Backend Unit Tests (Future)
-```csharp
-TeacherServiceTests
-├─ RegisterTeacher_WithValidData_CreatesTeacher
-├─ RegisterTeacher_WithDuplicateEmail_ThrowsException
-├─ LoginTeacher_WithValidCredentials_ReturnsToken
-└─ LoginTeacher_WithInvalidCredentials_ThrowsException
-
-StudentServiceTests
-├─ CreateStudent_WithValidData_ReturnsStudent
-├─ GetStudentById_WithOwnedStudent_ReturnsStudent
-├─ GetStudentById_WithUnownedStudent_ThrowsException
-└─ DeleteStudent_WithValidId_RemovesStudent
-
-ValidatorTests
-├─ TeacherRegisterValidator_WithInvalidEmail_Fails
-├─ StudentCreateValidator_WithAssessmentOutOfRange_Fails
-```
-
-### Frontend Component Tests (Future)
-```typescript
-LoginComponentTests
-├─ Should display login form
-├─ Should validate email before submit
-├─ Should call authService.login() on submit
-└─ Should redirect to list on success
-
-StudentListComponentTests
-├─ Should load and display students
-├─ Should show performance badges
-├─ Should call delete API on confirmation
-└─ Should reload list on delete
+Backend:  IIS with Application Pool (.NET Framework 4.8)
+          SQL Server (full instance)
+          HTTPS enabled
+Frontend: CDN or static host (minified Angular build)
+          HTTPS with valid certificate
 ```
 
 ---
 
 ## Summary
 
-The TrackMyGrade architecture ensures:
-- **Separation of Concerns**: Clean layers with well-defined responsibilities
-- **Loose Coupling**: Frontend and backend are independent
-- **Reusability**: Services and components can be reused
-- **Testability**: Each layer can be unit tested in isolation
-- **Maintainability**: Clear structure makes future enhancements easy
-- **Scalability**: Foundation for adding more features
+TrackMyGrade architecture ensures:
+- **Separation of Concerns**: Clean five-layer backend + decoupled Angular SPA
+- **Multi-role access**: Admin, Teacher, and Student roles with independent auth flows
+- **Loose Coupling**: Frontend and backend communicate only via REST/JSON
+- **Auditability**: AuditLogService tracks all data mutations
+- **Testability**: Each layer (controller, service, validator) is independently testable
+- **Maintainability**: Clear folder structure and naming conventions throughout

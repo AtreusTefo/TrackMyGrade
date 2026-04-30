@@ -12,19 +12,25 @@ The project work is organized using a **five-level Agile hierarchy** — **Appli
 
 ## Technology Stack
 
-**Backend:** ASP.NET Web API (OWIN, .NET Framework 4.8), using OWIN self-hosting (`Microsoft.Owin.Hosting`, `WebApp.Start<Startup>()`).
+**Backend:** ASP.NET Web API 5.2 (OWIN/Katana self-hosted, .NET Framework 4.8). Layered structure: `Application/` (DTOs, Services, Validators, Mapping), `Presentation/Controllers/`, `Infrastructure/` (EF6 DbContext, Swagger), `Models/`, `Handlers/` (ELMAH), `Logging/`.
 
-**Database:** SQLite (default, file-based) or SQL Server (if configured). Data access is via Entity Framework 6 (EF6) for .NET Framework.
+**Database:** SQL Server LocalDB (`(localdb)\MSSQLLocalDB` — `TrackMyGrade` database). Data access via Entity Framework 6 (EF6) Code-First.
 
-**Frontend:** Angular (TypeScript)
+**Frontend:** Angular 18 (Standalone Components, TypeScript 5.2, `moduleResolution: "bundler"`)
 
-**Validation:** FluentValidation for .NET (server-side), Angular template-driven forms (client-side)
+**Validation:** FluentValidation 11.8 (server-side), Angular template-driven forms (client-side)
 
-**API Documentation:** Swagger (Swashbuckle for .NET Framework)
+**API Documentation:** Swagger UI via Swashbuckle 5.6 at `http://localhost:5000/swagger`
 
-**Testing:** Postman (API), Angular unit/integration tests
+**Error Logging:** ELMAH (`Handlers/` + `Logging/ErrorLoggingConfig.cs`)
 
-**Note:** This project is built with classic ASP.NET Web API and OWIN middleware, targeting .NET Framework 4.8.
+**Mapping:** AutoMapper 10.1 (`Application/Mapping/MappingProfile.cs`)
+
+**Testing:** Postman collection + environment files; Newman CLI support
+
+**Roles:** Three-role system — Admin, Teacher, Student — each with independent login flows and route guards.
+
+**Note:** This project is built with classic ASP.NET Web API and OWIN middleware, targeting .NET Framework 4.8. The frontend uses Angular 18 standalone components with no NgModule.
 
 ---
 
@@ -93,10 +99,10 @@ APPLICATION: TrackMyGrade
 │   │   ├── US-03: As a teacher, I want to log in with my credentials so that I can manage students.
 │   │   │   ├── TASK-08: Create TeacherLoginDto and login response model
 │   │   │   ├── TASK-09: Implement POST /api/teachers/login controller action
-│   │   │   ├── TASK-10: Build Angular login form component
-│   │   │   └── TASK-11: Store teacher session in TeacherStateService on success
+│   │   │   ├── TASK-10: Build Angular login form component (teacher-login.component.ts)
+│   │   │   └── TASK-11: Store teacher session in TeacherAuthService on success
 │   │   └── US-04: As a teacher, I want to see a friendly error message when I enter wrong credentials so that I understand my login failed and can try again.
-│   │       ├── TASK-12: Return 401 Unauthorized for invalid credentials in API
+│   │       ├── TASK-12: Return 400 Bad Request for invalid credentials in API
 │   │       └── TASK-13: Display friendly error message in Angular on failed login
 │   └── FEAT-03: Input Validation
 │       ├── US-06: As a teacher, I want the student form to validate my input before submitting so that only clean and correct data is saved to the system.
@@ -191,39 +197,45 @@ APPLICATION: TrackMyGrade
 │           ├── TASK-69: Add XML doc comments to all controller actions
 │           └── TASK-70: Verify Swagger UI lists all endpoints with request/response models
 │
-└── EPIC-06: Student Portal
-    ├── FEAT-12: Student Account Activation
-    │   ├── US-23: As a student, I want to activate my account using my teacher-given Student ID and registered email so that I can set a password and gain access to my personal performance dashboard.
-    │   │   ├── TASK-71: Create StudentActivateDto with StudentUniqueId, Email, Password fields
-    │   │   ├── TASK-72: Implement POST /api/students/activate controller action
-    │   │   ├── TASK-73: Build Angular student activate component (student-activate.component.ts)
-    │   │   └── TASK-74: Redirect to /student/dashboard on successful account activation
-    │   └── US-24: As a student, I want the activation form to validate my inputs before submitting so that I am guided through entering the correct details the first time.
-    │       ├── TASK-75: Add Angular validators (required, STU-format pattern, email, minlength 6)
-    │       ├── TASK-76: Implement StudentActivateValidator using FluentValidation rules
-    │       └── TASK-77: Show confirmPassword mismatch error on frontend before submission
-    ├── FEAT-13: Student Login
-    │   ├── US-25: As a student, I want to log in using my Student ID and password so that I can access my personal performance dashboard on return visits.
-    │   │   ├── TASK-78: Create StudentLoginDto and StudentLoginResponseDto
-    │   │   ├── TASK-79: Implement POST /api/students/login controller action
-    │   │   ├── TASK-80: Build Angular student login component (student-login.component.ts)
-    │   │   └── TASK-81: Store student session in StudentAuthStateService on successful response
-    │   └── US-26: As a student, I want to see a user-friendly error message when my login fails so that I know whether I have the wrong credentials or need to activate my account first.
-    │       ├── TASK-82: Return 401 Unauthorized for wrong credentials / 400 for unactivated account
-    │       └── TASK-83: Display friendly error message in Angular on failed student login
-    └── FEAT-14: Student Dashboard
-        ├── US-27: As a student, I want to see a performance summary with my total score, average score, overall percentage, and performance level so that I can quickly understand my current academic standing.
-        │   ├── TASK-84: Create StudentProfileDto with calculated score fields
-        │   ├── TASK-85: Return StudentProfileDto with computed scores on login/activation response
-        │   ├── TASK-86: Build Angular student dashboard with performance summary cards
-        │   └── TASK-87: Display progress bar with colour-coded performance band legend
-        ├── US-28: As a student, I want to see a table of all my individual assessments including name, score, max score, percentage, due date, and submission status so that I can review each result and see which assessments are outstanding.
-        │   ├── TASK-88: Include assessments array in StudentProfileDto from API response
-        │   ├── TASK-89: Render assessments table in Angular student dashboard
-        │   └── TASK-90: Apply Overdue/Submitted status badge based on due date
-        └── US-29: As a student, I want to see my personal profile information including my name, grade, contact details, and registration date so that I can verify that my details on record are correct.
-            ├── TASK-91: Map all student personal fields in StudentProfileDto
-            └── TASK-92: Render My Profile section in Angular student dashboard component
+├── EPIC-06: Student Portal
+│   ├── FEAT-12: Student Account Setup (Password set by teacher on create)
+│   │   └── US-23: As a student, I want to log in with the email and password my teacher set for me so that I can access my personal dashboard.
+│   │       ├── TASK-71: Include Password field in StudentCreateDto and StudentDtoBase
+│   │       ├── TASK-72: Store student password on POST /api/students (teacher creates)
+│   │       ├── TASK-73: Build Angular StudentLoginComponent at /student-login
+│   │       └── TASK-74: Redirect to /student-dashboard on successful login
+│   ├── FEAT-13: Student Login
+│   │   ├── US-25: As a student, I want to log in using my email and password so that I can access my personal performance dashboard.
+│   │   │   ├── TASK-78: Create StudentLoginDto (email, password) and StudentAuthResponseDto
+│   │   │   ├── TASK-79: Implement POST /api/student-auth/login controller action
+│   │   │   ├── TASK-80: Build Angular StudentLoginComponent (student-login.component.ts) at /student-login
+│   │   │   └── TASK-81: Store student session in StudentAuthService (localStorage)
+│   │   └── US-26: As a student, I want to see a friendly error message when my login fails.
+│   │       ├── TASK-82: Return 400 Bad Request for invalid credentials
+│   │       └── TASK-83: Display friendly inline error in Angular on failed student login
+│   └── FEAT-14: Student Dashboard
+│       ├── US-27: As a student, I want to see my total score, average, percentage and performance level.
+│       │   ├── TASK-84: Include calculated fields in StudentAuthResponseDto
+│       │   ├── TASK-85: Implement GET /api/student-auth/profile (X-StudentToken header)
+│       │   ├── TASK-86: Build Angular StudentDashboardComponent at /student-dashboard
+│       │   └── TASK-87: Display performance summary and score cards
+│       ├── US-28: As a student, I want to see my individual assessment scores.
+│       │   ├── TASK-88: Include Assessment1, Assessment2, Assessment3 in StudentAuthResponseDto
+│       │   └── TASK-89: Render assessment scores in Angular student dashboard
+│       └── US-29: As a student, I want to see my personal profile (name, grade, student number, contact).
+│           ├── TASK-91: Map all personal fields in StudentAuthResponseDto
+│           └── TASK-92: Render My Profile section in Angular StudentDashboardComponent
+│
+└── EPIC-07: Admin Portal
+    └── FEAT-15: Admin Dashboard
+        ├── US-30: As an admin, I want to log in and access a management dashboard so that I can oversee all teachers, students, and system events.
+        │   ├── TASK-93: Create AdminLoginComponent at /admin
+        │   ├── TASK-94: Implement admin login via AdminAuthService
+        │   └── TASK-95: Redirect to /admin-dashboard on success
+        └── US-31: As an admin, I want to view all teachers, students, and audit logs in a tabbed interface.
+            ├── TASK-96: Build AdminDashboardComponent with tabs: Teachers | Students | Audit Logs
+            ├── TASK-97: Implement AdminApiService to fetch teachers, students, and audit log data
+            └── TASK-98: Implement AuditLogService to record all create/update/delete operations
 ```
 
 ---
@@ -308,7 +320,7 @@ A User Story is **Done** only when ALL of the following are true:
 ### Product Backlog
 
 
-All 29 User Stories, prioritized by business value, with story point estimates and Sprint assignments. The backlog and sprint assignments are kept up to date in the GitHub Project board. **Total estimated effort: 94 story points**.
+All 31 User Stories, prioritized by business value, with story point estimates and Sprint assignments. **Total estimated effort: 104 story points**.
 
 | ID | User Story | Priority | Points | Sprint |
 |----|-----------|----------|:------:|:------:|
@@ -326,22 +338,19 @@ All 29 User Stories, prioritized by business value, with story point estimates a
 | US-09 | Update student information | Medium | 5 | Sprint 3 |
 | US-10 | Delete a student record | Medium | 3 | Sprint 3 |
 | US-17 | Consume teacher API from frontend | Medium | 3 | Sprint 3 |
-| US-20 | Select grade from controlled dropdown | Medium | 2 | Sprint 3 |
-| US-23 | Activate student account | High | 3 | Sprint 3 |
-| US-24 | Validate activation form fields | High | 2 | Sprint 3 |
-| US-25 | Log in with Student ID and password | High | 3 | Sprint 3 |
+| US-23 | Student login setup (password on create) | High | 3 | Sprint 3 |
+| US-25 | Student login with email and password | High | 3 | Sprint 3 |
 | US-26 | Handle invalid student credentials | High | 2 | Sprint 3 |
-| US-11 | Add named assessments with flexible scoring | Medium | 5 | Sprint 4 |
-| US-21 | Add a named assessment to a student | Medium | 3 | Sprint 4 |
-| US-22 | Edit and delete an individual assessment | Medium | 3 | Sprint 4 |
 | US-12 | View total, average, and percentage | Medium | 3 | Sprint 4 |
 | US-13 | View performance level badge | Medium | 2 | Sprint 4 |
 | US-14 | Sort students by column | Low | 2 | Sprint 4 |
 | US-15 | Search and filter students | Low | 2 | Sprint 4 |
 | US-27 | View personal performance summary | Medium | 3 | Sprint 4 |
-| US-28 | View personal assessment list | Medium | 3 | Sprint 4 |
+| US-28 | View personal assessment scores | Medium | 3 | Sprint 4 |
 | US-29 | View personal profile information | Medium | 2 | Sprint 4 |
-| **Total** | | | **94** | |
+| US-30 | Admin login and dashboard | High | 3 | Sprint 4 |
+| US-31 | Admin tabs: Teachers, Students, Audit Logs | High | 5 | Sprint 4 |
+| **Total** | | | **104** | |
 
 ---
 
@@ -360,7 +369,7 @@ All 29 User Stories, prioritized by business value, with story point estimates a
 | US-02 | Validate registration fields | 3 | Done |
 | **Total** | | **13** | |
 
-**Sprint Review**: Teacher registration form is functional end-to-end. FluentValidation rejects invalid data with HTTP 400. Swagger UI documents all available endpoints. Backend infrastructure (layered architecture, EF6, SQLite/SQL Server) is fully configured and running.
+**Sprint Review**: Teacher registration form is functional end-to-end. FluentValidation rejects invalid data with HTTP 400. Swagger UI documents all available endpoints. Backend infrastructure (layered architecture: `Application/`, `Presentation/Controllers/`, `Infrastructure/Data/`; EF6 with SQL Server LocalDB) is fully configured and running.
 
 **Sprint Retrospective**:
 
@@ -417,7 +426,7 @@ All 29 User Stories, prioritized by business value, with story point estimates a
 | US-26 | Handle invalid student credentials | 2 | Done |
 | **Total** | | **31** | |
 
-Data model refactored: Grade is now a seeded lookup table (Grade 7–12), students reference it via `GradeId` FK; `IdPassportNo` and `StudentUniqueId` fields added; assessment scores extracted into the separate `StudentAssessments` table (EF6 migration `AddGradesAndAssessmentsRefactoring` applied March 18). Student list table expanded to show: Student ID (`StudentUniqueId`), Full Name, Email, Grade, Score (`totalScore/maxPossible`), and a colour-coded Performance Level badge; `StudentListDto` updated to carry all these fields from the API; DataTables `columnDefs` configured so the Performance column sorts by hidden numeric percentage. Student authentication portal completed: students activate their accounts at `/student/activate` using their teacher-assigned `StudentUniqueId` and registered email to set a password; students log in at `/student/login` using their `StudentUniqueId` and password. `StudentAuthStateService`, `studentAuthGuard`, and `studentGuestGuard` implemented for student session management.
+Student management lifecycle complete. `OmangOrPassport` field and `StudentNumber` (format: `STU-YYYY-NNNN`) added to the `Student` entity. Grade stored as an integer (1–12) directly on the student record. Student list at `/list` shows: StudentNumber, Full Name, Email, Grade, Score (computed from Assessment1-3), and a colour-coded Performance Level badge. `StudentAuthController` (`/api/student-auth`) implemented with `Login`, `GetProfile`, and `SubmitAssessments` endpoints. Student login portal delivered: teachers set a student password at creation time (`StudentCreateDto.Password`); students log in at `/student-login` using email + password via `POST /api/student-auth/login`; session stored in `StudentAuthService` (`localStorage`); `studentAuthGuard` protects `/student-dashboard`. `TeacherAuthService` manages teacher session (replaces earlier `TeacherStateService` naming).
 
 **Sprint Retrospective**:
 
@@ -429,33 +438,34 @@ Data model refactored: Grade is now a seeded lookup table (Grade 7–12), studen
 
 ---
 
-#### Sprint 4 — Assessment CRUD, Scoring, DataTables & Student Portal
+#### Sprint 4 — Scoring, DataTables, Student Portal & Admin Dashboard
 **Dates**: March 23–29, 2026
-**Sprint Goal**: *Implement the full individual-assessment workflow (add, edit, delete), automated score calculations with performance level labels, enhance the student table with DataTables sorting, searching, and pagination, and deliver the student self-service performance dashboard.*
-**Velocity**: 28 story points
+**Sprint Goal**: *Complete the assessment scoring system with real-time calculations and performance badges, enhance the student table with DataTables, deliver the student self-service login and dashboard, and implement the Admin Portal with audit logging.*
+**Velocity**: 30 story points
 
 | Story | Title | Points | Status |
 |-------|-------|:------:|:------:|
-| US-11 | Add named assessments with flexible scoring | 5 | — |
-| US-21 | Add a named assessment to a student | 3 | — |
-| US-22 | Edit and delete an individual assessment | 3 | — |
-| US-12 | View total, average, and percentage | 3 | — |
-| US-13 | View performance level badge | 2 | — |
-| US-14 | Sort students by column | 2 | — |
-| US-15 | Search and filter students | 2 | — |
-| US-27 | View personal performance summary | 3 | — |
-| US-28 | View personal assessment list | 3 | — |
-| US-29 | View personal profile information | 2 | — |
-| **Total** | | **28** | |
+| US-12 | View total, average, and percentage | 3 | Done |
+| US-13 | View performance level badge | 2 | Done |
+| US-14 | Sort students by column | 2 | Done |
+| US-15 | Search and filter students | 2 | Done |
+| US-25 | Student login (email + password) | 3 | Done |
+| US-26 | Handle invalid student credentials | 2 | Done |
+| US-27 | View personal performance summary | 3 | Done |
+| US-28 | View personal assessment scores | 3 | Done |
+| US-29 | View personal profile information | 2 | Done |
+| US-30 | Admin login and dashboard | 3 | Done |
+| US-31 | Admin tabs: Teachers, Students, Audit Logs | 5 | Done |
+| **Total** | | **30** | |
 
-**Sprint Review**: *(Pending Sprint 4 completion — March 23–29, 2026.)*
+**Sprint Review**: Student self-service portal delivered — students log in at `/student-login` with email/password and view their dashboard at `/student-dashboard`. DataTables sorting, search, and pagination active on `/list`. Performance badges (Excellent/Good/Satisfactory/Needs Support) colour-coded in both list and detail views. Admin portal delivered — admins log in at `/admin`, access `/admin-dashboard` with Teachers, Students, and Audit Logs tabs. `AuditLogService` records all create/update/delete events. `StudentAuthController` (`/api/student-auth`) handles student login, profile, and assessment submission. Home landing page at `/` implemented with animated background and role-based access cards.
 
 **Sprint Retrospective**:
 
 | | Notes |
 |-|-------|
 | Start | Running the full Postman collection as a regression suite before each release |
-| Stop | Manual testing only; introduce smoke tests for critical API paths |
+| Stop | Manual testing only — introduce smoke tests for critical API paths |
 | Continue | Keeping Swagger UI and Postman collection synchronized with the latest API |
 
 ---
@@ -543,20 +553,20 @@ Data model refactored: Grade is now a seeded lookup table (Grade 7–12), studen
 **so that** I can access the student management dashboard.
 
 **Acceptance Criteria:**
-- [ ] Login form (`LoginComponent`) collects `Email` and `Password`.
+- [ ] Login form (`TeacherLoginComponent`) collects `Email` and `Password`.
 - [ ] Both fields are required and validated in Angular.
-- [ ] On successful login (HTTP 200), teacher is redirected to `/` (students list).
-- [ ] Teacher session token/profile is stored in `TeacherStateService` and persisted in `localStorage`.
-- [ ] API returns HTTP 401 for invalid credentials; error is displayed inline.
+- [ ] On successful login (HTTP 200), teacher is redirected to `/list` (students list).
+- [ ] Teacher session token/profile is stored in `TeacherAuthService` and persisted in `localStorage`.
+- [ ] API returns HTTP 400 for invalid credentials; error is displayed inline.
 
 **Tasks:**
 - TASK-08: Create `TeacherLoginDto` and login response model
 - TASK-09: Implement `POST /api/teachers/login` controller action
-- TASK-10: Build Angular login form component (`login-form.component.ts`)
-- TASK-11: Store teacher session in `TeacherStateService` on successful response
+- TASK-10: Build Angular login form component (`teacher-login.component.ts`)
+- TASK-11: Store teacher session in `TeacherAuthService` on successful response
 
 **App Example:**
-> Mrs. Smith navigates to `/login`, enters `smith@school.com` and her password, and clicks Login. She is redirected to the homepage showing all students.
+> Mrs. Smith navigates to `/login`, enters `smith@school.com` and her password, and clicks Login. She is redirected to `/list` showing all students.
 
 ---
 

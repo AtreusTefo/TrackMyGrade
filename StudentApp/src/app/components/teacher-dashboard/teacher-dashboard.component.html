@@ -1,0 +1,46 @@
+<div class="teacher-dashboard-container">
+
+  <main class="dashboard-main">
+    <div *ngIf="isLoading" class="loading">
+      <p>Loading your profile...</p>
+    </div>
+
+    <div *ngIf="!isLoading && errors.length > 0" class="error-banner">
+      <div *ngFor="let error of errors" class="error-message">{{ error }}</div>
+    </div>
+
+    <div *ngIf="!isLoading && teacher" class="dashboard-content">
+      <section class="profile-section">
+        <h2>Welcome, {{ teacher.firstName }} {{ teacher.lastName }}!</h2>
+        <div class="profile-info">
+          <div class="info-card">
+            <label>Email</label>
+            <p>{{ teacher.email }}</p>
+          </div>
+          <div class="info-card">
+            <label>Subject</label>
+            <p>{{ teacher.subject }}</p>
+          </div>
+          <div class="info-card">
+            <label>Phone</label>
+            <p>{{ teacher.phone }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="actions-section">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+          <a [routerLink]="['/list']" class="action-btn">
+            <span class="btn-icon">📋</span>
+            <span class="btn-text">View Students</span>
+          </a>
+          <a [routerLink]="['/create']" class="action-btn">
+            <span class="btn-icon">➕</span>
+            <span class="btn-text">Add Student</span>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>

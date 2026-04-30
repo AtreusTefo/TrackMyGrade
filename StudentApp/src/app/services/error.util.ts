@@ -19,7 +19,7 @@ export function extractErrors(error: any): string[] {
       for (const key of Object.keys(modelState)) {
         const val = modelState[key];
         if (Array.isArray(val)) {
-          messages.push(...val.map((v: any) => String(v)));
+          messages.push(...val.map((v: any): string => String(v)));
         } else if (typeof val === 'string') {
           messages.push(val);
         }
@@ -32,7 +32,7 @@ export function extractErrors(error: any): string[] {
       if (key === 'Message' || key === 'message' || key === 'ModelState' || key === 'modelState') continue;
       const val = error.error[key];
       if (Array.isArray(val)) {
-        messages.push(...val.map((v: any) => String(v)));
+        messages.push(...val.map((v: any): string => String(v)));
       } else if (typeof val === 'string') {
         messages.push(val);
       }

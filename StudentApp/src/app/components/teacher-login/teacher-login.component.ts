@@ -27,7 +27,7 @@ export class TeacherLoginComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.teacherAuthService.isAuthenticated()) {
-      this.router.navigate(['/']);
+      this.router.navigate(['/teacher-dashboard']);
     }
   }
 
@@ -70,7 +70,7 @@ export class TeacherLoginComponent implements OnInit {
       next: (response) => {
         this.isSubmitting = false;
         this.teacherAuthService.setCurrentTeacher(response);
-        this.router.navigate(['/']);
+        this.router.navigate(['/teacher-dashboard']);
       },
       error: (error) => {
         const { fieldErrors, generalErrors } = extractFieldErrors(error);
