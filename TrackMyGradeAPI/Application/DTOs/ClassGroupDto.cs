@@ -1,0 +1,4 @@
+namespace TrackMyGrade.Application.DTOs
+{
+
+}

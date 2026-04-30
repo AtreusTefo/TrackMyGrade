@@ -2,17 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { TeacherAuthService } from '../../services/teacher-auth.service';
 import { extractFieldErrors } from '../../services/error.util';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-teacher-login',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  templateUrl: './teacher-login.component.html',
+  styleUrls: ['./teacher-login.component.css']
 })
-export class LoginComponent implements OnInit {
+export class TeacherLoginComponent implements OnInit {
   email: string = '';
   password: string = '';
   showPassword = false;
@@ -21,12 +21,12 @@ export class LoginComponent implements OnInit {
   isSubmitting = false;
 
   constructor(
-    private authService: AuthService,
+    private teacherAuthService: TeacherAuthService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    if (this.authService.isAuthenticated()) {
+    if (this.teacherAuthService.isAuthenticated()) {
       this.router.navigate(['/']);
     }
   }
@@ -66,10 +66,10 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    this.authService.login({ email: this.email, password: this.password }).subscribe({
+    this.teacherAuthService.login({ email: this.email, password: this.password }).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.authService.setCurrentTeacher(response);
+        this.teacherAuthService.setCurrentTeacher(response);
         this.router.navigate(['/']);
       },
       error: (error) => {

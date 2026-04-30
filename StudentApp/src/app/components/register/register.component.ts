@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { TeacherAuthService } from '../../services/teacher-auth.service';
 import { extractFieldErrors } from '../../services/error.util';
 
 @Component({
@@ -27,12 +27,12 @@ export class RegisterComponent implements OnInit {
   isSubmitting = false;
 
   constructor(
-    private authService: AuthService,
+    private teacherAuthService: TeacherAuthService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    if (this.authService.isAuthenticated()) {
+    if (this.teacherAuthService.isAuthenticated()) {
       this.router.navigate(['/']);
     }
   }
@@ -148,7 +148,7 @@ export class RegisterComponent implements OnInit {
       password: this.password
     };
 
-    this.authService.register(registerData).subscribe({
+    this.teacherAuthService.register(registerData).subscribe({
       next: (response) => {
         this.isSubmitting = false;
         this.router.navigate(['/login']);

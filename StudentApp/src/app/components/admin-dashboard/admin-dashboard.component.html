@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span class="admin-icon">🛡️</span>
+            <h1>Admin Portal</h1>
+            <p class="admin-name">{{ adminName }}</p>
+        </div>
+        <nav>
+            <button [class.active]="activeTab === 'teachers'" (click)="activeTab = 'teachers'; loadTeachersIfNeeded()">
+                👩‍🏫 Teachers
+            </button>
+            <button [class.active]="activeTab === 'students'" (click)="activeTab = 'students'; loadStudentsIfNeeded()">
+                🎓 Students
+            </button>
+            <button [class.active]="activeTab === 'auditLogs'" (click)="activeTab = 'auditLogs'; loadAuditLogsIfNeeded()">
+                📋 Audit Log
+            </button>
+        </nav>
+        <button class="logout-btn" (click)="logout()">Sign Out</button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+        <!-- Loading / Error -->
+        <div *ngIf="loading" class="status-msg">Loading…</div>
+        <div *ngIf="error" class="alert-error">{{ error }}</div>
+
+        <!-- Success toast -->
+        <div *ngIf="successMsg" class="alert-success">{{ successMsg }}</div>
+
+        <!-- Teachers Tab -->
+        <section *ngIf="activeTab === 'teachers'">
+            <div class="tab-header">
+                <h2>All Teachers <span class="count-badge">{{ teachers.length }}</span></h2>
+                <div class="tab-header-actions">
+                    <button class="btn-primary-sm" (click)="toggleTeacherForm()">{{ showTeacherForm ? '✕ Cancel' : '+ New Teacher' }}</button>
+                    <button class="btn-secondary-sm" (click)="toggleBulkTeacher()">{{ showBulkTeacher ? '✕ Close Bulk Import' : '⬆ Bulk Import' }}</button>
+                </div>
+            </div>
+
+            <!-- Create Teacher Panel -->
+            <div *ngIf="showTeacherForm" class="panel-form">
+                <h3>Create Teacher Account</h3>
+                <p class="panel-hint">A passwordless account will be created. Share the email with the teacher — they activate at <strong>/activate</strong>.</p>
+                <div class="form-row">
+                    <div class="form-field"><label>ID / Passport No.</label><input [(ngModel)]="newTeacher.idPassportNo" placeholder="123456789" maxlength="9" /></div>
+                    <div class="form-field"><label>First Name</label><input [(ngModel)]="newTeacher.firstName" placeholder="First name" /></div>
+                    <div class="form-field"><label>Last Name</label><input [(ngModel)]="newTeacher.lastName" placeholder="Last name" /></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field"><label>Email</label><input type="email" [(ngModel)]="newTeacher.email" placeholder="teacher@school.edu" /></div>
+                    <div class="form-field"><label>Phone (8 digits)</label><input [(ngModel)]="newTeacher.phone" placeholder="77754256" maxlength="8" /></div>
+                    <div class="form-field">
+                        <label>Subject</label>
+                        <select [(ngModel)]="newTeacher.subjectId">
+                            <option [ngValue]="0" disabled>-- Select --</option>
+                            <option *ngFor="let s of subjects" [ngValue]="s.id">{{ s.name }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="panel-actions">
+                    <button class="btn-primary" (click)="createTeacher()" [disabled]="loading || submittingTeacher">{{ submittingTeacher ? 'Creating…' : 'Create Account' }}</button>
+                </div>
+            </div>
+
+            <!-- Bulk Import Teachers Panel -->
+            <div *ngIf="showBulkTeacher" class="panel-form panel-bulk">
+                <h3>Bulk Import Teachers</h3>
+                <p class="panel-hint">
+                    CSV format: <code>IdPassportNo,FirstName,LastName,Email,Phone,SubjectName</code><br>
+                    Use exact subject names (e.g. <em>Mathematics</em>, <em>English</em>). Max 500 rows.
+                </p>
+                <div class="bulk-mode-tabs">
+                    <button [class.active]="bulkTeacherMode === 'paste'" (click)="bulkTeacherMode = 'paste'">Paste CSV</button>
+                    <button [class.active]="bulkTeacherMode === 'file'" (click)="bulkTeacherMode = 'file'">Upload File</button>
+                </div>
+
+                <!-- Paste mode -->
+                <div *ngIf="bulkTeacherMode === 'paste'" class="bulk-paste-area">
+                    <textarea [(ngModel)]="bulkTeacherCsvText" placeholder="IdPassportNo,FirstName,LastName,Email,Phone,SubjectName&#10;ABC123456,Jane,Doe,jane@school.edu,12345678,Mathematics" rows="8"></textarea>
+                    <div class="panel-actions">
+                        <button class="btn-secondary" (click)="previewBulkTeachers()">Preview Rows</button>
+                        <button class="btn-link" (click)="downloadTeacherTemplate()">⬇ Download Template</button>
+                    </div>
+                </div>
+
+                <!-- File upload mode -->
+                <div *ngIf="bulkTeacherMode === 'file'" class="bulk-file-area">
+                    <input #teacherFileInput type="file" accept=".csv,text/csv" (change)="onTeacherFileSelected($event)" style="display:none" />
+                    <button class="btn-secondary" (click)="teacherFileInput.click()">Choose CSV File</button>
+                    <span class="file-name" *ngIf="bulkTeacherFile">{{ bulkTeacherFile.name }}</span>
+                </div>
+
+                <!-- Preview table -->
+                <div *ngIf="bulkTeacherPreview.length > 0" class="bulk-preview">
+                    <p class="bulk-preview-label">Preview — {{ bulkTeacherPreview.length }} row(s)</p>
+                    <div class="bulk-table-wrap">
+                        <table class="data-table bulk-table">
+                            <thead><tr><th>#</th><th>ID/Passport</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Phone</th><th>Subject</th></tr></thead>
+                            <tbody>
+                                <tr *ngFor="let r of bulkTeacherPreview; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ r.idPassportNo }}</td>
+                                    <td>{{ r.firstName }}</td>
+                                    <td>{{ r.lastName }}</td>
+                                    <td>{{ r.email }}</td>
+                                    <td>{{ r.phone }}</td>
+                                    <td>{{ r.subjectName }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel-actions" style="margin-top:12px">
+                        <button class="btn-primary" (click)="executeBulkTeachers()" [disabled]="importingTeachers">{{ importingTeachers ? 'Importing…' : 'Import ' + bulkTeacherPreview.length + ' Teachers' }}</button>
+                        <button class="btn-secondary" (click)="clearBulkTeachers()">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Import results -->
+                <div *ngIf="bulkTeacherResult" class="bulk-result">
+                    <div class="bulk-result-summary">
+                        <span class="result-ok">✓ {{ bulkTeacherResult.successCount }} imported</span>
+                        <span *ngIf="bulkTeacherResult.failureCount > 0" class="result-fail">✗ {{ bulkTeacherResult.failureCount }} failed</span>
+                    </div>
+                    <button class="btn-link" (click)="bulkTeacherResult = null">Dismiss</button>
+                </div>
+            </div>
+
+            <div *ngIf="!loading && teachers.length === 0" class="empty-state">No teachers found.</div>
+            <table *ngIf="teachers.length > 0" class="data-table">
+                <thead>
+                    <tr><th>ID</th><th>Name</th><th>Email</th><th>Subject</th><th>Enrolled</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let t of teachers">
+                        <td>{{ t.teacherId }}</td>
+                        <td>{{ t.firstName }} {{ t.lastName }}</td>
+                        <td>{{ t.email }}</td>
+                        <td>{{ t.subjectName }}</td>
+                        <td>{{ t.enrollmentDate | date:'dd MMM yyyy' }}</td>
+                        <td><span class="status-badge" [class.pending]="!t.isActive">{{ t.isActive ? 'Active' : 'Pending Activation' }}</span></td>
+                        <td>
+                            <button class="btn-edit-sm" (click)="openEditTeacher(t)">Edit</button>
+                            <button class="btn-warning-sm" (click)="resetTeacherPassword(t)">Reset Password</button>
+                            <button class="btn-danger-sm" (click)="confirmDeleteTeacher(t)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Audit Log Tab -->
+        <section *ngIf="activeTab === 'auditLogs'">
+            <h2>Audit Log</h2>
+            <div *ngIf="!loading && filteredAuditLogs.length === 0" class="empty-state">No audit records found.</div>
+        </section>
+
+    </main>
+
+    <!-- Edit Teacher Modal -->
+    <div *ngIf="editTeacherTarget" class="modal-overlay" (click)="cancelEditTeacher()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <h3>Edit Teacher</h3>
+            <div class="form-row">
+                <div class="form-field"><label>First Name</label><input [(ngModel)]="editTeacher.firstName" /></div>
+                <div class="form-field"><label>Last Name</label><input [(ngModel)]="editTeacher.lastName" /></div>
+            </div>
+            <div *ngIf="editError" class="alert-error">{{ editError }}</div>
+            <div class="modal-actions">
+                <button class="btn-primary" (click)="saveEditTeacher()">Save</button>
+                <button class="btn-secondary" (click)="cancelEditTeacher()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

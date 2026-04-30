@@ -1,17 +1,20 @@
 import { Routes, CanActivateFn, Router } from '@angular/router';
-import { LoginComponent } from './components/login/login.component';
+import { AdminLoginComponent } from './components/admin-login/admin-login.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { TeacherLoginComponent } from './components/teacher-login/teacher-login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { StudentListComponent } from './components/student-list/student-list.component';
 import { StudentFormComponent } from './components/student-form/student-form.component';
 import { StudentDetailComponent } from './components/student-detail/student-detail.component';
 import { StudentLoginComponent } from './components/student-login/student-login.component';
 import { StudentDashboardComponent } from './components/student-dashboard/student-dashboard.component';
-import { AuthService } from './services/auth.service';
+import { HomeComponent } from './components/home/home.component';
+import { TeacherAuthService } from './services/teacher-auth.service';
 import { StudentAuthService } from './services/student-auth.service';
 import { inject } from '@angular/core';
 
 const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
+  const authService = inject(TeacherAuthService);
   const router = inject(Router);
   if (authService.isAuthenticated()) {
     return true;
@@ -29,9 +32,13 @@ const studentAuthGuard: CanActivateFn = (route, state) => {
 };
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/list', pathMatch: 'full' },
+  // Home Page
+  { path: '', component: HomeComponent, pathMatch: 'full' },
+  // Admin routes
+  { path: 'admin', component: AdminLoginComponent },
+  { path: 'admin-dashboard', component: AdminDashboardComponent },
   // Teacher routes
-  { path: 'login', component: LoginComponent },
+  { path: 'login', component: TeacherLoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'list', component: StudentListComponent, canActivate: [authGuard] },
   { path: 'create', component: StudentFormComponent, canActivate: [authGuard] },
@@ -40,5 +47,5 @@ export const routes: Routes = [
   // Student routes (login only — accounts created by teachers)
   { path: 'student-login', component: StudentLoginComponent },
   { path: 'student-dashboard', component: StudentDashboardComponent, canActivate: [studentAuthGuard] },
-  { path: '**', redirectTo: '/list' }
+  { path: '**', redirectTo: '/studentlist' }
 ];
