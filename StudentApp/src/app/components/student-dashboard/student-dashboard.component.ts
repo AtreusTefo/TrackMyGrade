@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { StudentAuthService } from '../../services/student-auth.service';
-import { StudentAuthResponse } from '../../models';
-import { extractFieldErrors, extractErrors } from '../../services/error.util';
+import { StudentAssignmentService } from '../../services/assignment.service';
+import { extractErrors } from '../../services/error.util';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -14,131 +14,124 @@ import { extractFieldErrors, extractErrors } from '../../services/error.util';
   styleUrls: ['./student-dashboard.component.css']
 })
 export class StudentDashboardComponent implements OnInit {
-  student: StudentAuthResponse | null = null;
+  student: any = null;
   isLoading = true;
   errors: string[] = [];
 
-  // Assessment submission
-  assessment1: number | null = null;
-  assessment2: number | null = null;
-  assessment3: number | null = null;
-  fieldErrors: { [key: string]: string } = {};
-  submitErrors: string[] = [];
-  isSubmitting = false;
-  submitSuccess = false;
+  // Tab state
+  activeTab: 'assignments' | 'results' = 'assignments';
+
+  // Assignments list
+  assignments: any[] = [];
+  assignmentsLoading = false;
+
+  // Submission
+  submittingId: number | null = null;
+  submissionContent: { [assignmentId: number]: string } = {};
+  submitSuccess: { [assignmentId: number]: boolean } = {};
+  submitError:   { [assignmentId: number]: string  } = {};
+
+  // My results
+  mySubmissions: any[] = [];
+  resultsLoading = false;
 
   constructor(
     private studentAuthService: StudentAuthService,
+    private assignmentService: StudentAssignmentService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
+    this.student = this.studentAuthService.getCurrentStudent();
     this.loadProfile();
+    this.loadAssignments();
   }
 
   loadProfile(): void {
     this.isLoading = true;
-    this.errors = [];
     this.studentAuthService.getProfile().subscribe({
       next: (data) => {
         this.student = data;
         this.studentAuthService.setCurrentStudent(data);
-        this.assessment1 = data.assessment1;
-        this.assessment2 = data.assessment2;
-        this.assessment3 = data.assessment3;
         this.isLoading = false;
       },
-      error: (error) => {
-        this.errors = extractErrors(error);
+      error: (err) => {
+        this.errors = extractErrors(err);
         this.isLoading = false;
       }
     });
   }
 
-  get total(): number {
-    return (this.assessment1 ?? 0) + (this.assessment2 ?? 0) + (this.assessment3 ?? 0);
+  // ── Assignments ───────────────────────────────────────────────────────
+
+  loadAssignments(): void {
+    this.assignmentsLoading = true;
+    this.assignmentService.getMyAssignments().subscribe({
+      next: (data) => { this.assignments = data; this.assignmentsLoading = false; },
+      error: ()    => { this.assignmentsLoading = false; }
+    });
   }
 
-  get average(): number {
-    return this.total / 3;
+  submitAssignment(assignmentId: number): void {
+    const content = this.submissionContent[assignmentId];
+    if (!content?.trim()) {
+      this.submitError[assignmentId] = 'Please write your answer before submitting.';
+      return;
+    }
+    this.submittingId = assignmentId;
+    this.submitError[assignmentId] = '';
+
+    this.assignmentService.submitAssignment(assignmentId, content).subscribe({
+      next: () => {
+        this.submittingId = null;
+        this.submitSuccess[assignmentId] = true;
+        // Update assignment status in list
+        const a = this.assignments.find(x => x.id === assignmentId);
+        if (a) a.studentSubmissionStatus = 'Pending';
+        setTimeout(() => this.submitSuccess[assignmentId] = false, 3000);
+      },
+      error: (err) => {
+        this.submittingId = null;
+        this.submitError[assignmentId] = err?.error || 'Submission failed. Please try again.';
+      }
+    });
   }
 
-  get percentage(): number {
-    return (this.total / 60) * 100;
+  // ── My Results ────────────────────────────────────────────────────────
+
+  loadResults(): void {
+    this.activeTab = 'results';
+    if (this.mySubmissions.length > 0) return;  // already loaded
+    this.resultsLoading = true;
+    this.assignmentService.getMySubmissions().subscribe({
+      next: (data) => { this.mySubmissions = data; this.resultsLoading = false; },
+      error: ()    => { this.resultsLoading = false; }
+    });
   }
 
-  get performanceLevel(): string {
-    if (this.percentage < 50) return 'Needs Support';
-    if (this.percentage <= 55) return 'Satisfactory';
-    if (this.percentage <= 75) return 'Good';
-    return 'Excellent';
+  // ── Helpers ───────────────────────────────────────────────────────────
+
+  isOverdue(dueDate: string): boolean {
+    return new Date(dueDate) < new Date();
   }
 
-  getPerformanceLevelClass(level: string): string {
-    switch (level) {
-      case 'Excellent': return 'excellent';
-      case 'Good': return 'good';
-      case 'Satisfactory': return 'satisfactory';
-      case 'Needs Support': return 'needs-support';
+  statusClass(status: string): string {
+    switch (status) {
+      case 'Graded':       return 'badge-graded';
+      case 'Pending':      return 'badge-pending';
+      case 'Late':         return 'badge-late';
+      case 'Not Submitted': return 'badge-none';
       default: return '';
     }
   }
 
-  validateField(field: string): void {
-    delete this.fieldErrors[field];
-    switch (field) {
-      case 'assessment1':
-        if (this.assessment1 === null || this.assessment1 < 0 || this.assessment1 > 20) {
-          this.fieldErrors['assessment1'] = 'Must be between 0 and 20';
-        }
-        break;
-      case 'assessment2':
-        if (this.assessment2 === null || this.assessment2 < 0 || this.assessment2 > 20) {
-          this.fieldErrors['assessment2'] = 'Must be between 0 and 20';
-        }
-        break;
-      case 'assessment3':
-        if (this.assessment3 === null || this.assessment3 < 0 || this.assessment3 > 20) {
-          this.fieldErrors['assessment3'] = 'Must be between 0 and 20';
-        }
-        break;
-    }
+  scorePercent(score: number, max: number): number {
+    if (!max) return 0;
+    return Math.round((score / max) * 100);
   }
 
-  private validate(): boolean {
-    this.fieldErrors = {};
-    ['assessment1', 'assessment2', 'assessment3'].forEach(f => this.validateField(f));
-    return Object.keys(this.fieldErrors).length === 0;
-  }
-
-  onSubmitAssessments(): void {
-    this.isSubmitting = true;
-    this.submitErrors = [];
-    this.submitSuccess = false;
-
-    if (!this.validate()) {
-      this.isSubmitting = false;
-      return;
-    }
-
-    this.studentAuthService.submitAssessments({
-      assessment1: this.assessment1!,
-      assessment2: this.assessment2!,
-      assessment3: this.assessment3!
-    }).subscribe({
-      next: (data) => {
-        this.student = data;
-        this.studentAuthService.setCurrentStudent(data);
-        this.isSubmitting = false;
-        this.submitSuccess = true;
-        setTimeout(() => this.submitSuccess = false, 3000);
-      },
-      error: (error) => {
-        const { fieldErrors, generalErrors } = extractFieldErrors(error);
-        this.fieldErrors = fieldErrors;
-        this.submitErrors = generalErrors;
-        this.isSubmitting = false;
-      }
-    });
+  logout(): void {
+    this.studentAuthService.logout();
+    this.router.navigate(['/login']);
   }
 }

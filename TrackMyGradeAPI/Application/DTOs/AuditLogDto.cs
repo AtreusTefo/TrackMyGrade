@@ -1,4 +1,6 @@
-namespace TrackMyGrade.Application.DTOs
+using System;
+
+namespace TrackMyGradeAPI.DTOs
 {
     /// <summary>Audit log record returned to admin users.</summary>
     public class AuditLogDto
@@ -12,13 +14,13 @@ namespace TrackMyGrade.Application.DTOs
         /// <summary>"Create", "Update", or "Delete".</summary>
         public string Action { get; set; } = string.Empty;
         /// <summary>JSON of the old state before the change (null for Create).</summary>
-        public string? OldValues { get; set; }
+        public string OldValues { get; set; }
         /// <summary>JSON of the new state after the change (null for Delete).</summary>
-        public string? NewValues { get; set; }
+        public string NewValues { get; set; }
         /// <summary>Identity of the user who made the change.</summary>
-        public string? ChangedBy { get; set; }
+        public string ChangedBy { get; set; }
         /// <summary>Role of the user who made the change.</summary>
-        public string? ChangedByRole { get; set; }
+        public string ChangedByRole { get; set; }
         /// <summary>UTC timestamp of the change.</summary>
         public DateTime ChangedAt { get; set; }
     }

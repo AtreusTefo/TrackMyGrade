@@ -1,179 +1,263 @@
-.teacher-dashboard-container {
-  min-height: calc(100vh - 64px);
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 0;
-}
-
-.dashboard-header {
-  background: linear-gradient(120deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
+/* ── Shared dashboard layout ──────────────────────────────── */
+.dashboard-wrapper {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background: #f0f4ff;
 }
 
-.dashboard-header h1 {
-  font-size: 2rem;
-  font-weight: 800;
-  margin: 0;
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  gap: 1.5rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.sidebar-brand { display: flex; align-items: center; gap: 0.6rem; }
+.brand-icon { font-size: 1.8rem; }
+.brand-text { font-size: 1.1rem; font-weight: 700; }
+
+.teacher-info, .student-info {
+  display: flex; align-items: center; gap: 0.8rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 0.75rem;
+}
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem;
+}
+.teacher-name, .student-name { font-weight: 600; margin: 0; font-size: 0.95rem; }
+.student-number { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin: 0; }
+.role-badge {
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+  background: rgba(255,255,255,0.2); border-radius: 99px;
+  padding: 2px 8px; letter-spacing: 0.05em;
+}
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+.sidebar-nav button {
+  background: transparent; border: none; color: rgba(255,255,255,0.8);
+  text-align: left; padding: 0.7rem 1rem; border-radius: 10px;
+  font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+}
+.sidebar-nav button:hover, .sidebar-nav button.active {
+  background: rgba(255,255,255,0.15); color: #fff;
 }
 
 .logout-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5; padding: 0.65rem 1rem; border-radius: 10px;
+  cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
+}
+.logout-btn:hover { background: rgba(239,68,68,0.3); }
+
+/* ── Main content ────────────────────────────────────────── */
+.main-content {
+  flex: 1; padding: 2rem 2.5rem; overflow-y: auto;
 }
 
-.logout-btn:hover {
-  background: white;
-  color: #667eea;
-}
-
-.dashboard-main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  font-size: 1.1rem;
-  color: #4a5568;
-}
-
-.error-banner {
-  background: #fed7d7;
-  border: 1px solid #fc8181;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 2rem;
-}
-
-.error-message {
-  color: #c53030;
-  font-weight: 500;
-}
-
-.dashboard-content {
-  display: grid;
-  gap: 2rem;
-}
-
-.profile-section,
-.actions-section {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.profile-section h2,
-.actions-section h2 {
-  color: #2d3748;
-  font-size: 1.5rem;
-  margin-top: 0;
+.section-header {
+  display: flex; align-items: center; gap: 1rem;
   margin-bottom: 1.5rem;
-  font-weight: 700;
+}
+.section-header h2 { font-size: 1.5rem; color: #1e3a8a; margin: 0; }
+
+.count-badge {
+  background: #dbeafe; color: #1e40af;
+  font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 99px;
 }
 
-.profile-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+/* ── Cards / shared ──────────────────────────────────────── */
+.card {
+  background: #fff; border-radius: 16px;
+  padding: 1.5rem; box-shadow: 0 2px 12px rgba(30,58,138,0.08);
+  margin-bottom: 1.25rem;
 }
 
-.info-card {
-  padding: 1rem;
-  background: #f7fafc;
-  border-radius: 8px;
-  border-left: 4px solid #667eea;
+.students-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;
+}
+.student-card {
+  background: #fff; border-radius: 14px; padding: 1rem;
+  box-shadow: 0 2px 10px rgba(30,58,138,0.07);
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.student-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+}
+.student-info h4 { margin: 0; font-size: 0.95rem; color: #1e3a8a; }
+.student-info p  { margin: 0; font-size: 0.8rem; color: #6b7280; }
+.student-num     { font-size: 0.75rem !important; color: #9ca3af !important; }
+.grade-chip {
+  margin-left: auto; background: #ede9fe; color: #6d28d9;
+  font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 99px;
 }
 
-.info-card label {
-  display: block;
-  font-size: 0.875rem;
-  color: #718096;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
+/* ── Assignments ─────────────────────────────────────────── */
+.assignment-list { display: flex; flex-direction: column; gap: 1rem; }
+.assignment-card {
+  background: #fff; border-radius: 14px; padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(30,58,138,0.07);
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.assignment-main { flex: 1; }
+.assignment-main h4 { margin: 0 0 0.25rem; color: #1e3a8a; }
+.class-name { margin: 0; font-size: 0.85rem; color: #6b7280; }
+.due-date   { margin: 0.25rem 0 0; font-size: 0.85rem; color: #374151; }
+.due-date.overdue { color: #ef4444; }
+.overdue-chip, .late-chip {
+  background: #fee2e2; color: #dc2626;
+  font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 99px;
+  margin-left: 6px;
+}
+.assignment-meta { display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end; }
+.score-chip {
+  background: #dbeafe; color: #1e40af;
+  font-size: 0.78rem; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+}
+.submission-chip {
+  background: #d1fae5; color: #065f46;
+  font-size: 0.78rem; font-weight: 600; padding: 3px 10px; border-radius: 99px;
 }
 
-.info-card p {
-  font-size: 1.1rem;
-  color: #2d3748;
-  margin: 0;
-  font-weight: 500;
+/* ── Submit area (student) ───────────────────────────────── */
+.assignment-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.right-meta { display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end; }
+.max-score {
+  background: #ede9fe; color: #6d28d9;
+  font-size: 0.78rem; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+}
+.description { font-size: 0.85rem; color: #6b7280; margin: 0.4rem 0 0; }
+.submit-area { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.submit-area textarea {
+  width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px;
+  padding: 0.75rem; font-size: 0.95rem; resize: vertical; outline: none;
+  font-family: inherit;
+}
+.submit-area textarea:focus { border-color: #667eea; }
+.submitted-note { margin-top: 0.75rem; font-size: 0.9rem; color: #059669; font-weight: 500; }
+.submitted-note.graded { color: #7c3aed; }
+
+/* ── Results ─────────────────────────────────────────────── */
+.results-list { display: flex; flex-direction: column; gap: 1rem; }
+.result-card {
+  background: #fff; border-radius: 14px; padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(30,58,138,0.07);
+}
+.result-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+.result-top h4 { margin: 0; color: #1e3a8a; }
+.sub-date { font-size: 0.82rem; color: #9ca3af; margin: 0 0 0.75rem; }
+.score-display { display: flex; align-items: baseline; gap: 0.25rem; margin-bottom: 0.5rem; }
+.score-num  { font-size: 2rem; font-weight: 700; color: #1e3a8a; }
+.score-denom{ font-size: 1rem; color: #6b7280; }
+.score-pct  { font-size: 0.9rem; color: #6b7280; }
+.score-bar  { height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; margin-bottom: 0.75rem; }
+.score-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 99px; transition: width 0.6s ease; }
+.feedback-box { background: #f0f4ff; border-radius: 10px; padding: 0.75rem 1rem; }
+.feedback-label { margin: 0 0 0.25rem; font-size: 0.8rem; font-weight: 600; color: #6b7280; }
+.feedback-text  { margin: 0; font-size: 0.9rem; color: #374151; }
+.pending-note   { font-size: 0.88rem; color: #9ca3af; font-style: italic; }
+
+/* ── Status chips ────────────────────────────────────────── */
+.status-chip {
+  font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+}
+.badge-graded, .graded     { background: #d1fae5; color: #065f46; }
+.badge-pending, .pending   { background: #fef3c7; color: #92400e; }
+.badge-late, .late         { background: #fee2e2; color: #991b1b; }
+.badge-none                { background: #f3f4f6; color: #6b7280; }
+
+/* ── Grading (teacher) ───────────────────────────────────── */
+.submission-list { display: flex; flex-direction: column; gap: 1rem; }
+.submission-card {
+  background: #fff; border-radius: 14px; padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(30,58,138,0.07);
+}
+.sub-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+.student-name { font-weight: 600; color: #1e3a8a; }
+.sub-date { font-size: 0.82rem; color: #9ca3af; margin-left: auto; }
+.content-label { font-size: 0.8rem; font-weight: 600; color: #6b7280; margin: 0 0 0.4rem; }
+.answer-box {
+  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 0.75rem; font-size: 0.9rem; color: #374151;
+  white-space: pre-wrap; min-height: 60px; margin-bottom: 0.75rem;
+}
+.grading-row { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
+.field-inline { display: flex; flex-direction: column; gap: 0.3rem; }
+.field-inline label { font-size: 0.8rem; font-weight: 600; color: #6b7280; }
+.field-inline input {
+  padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 8px;
+  font-size: 0.95rem; outline: none; width: 90px;
+}
+.field-inline.feedback input { width: 260px; }
+.field-inline input:focus { border-color: #667eea; }
+.btn-grade {
+  padding: 0.5rem 1.25rem; background: #1e40af; color: #fff;
+  border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-grade:hover { background: #1e3a8a; }
+
+/* ── Create assignment form ──────────────────────────────── */
+.create-form { margin-bottom: 1.5rem; }
+.create-form h3 { margin: 0 0 1rem; color: #1e3a8a; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.field { display: flex; flex-direction: column; gap: 0.35rem; }
+.field label { font-size: 0.85rem; font-weight: 600; color: #374151; }
+.field input, .field textarea {
+  padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb;
+  border-radius: 8px; font-size: 0.95rem; outline: none; font-family: inherit;
+}
+.field input:focus, .field textarea:focus { border-color: #667eea; }
+.full-width { grid-column: span 2; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-primary {
+  padding: 0.6rem 1.4rem; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 0.95rem;
+  font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.9; }
+.btn-secondary {
+  padding: 0.5rem 1rem; background: #ede9fe; color: #6d28d9;
+  border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s; white-space: nowrap;
+}
+.btn-secondary:hover { background: #ddd6fe; }
+.btn-submit {
+  padding: 0.65rem 1.4rem; background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff; border: none; border-radius: 10px; font-size: 0.95rem;
+  font-weight: 600; cursor: pointer; align-self: flex-start; transition: opacity 0.2s;
+}
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Alerts ──────────────────────────────────────────────── */
+.alert { padding: 0.7rem 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 0.5rem; }
+.alert.success { background: #d1fae5; color: #065f46; }
+.alert.error   { background: #fee2e2; color: #dc2626; }
+
+/* ── Loading / empty ─────────────────────────────────────── */
+.loading-row { color: #9ca3af; padding: 1rem 0; }
+.empty-state {
+  text-align: center; color: #9ca3af; padding: 3rem 1rem;
+  background: #fff; border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(30,58,138,0.06);
 }
 
-.action-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+.spinner-inline {
+  display: inline-block; width: 16px; height: 16px;
+  border: 3px solid rgba(255,255,255,0.4); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle;
 }
-
-.action-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 12px;
-  text-decoration: none;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  cursor: pointer;
-}
-
-.action-btn:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-}
-
-.btn-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.btn-text {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .dashboard-header h1 {
-    font-size: 1.5rem;
-  }
-
-  .dashboard-main {
-    padding: 1rem;
-  }
-
-  .profile-info {
-    grid-template-columns: 1fr;
-  }
-
-  .action-buttons {
-    grid-template-columns: 1fr;
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }

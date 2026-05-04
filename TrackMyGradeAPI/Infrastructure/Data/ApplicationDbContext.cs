@@ -1,108 +1,160 @@
+using System;
 using System.Data.Entity;
+using System.Collections.Generic;
+using System.Linq;
 using TrackMyGradeAPI.Models;
-
 namespace TrackMyGradeAPI.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext() : base("DefaultConnection")
-        {
-        }
+        public ApplicationDbContext() : base("DefaultConnection") { }
 
-        public DbSet<Teacher> Teachers { get; set; }
-        public DbSet<Student> Students { get; set; }
+        // ── Existing DbSets ────────────────────────────────────────────────
+        public DbSet<Teacher>    Teachers { get; set; }
+        public DbSet<Student>    Students { get; set; }
+
+        // ── New domain DbSets ──────────────────────────────────────────────
+        public DbSet<Course>               Courses              { get; set; }
+        public DbSet<ClassGroup>           ClassGroups          { get; set; }
+        public DbSet<StudentEnrollment>    StudentEnrollments   { get; set; }
+        public DbSet<Assignment>           Assignments          { get; set; }
+        public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // ── Teacher ────────────────────────────────────────────────────
             modelBuilder.Entity<Teacher>().HasKey(t => t.Id);
             modelBuilder.Entity<Teacher>()
                 .Property(t => t.Email).IsRequired().HasMaxLength(255);
+            modelBuilder.Entity<Teacher>()
+                .Property(t => t.PasswordHash).IsOptional().HasMaxLength(255);
 
+            // ── Student ────────────────────────────────────────────────────
             modelBuilder.Entity<Student>().HasKey(s => s.Id);
             modelBuilder.Entity<Student>()
                 .Property(s => s.StudentNumber).IsRequired().HasMaxLength(20);
             modelBuilder.Entity<Student>()
                 .Property(s => s.OmangOrPassport).IsRequired().HasMaxLength(9);
             modelBuilder.Entity<Student>()
-                .HasRequired(s => s.Teacher)
-                .WithMany()
-                .HasForeignKey(s => s.TeacherId)
-                .WillCascadeOnDelete(true);
-            modelBuilder.Entity<Student>()
                 .Property(s => s.Email).IsRequired().HasMaxLength(255);
+            modelBuilder.Entity<Student>()
+                .Property(s => s.PasswordHash).IsOptional().HasMaxLength(255);
 
-            // Ignore computed read-only properties — calculated at runtime, not stored in DB
-            modelBuilder.Entity<Student>().Ignore(s => s.Total);
-            modelBuilder.Entity<Student>().Ignore(s => s.Average);
-            modelBuilder.Entity<Student>().Ignore(s => s.Percentage);
-            modelBuilder.Entity<Student>().Ignore(s => s.PerformanceLevel);
+            // Student → primary Teacher FK (legacy, kept for backward compat reads)
+            modelBuilder.Entity<Student>()
+                .HasRequired(s => s.Teacher)
+                .WithMany(t => t.Students)
+                .HasForeignKey(s => s.TeacherId)
+                .WillCascadeOnDelete(false);   // cascade handled via ClassGroup/Enrollment
+
+            // ── Course ─────────────────────────────────────────────────────
+            modelBuilder.Entity<Course>().HasKey(c => c.Id);
+            modelBuilder.Entity<Course>()
+                .Property(c => c.Name).IsRequired().HasMaxLength(200);
+            modelBuilder.Entity<Course>()
+                .Property(c => c.Code).IsRequired().HasMaxLength(20);
+
+            // ── ClassGroup ─────────────────────────────────────────────────
+            modelBuilder.Entity<ClassGroup>().HasKey(cg => cg.Id);
+            modelBuilder.Entity<ClassGroup>()
+                .Property(cg => cg.Name).IsRequired().HasMaxLength(100);
+
+            modelBuilder.Entity<ClassGroup>()
+                .HasRequired(cg => cg.Course)
+                .WithMany(c => c.ClassGroups)
+                .HasForeignKey(cg => cg.CourseId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<ClassGroup>()
+                .HasRequired(cg => cg.Teacher)
+                .WithMany(t => t.ClassGroups)
+                .HasForeignKey(cg => cg.TeacherId)
+                .WillCascadeOnDelete(false);
+
+            // ── StudentEnrollment ──────────────────────────────────────────
+            modelBuilder.Entity<StudentEnrollment>().HasKey(e => e.Id);
+
+            modelBuilder.Entity<StudentEnrollment>()
+                .HasRequired(e => e.Student)
+                .WithMany(s => s.Enrollments)
+                .HasForeignKey(e => e.StudentId)
+                .WillCascadeOnDelete(true);   // deleting a student removes enrollments
+
+            modelBuilder.Entity<StudentEnrollment>()
+                .HasRequired(e => e.ClassGroup)
+                .WithMany(cg => cg.Enrollments)
+                .HasForeignKey(e => e.ClassGroupId)
+                .WillCascadeOnDelete(false);
+
+            // Unique index: a student can only be enrolled once per class
+            modelBuilder.Entity<StudentEnrollment>()
+                .HasIndex(e => new { e.StudentId, e.ClassGroupId })
+                .IsUnique();
+
+            // ── Assignment ─────────────────────────────────────────────────
+            modelBuilder.Entity<Assignment>().HasKey(a => a.Id);
+            modelBuilder.Entity<Assignment>()
+                .Property(a => a.Title).IsRequired().HasMaxLength(200);
+
+            modelBuilder.Entity<Assignment>()
+                .HasRequired(a => a.ClassGroup)
+                .WithMany(cg => cg.Assignments)
+                .HasForeignKey(a => a.ClassGroupId)
+                .WillCascadeOnDelete(true);   // deleting a class removes its assignments
+
+            modelBuilder.Entity<Assignment>()
+                .HasRequired(a => a.CreatedBy)
+                .WithMany(t => t.Assignments)
+                .HasForeignKey(a => a.CreatedByTeacherId)
+                .WillCascadeOnDelete(false);
+
+            // ── AssignmentSubmission ───────────────────────────────────────
+            modelBuilder.Entity<AssignmentSubmission>().HasKey(s => s.Id);
+            modelBuilder.Entity<AssignmentSubmission>()
+                .Property(s => s.Status).IsRequired().HasMaxLength(20);
+
+            modelBuilder.Entity<AssignmentSubmission>()
+                .HasRequired(s => s.Assignment)
+                .WithMany(a => a.Submissions)
+                .HasForeignKey(s => s.AssignmentId)
+                .WillCascadeOnDelete(true);   // deleting an assignment removes submissions
+
+            modelBuilder.Entity<AssignmentSubmission>()
+                .HasRequired(s => s.Student)
+                .WithMany(st => st.Submissions)
+                .HasForeignKey(s => s.StudentId)
+                .WillCascadeOnDelete(false);
+
+            // One submission per student per assignment
+            modelBuilder.Entity<AssignmentSubmission>()
+                .HasIndex(s => new { s.AssignmentId, s.StudentId })
+                .IsUnique();
         }
 
         public static void Initialize()
         {
-            // Disable EF's built-in model-compatibility check entirely.
-            // DropCreateDatabaseIfModelChanges proved unreliable when the DB was
-            // originally created by CreateDatabaseIfNotExists (open VS connections
-            // and stale __MigrationHistory hashes silently block the drop).
-            // Instead we manage schema evolution explicitly with conditional SQL so
-            // existing data is preserved and new columns are added automatically.
-            Database.SetInitializer<ApplicationDbContext>(null);
+            Database.SetInitializer(new DropCreateDatabaseAlways<ApplicationDbContext>());
 
-            using (var context = new ApplicationDbContext())
+            using (var ctx = new ApplicationDbContext())
             {
-                // Creates the full schema from the current EF model on a fresh install;
-                // returns false without touching anything when the DB already exists.
-                context.Database.CreateIfNotExists();
-
-                // Add StudentNumber if the column is missing (pre-dates this column).
-                // The EXEC wrapper compiles the backfill UPDATE in a child scope that
-                // runs after ALTER TABLE has committed the column, avoiding the SQL
-                // Server parse-time error "Invalid column name 'StudentNumber'" that
-                // occurs when both statements share the same T-SQL batch.
-                context.Database.ExecuteSqlCommand(
-                    @"IF NOT EXISTS (
-                          SELECT 1 FROM sys.columns
-                          WHERE  object_id = OBJECT_ID(N'dbo.Students')
-                          AND    name      = N'StudentNumber')
-                      BEGIN
-                          ALTER TABLE dbo.Students
-                              ADD StudentNumber NVARCHAR(20) NOT NULL DEFAULT '';
-                          EXEC(
-                              'UPDATE dbo.Students
-                               SET    StudentNumber =
-                                          ''STU-'' + CAST(YEAR(GETDATE()) AS NVARCHAR(4))
-                                          + ''-'' + RIGHT(''0000'' + CAST(Id AS NVARCHAR(10)), 4)
-                               WHERE  StudentNumber = ''''')
-                      END");
-
-                // Add OmangOrPassport if the column is missing (pre-dates this column).
-                context.Database.ExecuteSqlCommand(
-                    @"IF NOT EXISTS (
-                          SELECT 1 FROM sys.columns
-                          WHERE  object_id = OBJECT_ID(N'dbo.Students')
-                          AND    name      = N'OmangOrPassport')
-                      ALTER TABLE dbo.Students
-                          ADD OmangOrPassport NVARCHAR(9) NOT NULL DEFAULT ''");
-
-                // Add Password column for student login (teacher sets this when creating a student)
-                context.Database.ExecuteSqlCommand(
-                    @"IF NOT EXISTS (
-                          SELECT 1 FROM sys.columns
-                          WHERE  object_id = OBJECT_ID(N'dbo.Students')
-                          AND    name      = N'Password')
-                      ALTER TABLE dbo.Students
-                          ADD Password NVARCHAR(100) NULL");
-
-                // Add Token column for student authentication
-                context.Database.ExecuteSqlCommand(
-                    @"IF NOT EXISTS (
-                          SELECT 1 FROM sys.columns
-                          WHERE  object_id = OBJECT_ID(N'dbo.Students')
-                          AND    name      = N'Token')
-                      ALTER TABLE dbo.Students
-                          ADD Token NVARCHAR(100) NULL");
+                ctx.Database.Initialize(force: true);
+                
+                // Add a default admin teacher
+                if (!ctx.Teachers.Any(t => t.Email == "admin@trackmygrade.com"))
+                {
+                    ctx.Teachers.Add(new Teacher
+                    {
+                        FirstName = "Admin",
+                        LastName = "User",
+                        Email = "admin@trackmygrade.com",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                        Subject = "Administration",
+                        IsActivated = true
+                    });
+                    ctx.SaveChanges();
+                }
             }
         }
     }

@@ -1,33 +1,159 @@
-<div class="hero-container">
-  <div class="animated-background">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-  </div>
+<div class="home-page">
 
-  <div class="hero-content">
-    <h1 class="hero-title">Welcome to <span class="highlight">TrackMyGrade</span></h1>
-    <p class="hero-subtitle">The modern way to manage student performance and grades efficiently.</p>
-    
-    <div class="role-cards-container">
-      <!-- Student Card -->
-      <div class="role-card student-card" routerLink="/student-login">
-        <div class="card-icon">🎓</div>
-        <h2>Student Access</h2>
-        <p>View your grades, assignments, and track your progress.</p>
-        <button class="btn-primary">Student Login</button>
+  <!-- ══════════════════════════════════════════════
+       LOGGED-IN: Personal welcome banner
+  ══════════════════════════════════════════════ -->
+  <section *ngIf="isLoggedIn" class="logged-in-banner">
+    <div class="banner-blobs">
+      <div class="banner-blob banner-blob-1"></div>
+      <div class="banner-blob banner-blob-2"></div>
+    </div>
+    <div class="banner-content">
+      <div class="role-avatar">{{ getRoleIcon() }}</div>
+      <p class="banner-greeting">Welcome back</p>
+      <h1 class="banner-name">{{ userName }}</h1>
+      <span class="banner-role-chip">{{ getRoleLabel() }}</span>
+      <p class="banner-tagline">
+        You're all set. Head to your dashboard to continue where you left off.
+      </p>
+      <a [routerLink]="dashboardRoute" class="banner-cta" id="go-to-dashboard-btn">
+        Go to My Dashboard <span class="arrow">→</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       VISITOR: Full marketing landing page
+  ══════════════════════════════════════════════ -->
+  <ng-container *ngIf="!isLoggedIn">
+
+    <!-- ── Hero ─────────────────────────────────── -->
+    <section class="hero" id="hero">
+      <div class="hero-blobs">
+        <div class="hero-blob hero-blob-1"></div>
+        <div class="hero-blob hero-blob-2"></div>
+        <div class="hero-blob hero-blob-3"></div>
       </div>
-      
-      <!-- Teacher Card -->
-      <div class="role-card teacher-card" routerLink="/teacher-login">
-        <div class="card-icon">📚</div>
-        <h2>Teacher Portal</h2>
-        <p>Manage your classes, grade assignments, and monitor student success.</p>
-        <div class="button-group">
-          <button class="btn-primary">Teacher Login</button>
+
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Academic Management Platform
+        </div>
+
+        <h1 class="hero-title">
+          Track Grades.<br>
+          <span class="gradient-text">Empower Learning.</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          TrackMyGrade gives teachers, students, and administrators a single,
+          secure platform to manage assessments, track performance, and drive
+          academic success.
+        </p>
+
+        <div class="hero-actions">
+          <a routerLink="/login" class="btn-hero-primary" id="hero-get-started-btn">
+            Get Started Free →
+          </a>
+          <a href="#features" class="btn-hero-secondary" id="hero-learn-more-btn">
+            Learn More ↓
+          </a>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="hero-stats">
+          <div class="hero-stat" *ngFor="let stat of stats">
+            <span class="stat-value">{{ stat.value }}</span>
+            <span class="stat-label">{{ stat.label }}</span>
+          </div>
         </div>
       </div>
-      
-    </div>
-  </div>
+
+      <div class="scroll-hint">
+        <span>↓</span>
+        Scroll to explore
+      </div>
+    </section>
+
+    <!-- ── Features ──────────────────────────────── -->
+    <section class="features-section" id="features">
+      <div class="features-header">
+        <span class="section-label">Why TrackMyGrade</span>
+        <h2 class="section-title">Everything your school needs,<br>in one place</h2>
+        <p class="section-sub">
+          From secure submissions to instant analytics — TrackMyGrade handles it all
+          so you can focus on what matters: great education.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card" *ngFor="let f of features">
+          <span class="feature-icon">{{ f.icon }}</span>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.desc }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Who is it for? (Portal cards) ─────────── -->
+    <section class="portals-section" id="portals">
+      <div class="portals-header">
+        <span class="section-label">Built for Everyone</span>
+        <h2 class="section-title">One platform, three portals</h2>
+        <p class="section-sub">
+          A single login page routes each user to the right dashboard automatically.
+          No confusion, no wrong doors.
+        </p>
+      </div>
+
+      <div class="portals-grid">
+        <!-- Student -->
+        <a routerLink="/login" class="portal-card student" id="portal-student-card">
+          <span class="portal-icon">🎓</span>
+          <h3>Student Portal</h3>
+          <p>View your grades, track all three assessments, see your performance level, and monitor your academic progress in real time.</p>
+          <span class="portal-cta">Student Login →</span>
+        </a>
+
+        <!-- Teacher -->
+        <a routerLink="/login" class="portal-card teacher" id="portal-teacher-card">
+          <span class="portal-icon">📚</span>
+          <h3>Teacher Portal</h3>
+          <p>Manage classes, register students, enter assessment scores, and get a bird's-eye view of your class performance.</p>
+          <span class="portal-cta">Teacher Login →</span>
+        </a>
+
+        <!-- Admin -->
+        <a routerLink="/login" class="portal-card admin" id="portal-admin-card">
+          <span class="portal-icon">🛡️</span>
+          <h3>Admin Portal</h3>
+          <p>Oversee all teachers and students, review audit logs, manage system-wide settings, and ensure data integrity.</p>
+          <span class="portal-cta">Admin Login →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ── CTA Strip ──────────────────────────────── -->
+    <section class="cta-section" id="cta">
+      <div class="cta-content">
+        <h2 class="cta-title">Ready to get started?</h2>
+        <p class="cta-sub">
+          Join TrackMyGrade today and transform the way your school tracks academic performance.
+        </p>
+        <a routerLink="/login" class="btn-cta" id="cta-login-btn">
+          Sign In Now →
+        </a>
+      </div>
+    </section>
+
+    <!-- ── Footer ─────────────────────────────────── -->
+    <footer class="footer">
+      <p>© 2025 TrackMyGrade. All rights reserved. &nbsp;|&nbsp;
+        <a routerLink="/login">Sign In</a>
+      </p>
+    </footer>
+
+  </ng-container>
+
 </div>
