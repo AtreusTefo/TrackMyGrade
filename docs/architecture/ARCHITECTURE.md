@@ -18,7 +18,7 @@ TrackMyGrade follows a **Clean Architecture with Separation of Concerns (SoC)** 
 ├──────────────────────────────────────────────────────────────────┤
 │              HttpClient  ·  CORS  ·  X-TeacherId Header          │
 └──────────────────────────────────────────────────────────────────┘
-                          ⬇️ HTTP/JSON
+                          HTTP/JSON
 ┌──────────────────────────────────────────────────────────────────┐
 │              ASP.NET Web API 5.2 (.NET Framework 4.8)            │
 │         (Self-hosted via OWIN/Katana on port 5000)              │

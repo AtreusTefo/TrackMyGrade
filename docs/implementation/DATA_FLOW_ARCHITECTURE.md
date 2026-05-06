@@ -15,9 +15,9 @@ HTTP POST /api/admin/students
 AdminController (no validation)
   ↓
 AdminService.CreateStudent
-  ├─ Email duplicate check ✓
-  ├─ OMANG duplicate check ✓
-  └─ Teacher FK check? ✗ MISSING!
+  ├─ Email duplicate check
+  ├─ OMANG duplicate check
+  └─ Teacher FK check? MISSING!
   ↓
 Database
   └─ StudentEnrollment orphaned ✗ if teacher deleted later
@@ -59,7 +59,7 @@ Angular Component
               │  └─ Teacher ID required
               ├─ Check duplicate email (case-insensitive)
               ├─ Check duplicate OMANG
-              ├─ Verify teacher exists ✓ NEW!
+  ├─ Verify teacher exists NEW!
               └─ Insert student
                   ↓
                   Database (safe, all constraints checked)
@@ -164,7 +164,7 @@ AdminService.DeleteTeacher(5)
   └─ NO DELETE!
       ↓
 HTTP 400 Bad Request
-  ├─ Message: "Cannot delete teacher: they have 2 class group(s)..."
+  ├─ Message: "Cannot delete teacher: they have 2 class group(s)."
   └─ Admin sees error, takes action
 
 Option 1: Reassign classes to new teacher

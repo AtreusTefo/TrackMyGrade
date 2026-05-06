@@ -29,12 +29,12 @@ namespace TrackMyGradeAPI.Validators
 ```
 
 **Validations Added:**
-- Email format regex: `^[^@\s]+@[^@\s]+\.[^@\s]+$`
-- Phone format regex: `^\+?[0-9\-\(\)\s]{7,}$`
-- Grade range: 1-12
-- All required fields
-- Max length constraints
-- OMANG/Passport format
+ Email format regex: `^[^@\s]+@[^@\s]+\.[^@\s]+$`
+ Phone format regex: `^\+?[0-9\-\(\)\s]{7,}$`
+ Grade range: 1-12
+ All required fields
+ Max length constraints
+ OMANG/Passport format
 
 ---
 

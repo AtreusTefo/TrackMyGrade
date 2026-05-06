@@ -1,4 +1,4 @@
-# TrackMyGrade Development Report
+TrackMyGrade Development Report
 **Date:** April, 28 2026  
 **Branch:** dev2  
 **Commit Hash:** f04dd20  

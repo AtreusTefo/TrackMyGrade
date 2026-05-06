@@ -34,17 +34,17 @@ TrackMyGrade/
 │   │   ├── app/
 │   │   │   ├── components/
 │   │   │   │   ├── home/             # Landing page (HomeComponent)
-│   │   │   │   ├── teacher-login/    # TeacherLoginComponent
+│   │   │   │   ├── login/            # Generic login component
 │   │   │   │   ├── register/         # RegisterComponent
-│   │   │   │   ├── teacher-dashboard/
+│   │   │   │   ├── teacher-dashboard/# TeacherDashboardComponent
 │   │   │   │   ├── student-list/     # StudentListComponent
 │   │   │   │   ├── student-form/     # StudentFormComponent (create + edit)
 │   │   │   │   ├── student-detail/   # StudentDetailComponent
 │   │   │   │   ├── student-login/    # StudentLoginComponent
-│   │   │   │   ├── student-dashboard/
-│   │   │   │   ├── admin-login/      # AdminLoginComponent
-│   │   │   │   └── admin-dashboard/  # AdminDashboardComponent
-│   │   │   ├── services/             # TeacherAuthService, StudentAuthService, etc.
+│   │   │   │   ├── student-dashboard/# StudentDashboardComponent
+│   │   │   │   ├── admin-dashboard/  # AdminDashboardComponent
+│   │   │   │   └── activate/         # Route guards (CanActivateFn implementations)
+│   │   │   ├── services/             # TeacherAuthService, StudentAuthService, AdminAuthService, etc.
 │   │   │   ├── models/               # TypeScript interfaces (index.ts)
 │   │   │   ├── app.routes.ts         # Routes + CanActivateFn guards
 │   │   │   └── app.component.ts/html # Root shell + navbar
@@ -55,16 +55,24 @@ TrackMyGrade/
 │   ├── tsconfig.json                 # moduleResolution: "bundler"
 │   └── package.json
 │
-├── docs/
+├── .github/                          # GitHub configuration
+│   ├── copilot-instructions.md      # AI development guidelines
+│   └── workflows/                   # CI/CD workflows (if present)
+├── docs/                             # Project documentation
 │   ├── architecture/ARCHITECTURE.md
-│   ├── project/
+│   ├── implementation/               # Implementation guides and reports
+│   ├── guides/                       # Quick start and setup guides
+│   ├── daily-reports/               # Development progress reports
+│   ├── api-postman/                 # Postman integration guides
+│   ├── project/                     # Project requirements and deliverables
 │   │   ├── PROJECT_REQUIREMENTS.md
 │   │   ├── DELIVERABLES.md
 │   │   └── AGILE_HIERACHY.md
-│   └── error-fixes/FIX_ERRORS.md
-│
+│   ├── error-fixes/FIX_ERRORS.md
+│   └── DOCUMENTATION_INDEX.md       # Master documentation index
 ├── TrackMyGradeAPI.postman_collection.json
-└── TrackMyGradeAPI.postman_environment.json
+├── TrackMyGradeAPI.postman_environment.json
+└── README.md                         # This file
 ```
 
 ---
@@ -195,27 +203,39 @@ ng build --configuration production
 | URL | Component | Role Required |
 |-----|-----------|--------------|
 | `/` | `HomeComponent` | Public — landing page |
-| `/login` | `TeacherLoginComponent` | Public |
+| `/login` | `LoginComponent` | Public — generic login (teacher/admin) |
 | `/register` | `RegisterComponent` | Public |
-| `/list` | `StudentListComponent` | Teacher (auth guard) |
-| `/create` | `StudentFormComponent` | Teacher (auth guard) |
-| `/edit/:id` | `StudentFormComponent` | Teacher (auth guard) |
-| `/detail/:id` | `StudentDetailComponent` | Teacher (auth guard) |
+| `/teacher-dashboard` | `TeacherDashboardComponent` | Teacher (auth guard) |
+| `/student-list` | `StudentListComponent` | Teacher (auth guard) |
+| `/student-create` | `StudentFormComponent` | Teacher (auth guard) |
+| `/student-edit/:id` | `StudentFormComponent` | Teacher (auth guard) |
+| `/student-detail/:id` | `StudentDetailComponent` | Teacher (auth guard) |
 | `/student-login` | `StudentLoginComponent` | Public |
 | `/student-dashboard` | `StudentDashboardComponent` | Student (student auth guard) |
-| `/admin` | `AdminLoginComponent` | Public |
-| `/admin-dashboard` | `AdminDashboardComponent` | Admin |
+| `/admin-dashboard` | `AdminDashboardComponent` | Admin (admin auth guard) |
 | `**` | — | Redirects to `/` |
 
 ---
 
-## Key Features
+## Documentation
 
-### Authentication
+For detailed documentation, start with:
+
+1. **[docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md)** — Master documentation index
+2. **[docs/guides/QUICKSTART.md](docs/guides/QUICKSTART.md)** — 5-minute quick start
+3. **[docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)** — System architecture
+4. **[docs/project/PROJECT_REQUIREMENTS.md](docs/project/PROJECT_REQUIREMENTS.md)** — Full requirements
+
+---
+
+### Authentication & Authorization
 - **Teacher**: Register + login; session persisted in `localStorage` via `TeacherAuthService`
 - **Student**: Login with email/password set by teacher; session via `StudentAuthService`
 - **Admin**: Separate login via `AdminAuthService`
-- **Guards**: `authGuard` (teacher), `studentAuthGuard` (student) — `CanActivateFn` style
+- **Route Guards**: Located in `app/activate/` — `CanActivateFn` style guards enforce role-based access control
+  - `authGuard` — Protects teacher routes
+  - `studentAuthGuard` — Protects student routes
+  - `adminAuthGuard` — Protects admin routes
 
 ### Student Management
 - **Create**: Form with `OmangOrPassport`, grade, three assessments, initial password
@@ -275,13 +295,17 @@ Change the base URL when deploying to production.
 **Terminal 1 — Backend API**
 ```powershell
 cd TrackMyGradeAPI
-.\start-api.ps1       # OR open in Visual Studio and press F5
+# Option 1: Start via Visual Studio (F5)
+# Option 2: Using PowerShell script
+.\start-api.ps1
+# Option 3: Direct dotnet run (if .NET Framework configured)
 ```
 
 **Terminal 2 — Frontend**
 ```bash
 cd StudentApp
-npm start
+npm install    # First time only
+npm start      # Dev server at http://localhost:4200
 ```
 
 Navigate to `http://localhost:4200`.
@@ -330,16 +354,16 @@ Navigate to `http://localhost:4200`.
 
 ## Troubleshooting
 
-For a comprehensive guide, see [`TrackMyGradeAPI/TROUBLESHOOTING.md`](TrackMyGradeAPI/TROUBLESHOOTING.md).
+For comprehensive troubleshooting guide, see the [docs/error-fixes/FIX_ERRORS.md](docs/error-fixes/FIX_ERRORS.md).
 
 ### Quick Reference
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `Failed to listen on prefix 'http://localhost:5000/'` | Port 5000 already in use | `Get-Process -Name TrackMyGradeAPI \| Stop-Process -Force` |
-| Student form stuck on `Saving...` | `teacher.id` was undefined; `isSubmitting` left `true` | Ensure camelCase JSON in `WebApiConfig.cs`; guard `teacher?.id` in `getHeaders()`; always reset `isSubmitting` in `finally` |
+| `Failed to listen on prefix 'http://localhost:5000/'` | Port 5000 already in use | `Get-Process \| Where-Object {$_.Id -eq <PID>} \| Stop-Process -Force` |
+| Student form stuck on `Saving...` | `teacher.id` undefined; `isSubmitting` left `true` | Ensure camelCase JSON in `WebApiConfig.cs`; guard `teacher?.id` in `getHeaders()`; reset `isSubmitting` in `finally` |
 | TS2792 — Cannot find module `@angular/router` | `moduleResolution: "node"` incompatible with Angular 18 | Set `"moduleResolution": "bundler"` in `tsconfig.json` |
-| CORS error in browser | Backend not running or wrong port | Ensure API is running on port 5000; check `WebApiConfig.cs` |
+| CORS error in browser | Backend not running or wrong port | Ensure API running on port 5000; check `WebApiConfig.cs` |
 | Login/registration fails | Wrong API base URL | Verify `apiUrl` in service files matches `http://localhost:5000` |
 
 ---
@@ -377,5 +401,7 @@ For a comprehensive guide, see [`TrackMyGradeAPI/TROUBLESHOOTING.md`](TrackMyGra
 
 ---
 
-**Last Updated**: April 2026
-**Version**: 1.3.0
+**Last Updated**: May 2026
+**Version**: 1.4.0
+**Branch**: dev2
+**Repository**: https://github.com/AtreusTefo/TrackMyGrade

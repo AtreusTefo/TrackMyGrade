@@ -12,11 +12,13 @@ namespace TrackMyGradeAPI.Controllers
     [RoutePrefix("api/admin")]
     public class AdminController : ApiController
     {
-        private readonly IAdminService _adminService;
+        private readonly IAdminService       _adminService;
+        private readonly IAuditLogService    _auditLogService;
 
-        public AdminController(IAdminService adminService)
+        public AdminController(IAdminService adminService, IAuditLogService auditLogService)
         {
-            _adminService = adminService;
+            _adminService    = adminService;
+            _auditLogService = auditLogService;
         }
 
         // POST: api/admin/login
@@ -189,6 +191,53 @@ namespace TrackMyGradeAPI.Controllers
         {
             try { _adminService.UnenrollStudent(id, studentId); return Ok(new { message = "Student unenrolled." }); }
             catch (KeyNotFoundException ex) { return BadRequest(ex.Message); }
+            catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
+        }
+
+        // ── Audit Logs ─────────────────────────────────────────────────────
+
+        // GET: api/admin/audit-logs
+        /// <summary>Retrieve paginated audit logs with optional filtering (EntityType, Action, PerformedBy, date range).</summary>
+        [HttpGet, Route("audit-logs")]
+        [TokenAuthorize("Admin")]
+        [ResponseType(typeof(AuditLogPagedResponseDto))]
+        public IHttpActionResult GetAuditLogs([FromUri] AuditLogFilterDto filter)
+        {
+            try
+            {
+                var result = _auditLogService.GetAuditLogs(filter);
+                return Ok(result);
+            }
+            catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
+        }
+
+        // GET: api/admin/audit-logs/entity/{entityType}/{entityId}
+        /// <summary>Retrieve all audit logs for a specific entity (e.g., Teacher with ID 5).</summary>
+        [HttpGet, Route("audit-logs/entity/{entityType}/{entityId:int}")]
+        [TokenAuthorize("Admin")]
+        [ResponseType(typeof(System.Collections.Generic.List<AuditLogDto>))]
+        public IHttpActionResult GetAuditLogsByEntity(string entityType, int entityId)
+        {
+            try
+            {
+                var result = _auditLogService.GetAuditLogsByEntity(entityType, entityId);
+                return Ok(result);
+            }
+            catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
+        }
+
+        // GET: api/admin/audit-logs/user/{email}
+        /// <summary>Retrieve all audit logs performed by a specific user (admin email).</summary>
+        [HttpGet, Route("audit-logs/user/{email}")]
+        [TokenAuthorize("Admin")]
+        [ResponseType(typeof(System.Collections.Generic.List<AuditLogDto>))]
+        public IHttpActionResult GetAuditLogsByUser(string email)
+        {
+            try
+            {
+                var result = _auditLogService.GetAuditLogsByUser(email);
+                return Ok(result);
+            }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
         }
     }

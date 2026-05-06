@@ -45,7 +45,7 @@
         <h4>{{ t.firstName }} {{ t.lastName }}</h4>
         <p>{{ t.email }} | {{ t.subject }}</p>
         <p *ngIf="t.activationToken">Activation Link: <code>/activate?role=teacher&token={{ t.activationToken }}</code></p>
-        <button class="btn-danger-sm" (click)="deleteTeacher(t.id)">Delete</button>
+        <button class="btn-danger-sm" (click)="deleteTeacher(t.id, t.firstName + ' ' + t.lastName)">Delete</button>
       </div>
     </section>
 
@@ -78,7 +78,7 @@
         <h4>{{ s.firstName }} {{ s.lastName }}</h4>
         <p>{{ s.email }} | Grade: {{ s.grade }}</p>
         <p *ngIf="s.activationToken">Activation Link: <code>/activate?role=student&token={{ s.activationToken }}</code></p>
-        <button class="btn-danger-sm" (click)="deleteStudent(s.id)">Delete</button>
+        <button class="btn-danger-sm" (click)="deleteStudent(s.id, s.firstName + ' ' + s.lastName)">Delete</button>
       </div>
     </section>
 

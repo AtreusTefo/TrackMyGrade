@@ -11,7 +11,7 @@ This document outlines comprehensive improvements made to the TrackMyGrade appli
 ### 1. REFERENTIAL INTEGRITY ISSUES
 
 #### Issue 1.1: Teacher Deletion Without Checking Orphaned Resources
-**Severity:** 🔴 CRITICAL
+**Severity:** CRITICAL
 **Before:** Teachers could be deleted even when they had active class groups or assignments, leaving orphaned records.
 **After:** 
 - ✅ Service now checks for orphaned ClassGroups before deletion
@@ -20,7 +20,7 @@ This document outlines comprehensive improvements made to the TrackMyGrade appli
 - ✅ File: `TrackMyGradeAPI\Application\Services\AdminService.cs` - `DeleteTeacher()`
 
 #### Issue 1.2: Invalid Teacher ID in Student Creation
-**Severity:** 🟠 HIGH
+**Severity:** HIGH
 **Before:** Admin could create students with non-existent teacher IDs
 **After:**
 - ✅ Validator checks teacher exists before allowing student creation
@@ -29,7 +29,7 @@ This document outlines comprehensive improvements made to the TrackMyGrade appli
 - ✅ File: `TrackMyGradeAPI\Application\Services\AdminService.cs` - `CreateStudent()`
 
 #### Issue 1.3: Invalid Course ID in ClassGroup Creation
-**Severity:** 🟠 HIGH
+**Severity:** HIGH
 **Before:** ClassGroups could be created with non-existent course IDs
 **After:**
 - ✅ Validator validates courseId > 0

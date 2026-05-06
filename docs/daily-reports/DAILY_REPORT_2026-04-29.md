@@ -1,4 +1,4 @@
-# Daily Report - April 29, 2026
+Daily Report - April 29, 2026
 
 **Project:** TrackMyGrade (ASP.NET framework + Angular frontend)
 **Branch:** dev2  

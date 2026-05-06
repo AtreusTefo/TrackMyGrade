@@ -42,12 +42,14 @@ namespace TrackMyGradeAPI.Services
         private readonly ApplicationDbContext _db;
         private readonly IMapper              _mapper;
         private readonly ITokenService        _tokenService;
+        private readonly IAuditLogService     _auditLogService;
 
-        public AdminService(ApplicationDbContext db, IMapper mapper, ITokenService tokenService)
+        public AdminService(ApplicationDbContext db, IMapper mapper, ITokenService tokenService, IAuditLogService auditLogService)
         {
-            _db           = db;
-            _mapper       = mapper;
-            _tokenService = tokenService;
+            _db                = db;
+            _mapper            = mapper;
+            _tokenService      = tokenService;
+            _auditLogService   = auditLogService;
         }
 
         // ── Auth ──────────────────────────────────────────────────────────
@@ -109,6 +111,8 @@ namespace TrackMyGradeAPI.Services
             _db.Teachers.Add(teacher);
             _db.SaveChanges();
 
+            _auditLogService.LogCreate("Teacher", teacher.Id, new { teacher.FirstName, teacher.LastName, teacher.Email, teacher.Subject }, "admin@trackmygrade.com");
+
             return new AdminTeacherDto
             {
                 Id = teacher.Id, FirstName = teacher.FirstName, LastName = teacher.LastName,
@@ -139,8 +143,11 @@ namespace TrackMyGradeAPI.Services
                 );
 
             // ── Safe to delete ────────────────────────────────────────────
+            var teacherSnapshot = new { teacher.FirstName, teacher.LastName, teacher.Email, teacher.Subject };
             _db.Teachers.Remove(teacher);
             _db.SaveChanges();
+
+            _auditLogService.LogDelete("Teacher", id, teacherSnapshot, "admin@trackmygrade.com");
         }
 
         // ── Students ──────────────────────────────────────────────────────
@@ -197,6 +204,10 @@ namespace TrackMyGradeAPI.Services
             _db.Students.Add(student);
             _db.SaveChanges();
 
+            _auditLogService.LogCreate("Student", student.Id, 
+                new { student.FirstName, student.LastName, student.Email, student.Grade, student.TeacherId }, 
+                "admin@trackmygrade.com");
+
             return new AdminStudentDto
             {
                 Id = student.Id, StudentNumber = student.StudentNumber,
@@ -232,6 +243,9 @@ namespace TrackMyGradeAPI.Services
                 _db.Students.Any(s => s.Id != id && s.OmangOrPassport == normalizedPassport))
                 throw new InvalidOperationException("A student with this OMANG/Passport already exists.");
 
+            // ── Capture old state for audit ────────────────────────────────
+            var oldState = new { student.FirstName, student.LastName, student.Email, student.Grade, student.TeacherId };
+
             // ── Update student ─────────────────────────────────────────────
             student.FirstName       = request.FirstName.Trim();
             student.LastName        = request.LastName.Trim();
@@ -241,6 +255,9 @@ namespace TrackMyGradeAPI.Services
             student.Grade           = request.Grade;
             student.TeacherId       = request.TeacherId;
             _db.SaveChanges();
+
+            var newState = new { student.FirstName, student.LastName, student.Email, student.Grade, student.TeacherId };
+            _auditLogService.LogUpdate("Student", id, oldState, newState, "admin@trackmygrade.com");
 
             return new AdminStudentDto
             {
@@ -257,10 +274,14 @@ namespace TrackMyGradeAPI.Services
             var student = _db.Students.Find(id);
             if (student == null) throw new KeyNotFoundException($"Student with ID {id} not found.");
 
+            var studentSnapshot = new { student.FirstName, student.LastName, student.Email, student.Grade };
+
             // ── StudentEnrollments cascade delete is configured in DbContext ─
             // ── AssignmentSubmissions cascade delete is configured in DbContext ──
             _db.Students.Remove(student);
             _db.SaveChanges();
+
+            _auditLogService.LogDelete("Student", id, studentSnapshot, "admin@trackmygrade.com");
         }
 
         // ── Courses ───────────────────────────────────────────────────────
@@ -290,6 +311,9 @@ namespace TrackMyGradeAPI.Services
             };
             _db.Courses.Add(course);
             _db.SaveChanges();
+
+            _auditLogService.LogCreate("Course", course.Id, new { course.Name, course.Code, course.Description }, "admin@trackmygrade.com");
+
             return new CourseDto { Id = course.Id, Name = course.Name, Code = course.Code, Description = course.Description };
         }
 
@@ -332,6 +356,10 @@ namespace TrackMyGradeAPI.Services
             _db.ClassGroups.Add(group);
             _db.SaveChanges();
 
+            _auditLogService.LogCreate("ClassGroup", group.Id, 
+                new { group.Name, group.GradeLevel, group.CourseId, group.TeacherId }, 
+                "admin@trackmygrade.com");
+
             return new ClassGroupDto
             {
                 Id = group.Id, Name = group.Name, GradeLevel = group.GradeLevel,
@@ -357,13 +385,18 @@ namespace TrackMyGradeAPI.Services
                 throw new InvalidOperationException($"Student {studentId} is already enrolled in class group {classGroupId}.");
 
             // ── Create enrollment ──────────────────────────────────────────
-            _db.StudentEnrollments.Add(new StudentEnrollment
+            var enrollment = new StudentEnrollment
             {
                 StudentId = studentId,
                 ClassGroupId = classGroupId,
                 EnrolledAt = DateTime.UtcNow
-            });
+            };
+            _db.StudentEnrollments.Add(enrollment);
             _db.SaveChanges();
+
+            _auditLogService.LogCreate("StudentEnrollment", enrollment.Id, 
+                new { enrollment.StudentId, enrollment.ClassGroupId }, 
+                "admin@trackmygrade.com");
 
             return GetAllClassGroups().First(cg => cg.Id == classGroupId);
         }
@@ -378,8 +411,11 @@ namespace TrackMyGradeAPI.Services
                     $"Enrollment not found: student {studentId} in class group {classGroupId}."
                 );
 
+            var enrollmentSnapshot = new { enrollment.StudentId, enrollment.ClassGroupId };
             _db.StudentEnrollments.Remove(enrollment);
             _db.SaveChanges();
+
+            _auditLogService.LogDelete("StudentEnrollment", enrollment.Id, enrollmentSnapshot, "admin@trackmygrade.com");
         }
     }
 }

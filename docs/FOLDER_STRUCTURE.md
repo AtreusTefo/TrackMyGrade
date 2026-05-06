@@ -1,4 +1,4 @@
-# 📁 Documentation Structure
+# Documentation Structure
 
 ## Folder Organization
 

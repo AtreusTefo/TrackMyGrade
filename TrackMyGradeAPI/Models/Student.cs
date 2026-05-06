@@ -138,4 +138,21 @@ namespace TrackMyGradeAPI.Models
         public const string Graded  = "Graded";
         public const string Late    = "Late";
     }
+
+    /// <summary>
+    /// Immutable audit log for all system changes.
+    /// Enables administrative oversight and compliance tracking.
+    /// </summary>
+    public class AuditLog
+    {
+        public int      Id              { get; set; }
+        public string   Action          { get; set; }      // Created, Updated, Deleted
+        public string   EntityType      { get; set; }      // Teacher, Student, Assignment, etc.
+        public int      EntityId        { get; set; }      // ID of the affected entity
+        public string   Changes         { get; set; }      // JSON serialized before/after values
+        public string   PerformedBy     { get; set; }      // Admin email or system identifier
+        public DateTime PerformedAt     { get; set; }      // UTC timestamp
+        public string   IpAddress       { get; set; }      // Optional: requester IP
+        public string   UserAgent       { get; set; }      // Optional: requester user agent
+    }
 }

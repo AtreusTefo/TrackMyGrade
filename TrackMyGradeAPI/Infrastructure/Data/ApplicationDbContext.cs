@@ -19,6 +19,7 @@ namespace TrackMyGradeAPI.Data
         public DbSet<StudentEnrollment>    StudentEnrollments   { get; set; }
         public DbSet<Assignment>           Assignments          { get; set; }
         public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
+        public DbSet<AuditLog>             AuditLogs            { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -131,6 +132,27 @@ namespace TrackMyGradeAPI.Data
             modelBuilder.Entity<AssignmentSubmission>()
                 .HasIndex(s => new { s.AssignmentId, s.StudentId })
                 .IsUnique();
+
+            // ── AuditLog ────────────────────────────────────────────────────
+            modelBuilder.Entity<AuditLog>().HasKey(a => a.Id);
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.Action).IsRequired().HasMaxLength(20);
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.EntityType).IsRequired().HasMaxLength(50);
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.PerformedBy).IsRequired().HasMaxLength(255);
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.PerformedAt).IsRequired();
+
+            // Index for efficient querying by date and entity type
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => new { a.EntityType, a.PerformedAt })
+                .IsUnique(false);
+
+            // Index for audit trail per user
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => new { a.PerformedBy, a.PerformedAt })
+                .IsUnique(false);
         }
 
         public static void Initialize()
