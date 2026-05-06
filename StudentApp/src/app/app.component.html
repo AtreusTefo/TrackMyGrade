@@ -1,24 +1,61 @@
-<header class="navbar">
-    <div class="navbar-container">
-        <div class="navbar-brand">
-            <h1>{{ title }}</h1>
-        </div>
-        <nav *ngIf="isAdminAuthenticated" class="navbar-menu">
-            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-            <span class="user-info">Welcome, {{ currentAdmin?.firstName }}</span>
-            <button (click)="logoutAdmin()" class="btn-logout">Logout</button>
-        </nav>
-        <nav *ngIf="isTeacherAuthenticated" class="navbar-menu">
-            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-            <span class="user-info">Welcome, {{ currentTeacher?.firstName }}</span>
-            <button (click)="logoutTeacher()" class="btn-logout">Logout</button>
-        </nav>
-        <nav *ngIf="isStudentAuthenticated" class="navbar-menu">
-            <a routerLink="/student-dashboard" routerLinkActive="active">My Dashboard</a>
-            <span class="user-info">Welcome, {{ currentStudent?.firstName }}</span>
-            <button (click)="logoutStudent()" class="btn-logout">Logout</button>
-        </nav>
-    </div>
+<header class="navbar" [class.navbar-hidden]="!isAnyoneLoggedIn && false">
+  <div class="navbar-container">
+
+    <!-- Brand -->
+    <a routerLink="/" class="navbar-brand" id="navbar-brand">
+      <span class="brand-icon">📊</span>
+      <span class="brand-name">TrackMyGrade</span>
+    </a>
+
+    <!-- No one logged in → public nav -->
+    <nav *ngIf="!isAnyoneLoggedIn" class="navbar-menu public-nav">
+      <a href="#features"  class="nav-link">Features</a>
+      <a href="#portals"   class="nav-link">Portals</a>
+      <a routerLink="/login" class="btn-nav-login" id="navbar-login-btn">Sign In →</a>
+    </nav>
+
+    <!-- Admin nav -->
+    <nav *ngIf="isAdminLoggedIn" class="navbar-menu" id="admin-nav">
+      <a routerLink="/admin-dashboard" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+        🏠 Dashboard
+      </a>
+      <div class="nav-divider"></div>
+      <span class="user-pill admin-pill">
+        🛡️ {{ userName || currentAdmin?.firstName }}
+      </span>
+      <button (click)="logout()" class="btn-logout" id="admin-logout-btn">Logout</button>
+    </nav>
+
+    <!-- Teacher nav -->
+    <nav *ngIf="isTeacherLoggedIn" class="navbar-menu" id="teacher-nav">
+      <a routerLink="/teacher-dashboard" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+        🏠 Dashboard
+      </a>
+      <a routerLink="/list"   routerLinkActive="active" class="nav-link">👥 My Students</a>
+      <a routerLink="/create" routerLinkActive="active" class="nav-link">➕ Add Student</a>
+      <div class="nav-divider"></div>
+      <span class="user-pill teacher-pill">
+        📚 {{ userName || currentTeacher?.firstName }}
+      </span>
+      <button (click)="logout()" class="btn-logout" id="teacher-logout-btn">Logout</button>
+    </nav>
+
+    <!-- Student nav -->
+    <nav *ngIf="isStudentLoggedIn" class="navbar-menu" id="student-nav">
+      <a routerLink="/student-dashboard" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+        🏠 My Grades
+      </a>
+      <div class="nav-divider"></div>
+      <span class="user-pill student-pill">
+        🎓 {{ userName || currentStudent?.firstName }}
+      </span>
+      <button (click)="logout()" class="btn-logout" id="student-logout-btn">Logout</button>
+    </nav>
+
+  </div>
 </header>
 
 <main class="main-content">

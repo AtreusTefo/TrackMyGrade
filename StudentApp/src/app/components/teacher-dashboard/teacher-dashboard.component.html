@@ -1,0 +1,167 @@
+<div class="dashboard-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">📚</span>
+      <span class="brand-text">TrackMyGrade</span>
+    </div>
+    <div class="teacher-info" *ngIf="teacher">
+      <div class="avatar">{{ teacher.firstName?.[0] }}{{ teacher.lastName?.[0] }}</div>
+      <div class="teacher-meta">
+        <p class="teacher-name">{{ teacher.firstName }} {{ teacher.lastName }}</p>
+        <span class="role-badge">Teacher</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button [class.active]="activeTab==='students'"    (click)="activeTab='students'">   👥 My Students</button>
+      <button [class.active]="activeTab==='assignments'" (click)="activeTab='assignments'">📝 Assignments</button>
+      <button [class.active]="activeTab==='grade'"       (click)="activeTab='grade'">      ✏️  Grade Work</button>
+    </nav>
+    <button class="logout-btn" (click)="logout()">⬅ Logout</button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- ── My Students ── -->
+    <section *ngIf="activeTab==='students'">
+      <div class="section-header">
+        <h2>My Students</h2>
+        <span class="count-badge">{{ students.length }} enrolled</span>
+      </div>
+
+      <div *ngIf="studentsLoading" class="loading-row">Loading students…</div>
+
+      <div *ngIf="!studentsLoading && students.length === 0" class="empty-state">
+        No students are enrolled in your classes yet.
+      </div>
+
+      <div class="students-grid" *ngIf="!studentsLoading && students.length > 0">
+        <div class="student-card" *ngFor="let s of students">
+          <div class="student-avatar">{{ s.firstName?.[0] }}{{ s.lastName?.[0] }}</div>
+          <div class="student-info">
+            <h4>{{ s.firstName }} {{ s.lastName }}</h4>
+            <p>{{ s.email }}</p>
+            <p class="student-num">{{ s.studentNumber }}</p>
+          </div>
+          <span class="grade-chip">Grade {{ s.grade }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Assignments ── -->
+    <section *ngIf="activeTab==='assignments'">
+      <div class="section-header">
+        <h2>Assignments</h2>
+        <button class="btn-primary" (click)="showCreateForm=!showCreateForm">
+          {{ showCreateForm ? '✕ Cancel' : '+ New Assignment' }}
+        </button>
+      </div>
+
+      <div *ngIf="createSuccess" class="alert success">{{ createSuccess }}</div>
+
+      <!-- Create Form -->
+      <div class="create-form card" *ngIf="showCreateForm">
+        <h3>Create Assignment</h3>
+        <div *ngIf="createError" class="alert error">{{ createError }}</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Title *</label>
+            <input type="text" [(ngModel)]="newAssignment.title" placeholder="e.g. Chapter 5 Review" />
+          </div>
+          <div class="field">
+            <label>Class Group ID *</label>
+            <input type="number" [(ngModel)]="newAssignment.classGroupId" placeholder="Class ID" />
+          </div>
+          <div class="field">
+            <label>Due Date *</label>
+            <input type="datetime-local" [(ngModel)]="newAssignment.dueDate" />
+          </div>
+          <div class="field">
+            <label>Max Score</label>
+            <input type="number" [(ngModel)]="newAssignment.maxScore" min="1" max="100" />
+          </div>
+          <div class="field full-width">
+            <label>Description</label>
+            <textarea [(ngModel)]="newAssignment.description" rows="3" placeholder="Instructions…"></textarea>
+          </div>
+        </div>
+        <button class="btn-primary" (click)="createAssignment()">Create Assignment</button>
+      </div>
+
+      <!-- Assignment List -->
+      <div *ngIf="assignmentsLoading" class="loading-row">Loading assignments…</div>
+      <div *ngIf="!assignmentsLoading && assignments.length === 0" class="empty-state">
+        No assignments yet. Create your first one above.
+      </div>
+
+      <div class="assignment-list" *ngIf="!assignmentsLoading && assignments.length > 0">
+        <div class="assignment-card" *ngFor="let a of assignments">
+          <div class="assignment-main">
+            <h4>{{ a.title }}</h4>
+            <p class="class-name">{{ a.classGroupName }}</p>
+            <p class="due-date" [class.overdue]="isOverdue(a.dueDate)">
+              Due: {{ a.dueDate | date:'dd MMM yyyy, HH:mm' }}
+              <span *ngIf="isOverdue(a.dueDate)" class="overdue-chip">Overdue</span>
+            </p>
+          </div>
+          <div class="assignment-meta">
+            <span class="score-chip">Max: {{ a.maxScore }}</span>
+            <span class="submission-chip">{{ a.submissionCount }} submitted</span>
+          </div>
+          <button class="btn-secondary" (click)="viewSubmissions(a)">View Submissions →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Grade Work ── -->
+    <section *ngIf="activeTab==='grade'">
+      <div class="section-header">
+        <h2>Grade Submissions
+          <span *ngIf="selectedAssignment"> — {{ selectedAssignment.title }}</span>
+        </h2>
+      </div>
+
+      <div *ngIf="!selectedAssignment" class="empty-state">
+        Select an assignment from the Assignments tab to view submissions.
+      </div>
+
+      <div *ngIf="submissionsLoading" class="loading-row">Loading submissions…</div>
+
+      <div *ngIf="gradeSuccess" class="alert success">{{ gradeSuccess }}</div>
+
+      <div *ngIf="selectedAssignment && !submissionsLoading && submissions.length === 0" class="empty-state">
+        No submissions yet for this assignment.
+      </div>
+
+      <div class="submission-list" *ngIf="!submissionsLoading && submissions.length > 0">
+        <div class="submission-card" *ngFor="let s of submissions">
+          <div class="sub-header">
+            <span class="student-name">{{ s.studentName }}</span>
+            <span class="sub-date">Submitted: {{ s.submittedAt | date:'dd MMM, HH:mm' }}</span>
+            <span class="status-chip" [class]="s.status.toLowerCase()">{{ s.status }}</span>
+          </div>
+          <div class="sub-content">
+            <p class="content-label">Student's Answer:</p>
+            <div class="answer-box">{{ s.content || '(No content submitted)' }}</div>
+          </div>
+          <div class="grading-row">
+            <div class="field-inline">
+              <label>Score (/ {{ selectedAssignment.maxScore }})</label>
+              <input type="number" [(ngModel)]="gradingMap[s.id].score"
+                [min]="0" [max]="selectedAssignment.maxScore" />
+            </div>
+            <div class="field-inline feedback">
+              <label>Feedback</label>
+              <input type="text" [(ngModel)]="gradingMap[s.id].feedback"
+                placeholder="Write feedback…" />
+            </div>
+            <button class="btn-grade" (click)="saveGrade(s.id)">Save Grade</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>

@@ -8,35 +8,20 @@ namespace TrackMyGradeAPI.Mapping
     {
         public MappingProfile()
         {
-            // Teacher mappings
-            CreateMap<TeacherRegisterDto, Teacher>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Token, opt => opt.Ignore());
+            // ── Teacher ────────────────────────────────────────────────────
+            // Registration removed — admin creates teachers now.
+            // Login response: map Teacher → TeacherResponseDto (Token = JWT)
             CreateMap<Teacher, TeacherResponseDto>()
-                .ForSourceMember(src => src.Password, opt => opt.DoNotValidate());
+                .ForMember(dest => dest.Token, opt => opt.MapFrom(src => src.Token));
 
-            // Student mappings (teacher-managed)
-            CreateMap<StudentCreateDto, Student>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.StudentNumber, opt => opt.Ignore())
-                .ForMember(dest => dest.TeacherId, opt => opt.Ignore())
-                .ForMember(dest => dest.Teacher, opt => opt.Ignore())
-                .ForMember(dest => dest.Token, opt => opt.Ignore());
-
-            CreateMap<StudentUpdateDto, Student>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.StudentNumber, opt => opt.Ignore())
-                .ForMember(dest => dest.TeacherId, opt => opt.Ignore())
-                .ForMember(dest => dest.Teacher, opt => opt.Ignore())
-                .ForMember(dest => dest.Password, opt => opt.Ignore())
-                .ForMember(dest => dest.Token, opt => opt.Ignore());
-
-            // Total, Average, Percentage, PerformanceLevel are computed properties on Student
-            // with matching names on StudentResponseDto — AutoMapper convention maps them automatically.
+            // ── Student (read — teacher/admin view) ────────────────────────
+            // StudentCreateDto / StudentUpdateDto mappings removed —
+            // admin uses inline creation in AdminService (no AutoMapper needed).
             CreateMap<Student, StudentResponseDto>();
 
-            // Student auth response (includes token)
-            CreateMap<Student, StudentAuthResponseDto>();
+            // ── Student auth response (includes JWT token) ─────────────────
+            CreateMap<Student, StudentAuthResponseDto>()
+                .ForMember(dest => dest.Token, opt => opt.MapFrom(src => src.Token));
         }
     }
 }

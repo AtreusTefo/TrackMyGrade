@@ -1,4 +1,4 @@
-# Daily Development Report
+Daily Development Report
 
 | | |
 |---|---|

@@ -3,12 +3,13 @@ using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Description;
 using TrackMyGradeAPI.DTOs;
+using TrackMyGradeAPI.Handlers;
 using TrackMyGradeAPI.Logging;
 using TrackMyGradeAPI.Services;
 
 namespace TrackMyGradeAPI.Controllers
 {
-    /// <summary>Student self-service endpoints: login, profile and assessment submission.</summary>
+    /// <summary>Student self-service: login and profile. Assessment self-scoring removed.</summary>
     [RoutePrefix("api/student-auth")]
     public class StudentAuthController : ApiController
     {
@@ -20,82 +21,35 @@ namespace TrackMyGradeAPI.Controllers
         }
 
         // POST: api/student-auth/login
-        /// <summary>Authenticates a student and returns an auth token.</summary>
-        /// <param name="request">Student email and password.</param>
-        /// <response code="200">Login successful. Returns the student profile with an auth token.</response>
-        /// <response code="400">Invalid credentials.</response>
-        [HttpPost]
-        [Route("login")]
+        /// <summary>Authenticates an activated student and returns a JWT.</summary>
+        [HttpPost, Route("login")]
         [ResponseType(typeof(StudentAuthResponseDto))]
         public IHttpActionResult Login([FromBody] StudentLoginDto request)
         {
-            try
-            {
-                var result = _studentAuthService.Login(request);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                ErrorLoggingConfig.LogError(ex);
-                return BadRequest(ex.Message);
-            }
+            try { return Ok(_studentAuthService.Login(request)); }
+            catch (UnauthorizedAccessException ex) { return Unauthorized(); }
+            catch (InvalidOperationException ex)   { return BadRequest(ex.Message); }
+            catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }
 
         // GET: api/student-auth/profile
-        /// <summary>Returns the authenticated student's profile including marks.</summary>
-        /// <remarks>Pass the student token via the <c>X-StudentToken</c> request header.</remarks>
-        /// <response code="200">Profile returned successfully.</response>
-        /// <response code="400">Invalid or missing token.</response>
-        [HttpGet]
-        [Route("profile")]
+        /// <summary>Returns the authenticated student's profile. Requires Authorization: Bearer token.</summary>
+        [HttpGet, Route("profile")]
+        [TokenAuthorize("Student")]
         [ResponseType(typeof(StudentAuthResponseDto))]
         public IHttpActionResult GetProfile()
         {
             try
             {
-                string token = Request.Headers
-                    .FirstOrDefault(h => h.Key == "X-StudentToken").Value?.FirstOrDefault();
-
-                if (string.IsNullOrEmpty(token))
-                    return BadRequest("Authentication token is required");
-
-                var result = _studentAuthService.GetProfile(token);
-                return Ok(result);
+                // Token is validated by the filter; pull session token from header for DB lookup
+                string token = Request.Headers.Authorization?.Parameter;
+                return Ok(_studentAuthService.GetProfile(token));
             }
-            catch (Exception ex)
-            {
-                ErrorLoggingConfig.LogError(ex);
-                return BadRequest(ex.Message);
-            }
+            catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }
 
-        // PUT: api/student-auth/submit-assessments
-        /// <summary>Allows the authenticated student to submit their own assessment scores.</summary>
-        /// <param name="request">Assessment scores (each 0–20).</param>
-        /// <remarks>Pass the student token via the <c>X-StudentToken</c> request header.</remarks>
-        /// <response code="200">Assessments submitted successfully. Returns updated profile.</response>
-        /// <response code="400">Validation failed or invalid token.</response>
-        [HttpPut]
-        [Route("submit-assessments")]
-        [ResponseType(typeof(StudentAuthResponseDto))]
-        public IHttpActionResult SubmitAssessments([FromBody] StudentSubmitAssessmentsDto request)
-        {
-            try
-            {
-                string token = Request.Headers
-                    .FirstOrDefault(h => h.Key == "X-StudentToken").Value?.FirstOrDefault();
-
-                if (string.IsNullOrEmpty(token))
-                    return BadRequest("Authentication token is required");
-
-                var result = _studentAuthService.SubmitAssessments(token, request);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                ErrorLoggingConfig.LogError(ex);
-                return BadRequest(ex.Message);
-            }
-        }
+        // NOTE: PUT /submit-assessments deliberately removed.
+        // Students submit ASSIGNMENTS via StudentSubmissionController.
+        // Teachers GRADE submissions via TeacherClassController.
     }
 }

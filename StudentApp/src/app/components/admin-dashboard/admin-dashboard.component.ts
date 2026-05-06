@@ -1,730 +1,356 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { AdminApiService } from '../../services/admin-api.service';
-import { extractFieldErrors } from '../../services/error.util';
-import { TabType, AuditLogDto } from '../../models';
 
 @Component({
-    selector: 'app-admin-dashboard',
-    standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
-    templateUrl: './admin-dashboard.component.html',
-    styleUrls: ['./admin-dashboard.component.css']
+  selector: 'app-admin-dashboard',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './admin-dashboard.component.html',
+  styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit {
-    activeTab: TabType = 'teachers';
+  activeTab: 'teachers' | 'students' | 'courses' | 'classes' = 'teachers';
+  adminName = 'Administrator';
+  loading = false;
+  error = '';
+  success = '';
+  submitting = false;
 
-    teachers: any[] = [];
-    students: any[] = [];
-    auditLogs: AuditLogDto[] = [];
-    filteredAuditLogs: AuditLogDto[] = [];
+  teachers: any[] = [];
+  students: any[] = [];
+  courses: any[] = [];
+  classGroups: any[] = [];
 
-    studentSearch = '';
-    auditEntityFilter = '';
-    auditActionFilter = '';
+  // Create forms
+  showTeacherForm = false;
+  newTeacher = { firstName: '', lastName: '', email: '', phone: '', subject: '' };
+  teacherErrors: { [key: string]: string } = {};
 
-    loading = false;
-    error = '';
-    successMsg = '';
+  showStudentForm = false;
+  newStudent = { firstName: '', lastName: '', email: '', phone: '', omangOrPassport: '', grade: 1, teacherId: 0 };
+  studentErrors: { [key: string]: string } = {};
 
-    deleteTarget: { type: 'teacher' | 'student'; id: number; data: any } | null = null;
-    deleteTargetName = '';
+  showCourseForm = false;
+  newCourse = { name: '', code: '', description: '' };
+  courseErrors: { [key: string]: string } = {};
 
-    adminName = '';
+  showClassForm = false;
+  newClass = { name: '', gradeLevel: 1, courseId: 0, teacherId: 0 };
+  classErrors: { [key: string]: string } = {};
 
-    // Create Teacher form state
-    showTeacherForm = false;
-    subjects: any[] = [];
-    newTeacher = { idPassportNo: '', firstName: '', lastName: '', email: '', phone: '', subjectId: 0 };
+  constructor(private adminApi: AdminApiService, private router: Router) {}
 
-    // Create Student form state
-    showStudentForm = false;
-    grades: any[] = [];
-    newStudent = { idPassportNo: '', firstName: '', lastName: '', email: '', phone: '', gradeId: 0 };
+  ngOnInit(): void {
+    if (!localStorage.getItem('admin_token')) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.loadData();
+  }
 
-    // Teacher assignment state
-    assigningStudentId: number | null = null;
-    teacherToAssignId = 0;
+  loadData(): void {
+    this.loading = true;
+    this.error = '';
+    this.adminApi.getAllTeachers().subscribe(data => this.teachers = data);
+    this.adminApi.getAllStudents().subscribe(data => this.students = data);
+    this.adminApi.getAllCourses().subscribe(data => this.courses = data);
+    this.adminApi.getAllClassGroups().subscribe(data => {
+      this.classGroups = data;
+      this.loading = false;
+    });
+  }
 
-    // Per-operation in-progress guards (prevents double-click race conditions)
-    submittingTeacher = false;
-    submittingStudent = false;
-    assigningInProgress = false;
-    private unassigningInProgress = false;
-    deletingTeacherId: number | null = null;
-    deletingStudentId: number | null = null;
-    resettingTeacherId: number | null = null;
-    resettingStudentId: number | null = null;
-    deleteInProgress = false;
+  // ── Validation Helpers ────────────────────────────────────────────────
 
-    // Edit teacher state
-    editTeacherTarget: any = null;
-    editTeacher = { idPassportNo: '', firstName: '', lastName: '', email: '', phone: '', subjectId: 0 };
+  private validateEmail(email: string): string {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return 'Email is required';
+    if (!emailRegex.test(email)) return 'Invalid email format';
+    return '';
+  }
 
-    // Edit student state
-    editStudentTarget: any = null;
-    editStudent = { idPassportNo: '', firstName: '', lastName: '', email: '', phone: '', gradeId: 0 };
+  private validatePhone(phone: string): string {
+    if (!phone) return '';
+    const phoneRegex = /^\+?[0-9\-\(\)\s]{7,}$/;
+    if (!phoneRegex.test(phone)) return 'Invalid phone format';
+    if (phone.length > 20) return 'Phone cannot exceed 20 characters';
+    return '';
+  }
 
-    savingEdit = false;
-    editError = '';
+  private validateName(name: string, fieldName: string): string {
+    if (!name || !name.trim()) return `${fieldName} is required`;
+    if (name.length > 100) return `${fieldName} cannot exceed 100 characters`;
+    return '';
+  }
 
-    // Bulk import — teachers
-    showBulkTeacher = false;
-    bulkTeacherMode: 'paste' | 'file' = 'paste';
-    bulkTeacherCsvText = '';
-    bulkTeacherFile: File | null = null;
-    bulkTeacherPreview: any[] = [];
-    bulkTeacherResult: any = null;
-    importingTeachers = false;
+  private clearErrors(errorObj: any): void {
+    Object.keys(errorObj).forEach(key => errorObj[key] = '');
+  }
 
-    // Bulk import — students
-    showBulkStudent = false;
-    bulkStudentMode: 'paste' | 'file' = 'paste';
-    bulkStudentCsvText = '';
-    bulkStudentFile: File | null = null;
-    bulkStudentPreview: any[] = [];
-    bulkStudentResult: any = null;
-    importingStudents = false;
+  // ── Teachers ──────────────────────────────────────────────────────────
 
-    constructor(private adminApi: AdminApiService, private router: Router) { }
+  validateTeacherForm(): boolean {
+    this.clearErrors(this.teacherErrors);
+    this.teacherErrors['firstName'] = this.validateName(this.newTeacher.firstName, 'First name');
+    this.teacherErrors['lastName'] = this.validateName(this.newTeacher.lastName, 'Last name');
+    this.teacherErrors['email'] = this.validateEmail(this.newTeacher.email);
+    this.teacherErrors['phone'] = this.validatePhone(this.newTeacher.phone);
 
-    ngOnInit(): void {
-        const info = localStorage.getItem('admin_info');
-        if (info) {
-            const a = JSON.parse(info);
-            this.adminName = `${a.firstName} ${a.lastName}`;
-        }
-        if (!localStorage.getItem('admin_token')) {
-            this.router.navigate(['/admin/login']);
-            return;
-        }
-        this.loadTeachers();
+    if (this.newTeacher.subject && this.newTeacher.subject.length > 100) {
+      this.teacherErrors['subject'] = 'Subject cannot exceed 100 characters';
     }
 
-    loadTeachers(): void {
-        this.loading = true; this.error = '';
-        this.adminApi.getAllTeachers().subscribe({
-            next: (data: any) => { this.teachers = data; this.loading = false; },
-            error: () => { this.error = 'Failed to load teachers.'; this.loading = false; }
-        });
+    return !Object.values(this.teacherErrors).some(e => e);
+  }
+
+  createTeacher(): void {
+    if (!this.validateTeacherForm()) return;
+    if (this.submitting) return;
+
+    this.submitting = true;
+    this.adminApi.createTeacher(this.newTeacher).subscribe({
+      next: (t) => {
+        this.teachers.push(t);
+        this.showTeacherForm = false;
+        this.newTeacher = { firstName: '', lastName: '', email: '', phone: '', subject: '' };
+        this.clearErrors(this.teacherErrors);
+        this.showSuccess('Teacher created. Ask them to check their email for activation.');
+        this.submitting = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        this.submitting = false;
+      }
+    });
+  }
+
+  deleteTeacher(id: number, name: string): void {
+    if (!confirm(`Delete teacher "${name}"? This will fail if they have active classes or assignments.`)) return;
+    if (this.submitting) return;
+
+    this.submitting = true;
+    this.adminApi.deleteTeacher(id).subscribe({
+      next: () => {
+        this.teachers = this.teachers.filter(t => t.id !== id);
+        this.showSuccess('Teacher deleted.');
+        this.submitting = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        this.submitting = false;
+      }
+    });
+  }
+
+  // ── Students ──────────────────────────────────────────────────────────
+
+  validateStudentForm(): boolean {
+    this.clearErrors(this.studentErrors);
+    this.studentErrors['firstName'] = this.validateName(this.newStudent.firstName, 'First name');
+    this.studentErrors['lastName'] = this.validateName(this.newStudent.lastName, 'Last name');
+    this.studentErrors['email'] = this.validateEmail(this.newStudent.email);
+    this.studentErrors['phone'] = this.validatePhone(this.newStudent.phone);
+
+    if (!this.newStudent.omangOrPassport || !this.newStudent.omangOrPassport.trim()) {
+      this.studentErrors['omangOrPassport'] = 'OMANG or Passport is required';
+    } else if (this.newStudent.omangOrPassport.length > 20) {
+      this.studentErrors['omangOrPassport'] = 'OMANG/Passport cannot exceed 20 characters';
     }
 
-    loadTeachersIfNeeded(): void {
-        if (this.teachers.length > 0) return;
-        this.loadTeachers();
+    if (this.newStudent.grade < 1 || this.newStudent.grade > 12) {
+      this.studentErrors['grade'] = 'Grade must be between 1 and 12';
     }
 
-    // ─── Create Teacher ───────────────────────────────────────────────────────
-
-    toggleTeacherForm(): void {
-        this.showTeacherForm = !this.showTeacherForm;
-        if (this.showTeacherForm && this.subjects.length === 0) {
-            this.adminApi.getSubjects().subscribe({ next: (data: any) => this.subjects = data });
-        }
-        if (!this.showTeacherForm) {
-            this.resetNewTeacher();
-        }
+    if (this.newStudent.teacherId <= 0) {
+      this.studentErrors['teacherId'] = 'Please select a teacher';
     }
 
-    createTeacher(): void {
-        if (this.submittingTeacher) return;
-        if (!this.newTeacher.idPassportNo || !this.newTeacher.firstName || !this.newTeacher.lastName
-            || !this.newTeacher.email || !this.newTeacher.phone || this.newTeacher.subjectId === 0) {
-            this.error = 'Please fill in all fields for the new teacher.';
-            return;
-        }
-        if (!/^[a-zA-Z0-9\-]{9}$/.test(this.newTeacher.idPassportNo)) {
-            this.error = 'ID/Passport No. must be exactly 9 characters (letters, numbers, hyphens only).';
-            return;
-        }
-        if (!/^[a-zA-Z\s\-]{2,50}$/.test(this.newTeacher.firstName.trim())) {
-            this.error = 'First name must be 2–50 characters (letters, spaces, hyphens only).';
-            return;
-        }
-        if (!/^[a-zA-Z\s\-]{2,50}$/.test(this.newTeacher.lastName.trim())) {
-            this.error = 'Last name must be 2–50 characters (letters, spaces, hyphens only).';
-            return;
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.newTeacher.email) || this.newTeacher.email.length > 255) {
-            this.error = 'Please enter a valid email address (max 255 characters).';
-            return;
-        }
-        if (!/^\d{8}$/.test(this.newTeacher.phone)) {
-            this.error = 'Phone must be exactly 8 digits.'; 
-            return;
-        }
-        this.submittingTeacher = true;
-        this.loading = true; this.error = '';
-        this.adminApi.createTeacher(this.newTeacher).subscribe({
-            next: (teacher: any) => {
-                this.teachers = [...this.teachers, teacher];
-                this.showTeacherForm = false;
-                this.resetNewTeacher();
-                this.loading = false;
-                this.submittingTeacher = false;
-                this.showSuccess(`Teacher account created. Share email "${teacher.email}" so they can activate their account.`);
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message
-                    || (err?.error?.errors ? JSON.stringify(err.error.errors) : null)
-                    || 'Failed to create teacher.';
-                this.loading = false;
-                this.submittingTeacher = false;
-            }
-        });
+    return !Object.values(this.studentErrors).some(e => e);
+  }
+
+  createStudent(): void {
+    if (!this.validateStudentForm()) return;
+    if (this.submitting) return;
+
+    this.submitting = true;
+    this.adminApi.createStudent(this.newStudent).subscribe({
+      next: (s) => {
+        this.students.push(s);
+        this.showStudentForm = false;
+        this.newStudent = { firstName: '', lastName: '', email: '', phone: '', omangOrPassport: '', grade: 1, teacherId: 0 };
+        this.clearErrors(this.studentErrors);
+        this.showSuccess('Student created. Ask them to check their email for activation.');
+        this.submitting = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        this.submitting = false;
+      }
+    });
+  }
+
+  deleteStudent(id: number, name: string): void {
+    if (!confirm(`Delete student "${name}"? All enrollments and submissions will be removed.`)) return;
+    if (this.submitting) return;
+
+    this.submitting = true;
+    this.adminApi.deleteStudent(id).subscribe({
+      next: () => {
+        this.students = this.students.filter(s => s.id !== id);
+        this.showSuccess('Student deleted.');
+        this.submitting = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        this.submitting = false;
+      }
+    });
+  }
+
+  // ── Courses ───────────────────────────────────────────────────────────
+
+  validateCourseForm(): boolean {
+    this.clearErrors(this.courseErrors);
+
+    if (!this.newCourse.name || !this.newCourse.name.trim()) {
+      this.courseErrors['name'] = 'Course name is required';
+    } else if (this.newCourse.name.length > 200) {
+      this.courseErrors['name'] = 'Course name cannot exceed 200 characters';
     }
 
-    private resetNewTeacher(): void {
-        this.newTeacher = { idPassportNo: '', firstName: '', lastName: '', email: '', phone: '', subjectId: 0 };
+    if (!this.newCourse.code || !this.newCourse.code.trim()) {
+      this.courseErrors['code'] = 'Course code is required';
+    } else if (this.newCourse.code.length > 20) {
+      this.courseErrors['code'] = 'Course code cannot exceed 20 characters';
     }
 
-    // ─── Create Student ───────────────────────────────────────────────────────
-
-    loadStudents(): void {
-        this.loading = true; this.error = '';
-        this.adminApi.getAllStudents().subscribe({
-            next: (data: any) => { this.students = data; this.loading = false; },
-            error: () => { this.error = 'Failed to load students.'; this.loading = false; }
-        });
+    if (this.newCourse.description && this.newCourse.description.length > 500) {
+      this.courseErrors['description'] = 'Description cannot exceed 500 characters';
     }
 
-    loadStudentsIfNeeded(): void {
-        if (this.students.length > 0) return;
-        this.loadStudents();
+    return !Object.values(this.courseErrors).some(e => e);
+  }
+
+  createCourse(): void {
+    if (!this.validateCourseForm()) return;
+    if (this.submitting) return;
+
+    this.submitting = true;
+    this.adminApi.createCourse(this.newCourse).subscribe({
+      next: (c) => {
+        this.courses.push(c);
+        this.showCourseForm = false;
+        this.newCourse = { name: '', code: '', description: '' };
+        this.clearErrors(this.courseErrors);
+        this.showSuccess('Course created.');
+        this.submitting = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        this.submitting = false;
+      }
+    });
+  }
+
+  // ── Classes ────────────────────────────────────────────────────────────
+
+  validateClassForm(): boolean {
+    this.clearErrors(this.classErrors);
+
+    if (!this.newClass.name || !this.newClass.name.trim()) {
+      this.classErrors['name'] = 'Class name is required';
+    } else if (this.newClass.name.length > 100) {
+      this.classErrors['name'] = 'Class name cannot exceed 100 characters';
     }
 
-    toggleStudentForm(): void {
-        this.showStudentForm = !this.showStudentForm;
-        if (this.showStudentForm && this.grades.length === 0) {
-            this.adminApi.getGrades().subscribe({ next: (data: any) => this.grades = data });
-        }
-        if (!this.showStudentForm) {
-            this.resetNewStudent();
-        }
+    if (this.newClass.gradeLevel < 1 || this.newClass.gradeLevel > 12) {
+      this.classErrors['gradeLevel'] = 'Grade level must be between 1 and 12';
     }
 
-    createStudent(): void {
-        if (this.submittingStudent) return;
-        if (!this.newStudent.idPassportNo || !this.newStudent.firstName || !this.newStudent.lastName
-            || !this.newStudent.email || !this.newStudent.phone || this.newStudent.gradeId === 0) {
-            this.error = 'Please fill in all fields for the new student.';
-            return;
-        }
-        if (!/^[a-zA-Z0-9\-]{9}$/.test(this.newStudent.idPassportNo)) {
-            this.error = 'ID/Passport No. must be exactly 9 characters (letters, numbers, hyphens only).';
-            return;
-        }
-        if (!/^[a-zA-Z\s\-]{2,50}$/.test(this.newStudent.firstName.trim())) {
-            this.error = 'First name must be 2–50 characters (letters, spaces, hyphens only).';
-            return;
-        }
-        if (!/^[a-zA-Z\s\-]{2,50}$/.test(this.newStudent.lastName.trim())) {
-            this.error = 'Last name must be 2–50 characters (letters, spaces, hyphens only).';
-            return;
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.newStudent.email) || this.newStudent.email.length > 255) {
-            this.error = 'Please enter a valid email address (max 255 characters).';
-            return;
-        }
-        if (!/^\d{8}$/.test(this.newStudent.phone)) {
-            this.error = 'Phone must be exactly 8 digits.'; 
-            return;
-        }   
-        this.submittingStudent = true;
-        this.loading = true; this.error = '';
-        this.adminApi.createStudent(this.newStudent).subscribe({
-            next: (student: any) => {
-                this.students = [...this.students, student];
-                this.showStudentForm = false;
-                this.resetNewStudent();
-                this.loading = false;
-                this.submittingStudent = false;
-                this.showSuccess(`Student account created (ID: ${student.studentUniqueId}). Share their Unique ID and email so they can activate.`);
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message || 'Failed to create student.';
-                this.loading = false;
-                this.submittingStudent = false;
-            }
-        });
+    if (this.newClass.courseId <= 0) {
+      this.classErrors['courseId'] = 'Please select a course';
     }
 
-    private resetNewStudent(): void {
-        this.newStudent = { idPassportNo: '', firstName: '', lastName: '', email: '', phone: '', gradeId: 0 };
+    if (this.newClass.teacherId <= 0) {
+      this.classErrors['teacherId'] = 'Please select a teacher';
     }
 
-    // ─── Teacher assignment ───────────────────────────────────────────────────
+    return !Object.values(this.classErrors).some(e => e);
+  }
 
-    toggleAssignPanel(studentId: number): void {
-        this.assigningStudentId = this.assigningStudentId === studentId ? null : studentId;
-        this.teacherToAssignId = 0;
-        // Ensure teachers are loaded for the dropdown
-        if (this.teachers.length === 0) {
-            this.adminApi.getAllTeachers().subscribe({ next: (data: any) => this.teachers = data });
-        }
-    }
+  createClassGroup(): void {
+    if (!this.validateClassForm()) return;
+    if (this.submitting) return;
 
-    assignTeacher(studentId: number): void {
-        if (!this.teacherToAssignId || this.assigningInProgress) return;
-        this.assigningInProgress = true;
-        const teacherId = this.teacherToAssignId;
-        const teacher = this.teachers.find(t => t.teacherId === teacherId);
-        this.adminApi.assignStudentToTeacher(studentId, teacherId).subscribe({
-            next: () => {
-                // Update local array without a full reload
-                this.students = this.students.map(s => {
-                    if (s.id !== studentId) return s;
-                    const teachers = [...(s.teachers || []), {
-                        teacherId: teacher?.teacherId,
-                        fullName: `${teacher?.firstName ?? ''} ${teacher?.lastName ?? ''}`.trim(),
-                        firstName: teacher?.firstName,
-                        lastName: teacher?.lastName,
-                        subjectName: teacher?.subjectName
-                    }];
-                    return { ...s, teachers };
-                });
-                this.assigningStudentId = null;
-                this.teacherToAssignId = 0;
-                this.assigningInProgress = false;
-                this.showSuccess('Teacher assigned successfully.');
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message || 'Failed to assign teacher.';
-                this.assigningInProgress = false;
-            }
-        });
-    }
+    this.submitting = true;
+    this.adminApi.createClassGroup(this.newClass).subscribe({
+      next: (c) => {
+        this.classGroups.push(c);
+        this.showClassForm = false;
+        this.newClass = { name: '', gradeLevel: 1, courseId: 0, teacherId: 0 };
+        this.clearErrors(this.classErrors);
+        this.showSuccess('Class created.');
+        this.submitting = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        this.submitting = false;
+      }
+    });
+  }
 
-    unassignTeacher(studentId: number, teacherId: number): void {
-        if (this.unassigningInProgress) return;
-        this.unassigningInProgress = true;
-        this.adminApi.unassignStudentFromTeacher(studentId, teacherId).subscribe({
-            next: () => {
-                // Update local array without a full reload
-                this.students = this.students.map(s => {
-                    if (s.id !== studentId) return s;
-                    return { ...s, teachers: (s.teachers || []).filter((t: any) => t.teacherId !== teacherId) };
-                });
-                this.unassigningInProgress = false;
-                this.showSuccess('Teacher unassigned successfully.');
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message || 'Failed to unassign teacher.';
-                this.unassigningInProgress = false;
-            }
-        });
-    }
+  enrollStudent(classGroupId: number, studentId: number): void {
+    if (this.submitting) return;
 
+    this.submitting = true;
+    this.adminApi.enrollStudent(classGroupId, studentId).subscribe({
+      next: () => {
+        this.showSuccess('Student enrolled in class.');
+        this.loadData();
+        this.submitting = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        this.submitting = false;
+      }
+    });
+  }
 
-    loadAuditLogs(): void {
-        this.loading = true; this.error = '';
-        this.adminApi.getAuditLogs(1, 50).subscribe({
-            next: (data: any) => {
-                this.auditLogs = data;
-                this.applyAuditFilter();
-                this.loading = false;
-            },
-            error: () => { this.error = 'Failed to load audit logs.'; this.loading = false; }
-        });
-    }
+  unenrollStudent(classGroupId: number, studentId: number): void {
+    if (!confirm('Remove this student from the class?')) return;
+    if (this.submitting) return;
 
-    loadAuditLogsIfNeeded(): void {
-        if (this.auditLogs.length > 0) return;
-        this.loadAuditLogs();
-    }
+    this.submitting = true;
+    this.adminApi.unenrollStudent(classGroupId, studentId).subscribe({
+      next: () => {
+        this.showSuccess('Student removed from class.');
+        this.loadData();
+        this.submitting = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        this.submitting = false;
+      }
+    });
+  }
 
-    get filteredStudents(): any[] {
-        if (!this.studentSearch.trim()) return this.students;
-        const q = this.studentSearch.toLowerCase();
-        return this.students.filter(s =>
-            (s.firstName + ' ' + s.lastName).toLowerCase().includes(q) ||
-            (s.studentUniqueId || '').toLowerCase().includes(q) ||
-            (s.email || '').toLowerCase().includes(q)
-        );
-    }
+  // ── Helpers ──────────────────────────────────────────────────────────
 
-    applyAuditFilter(): void {
-        this.filteredAuditLogs = this.auditLogs.filter(log =>
-            (!this.auditEntityFilter || log.entityName === this.auditEntityFilter) &&
-            (!this.auditActionFilter || log.action === this.auditActionFilter)
-        );
-    }
+  private showSuccess(msg: string): void {
+    this.success = msg;
+    setTimeout(() => this.success = '', 3000);
+  }
 
-    resetTeacherPassword(teacher: any): void {
-        if (this.resettingTeacherId === teacher.teacherId) return;
-        if (!confirm(`Reset password for ${teacher.firstName} ${teacher.lastName}? They will need to re-activate their account.`)) return;
-        this.resettingTeacherId = teacher.teacherId;
-        this.adminApi.resetTeacherPassword(teacher.teacherId).subscribe({
-            next: () => {
-                this.teachers = this.teachers.map(t =>
-                    t.teacherId === teacher.teacherId ? { ...t, isActive: false } : t
-                );
-                this.resettingTeacherId = null;
-                this.showSuccess(`Password reset for ${teacher.firstName} ${teacher.lastName}. They must re-activate their account.`);
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message || 'Failed to reset password.';
-                this.resettingTeacherId = null;
-            }
-        });
-    }
+  private showError(err: any): void {
+    this.error = err?.error?.message || err?.error || 'An error occurred';
+    setTimeout(() => this.error = '', 5000);
+  }
 
-    resetStudentPassword(student: any): void {
-        if (this.resettingStudentId === student.id) return;
-        if (!confirm(`Reset password for ${student.firstName} ${student.lastName}? They will need to re-activate their account.`)) return;
-        this.resettingStudentId = student.id;
-        this.adminApi.resetStudentPassword(student.id).subscribe({
-            next: () => {
-                this.resettingStudentId = null;
-                this.showSuccess(`Password reset for ${student.firstName} ${student.lastName}. They must re-activate their account.`);
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message || 'Failed to reset password.';
-                this.resettingStudentId = null;
-            }
-        });
-    }
-
-    // ─── Bulk Import — Teachers ───────────────────────────────────────────────
-
-    toggleBulkTeacher(): void {
-        this.showBulkTeacher = !this.showBulkTeacher;
-        if (!this.showBulkTeacher) this.clearBulkTeachers();
-    }
-
-    clearBulkTeachers(): void {
-        this.bulkTeacherCsvText = '';
-        this.bulkTeacherFile = null;
-        this.bulkTeacherPreview = [];
-        this.bulkTeacherResult = null;
-    }
-
-    onTeacherFileSelected(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        if (!input.files?.length) return;
-        this.bulkTeacherFile = input.files[0];
-        this.readFileAsCsv(this.bulkTeacherFile, parsed => {
-            this.bulkTeacherPreview = this.parseCsvToTeacherRows(parsed);
-        });
-    }
-
-    previewBulkTeachers(): void {
-        if (!this.bulkTeacherCsvText.trim()) { this.error = 'Paste CSV content first.'; return; }
-        this.bulkTeacherPreview = this.parseCsvToTeacherRows(this.bulkTeacherCsvText);
-        if (this.bulkTeacherPreview.length === 0) this.error = 'No valid rows found in pasted CSV.';
-    }
-
-    executeBulkTeachers(): void {
-        if (this.importingTeachers || !this.bulkTeacherPreview.length) return;
-        this.importingTeachers = true;
-        const payload = this.bulkTeacherPreview;
-        this.adminApi.bulkImportTeachers(payload).subscribe({
-            next: (result: any) => {
-                this.bulkTeacherResult = result;
-                this.importingTeachers = false;
-                if (result.successCount > 0) {
-                    this.showSuccess(`Bulk import: ${result.successCount} teacher(s) created.`);
-                    // Reload teacher list
-                    this.adminApi.getAllTeachers().subscribe({ next: (data: any) => this.teachers = data });
-                }
-                this.bulkTeacherPreview = [];
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message || 'Bulk import failed.';
-                this.importingTeachers = false;
-            }
-        });
-    }
-
-    downloadTeacherTemplate(): void {
-        const csv = 'IdPassportNo,FirstName,LastName,Email,Phone,SubjectName\n';
-        this.triggerCsvDownload(csv, 'teacher_import_template.csv');
-    }
-
-    // ─── Bulk Import — Students ───────────────────────────────────────────────
-
-    toggleBulkStudent(): void {
-        this.showBulkStudent = !this.showBulkStudent;
-        if (!this.showBulkStudent) this.clearBulkStudents();
-    }
-
-    clearBulkStudents(): void {
-        this.bulkStudentCsvText = '';
-        this.bulkStudentFile = null;
-        this.bulkStudentPreview = [];
-        this.bulkStudentResult = null;
-    }
-
-    onStudentFileSelected(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        if (!input.files?.length) return;
-        this.bulkStudentFile = input.files[0];
-        this.readFileAsCsv(this.bulkStudentFile, parsed => {
-            this.bulkStudentPreview = this.parseCsvToStudentRows(parsed);
-        });
-    }
-
-    previewBulkStudents(): void {
-        if (!this.bulkStudentCsvText.trim()) { this.error = 'Paste CSV content first.'; return; }
-        this.bulkStudentPreview = this.parseCsvToStudentRows(this.bulkStudentCsvText);
-        if (this.bulkStudentPreview.length === 0) this.error = 'No valid rows found in pasted CSV.';
-    }
-
-    executeBulkStudents(): void {
-        if (this.importingStudents || !this.bulkStudentPreview.length) return;
-        this.importingStudents = true;
-        const payload = this.bulkStudentPreview;
-        this.adminApi.bulkImportStudents(payload).subscribe({
-            next: (result: any) => {
-                this.bulkStudentResult = result;
-                this.importingStudents = false;
-                if (result.successCount > 0) {
-                    this.showSuccess(`Bulk import: ${result.successCount} student(s) created.`);
-                    // Reload student list
-                    this.adminApi.getAllStudents().subscribe({ next: (data: any) => this.students = data });
-                }
-                this.bulkStudentPreview = [];
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message || 'Bulk import failed.';
-                this.importingStudents = false;
-            }
-        });
-    }
-
-    downloadStudentTemplate(): void {
-        const csv = 'IdPassportNo,FirstName,LastName,Email,Phone,GradeName\n';
-        this.triggerCsvDownload(csv, 'student_import_template.csv');
-    }
-
-    // ─── CSV helpers ──────────────────────────────────────────────────────────
-
-    private readFileAsCsv(file: File, onLoaded: (text: string) => void): void {
-        const reader = new FileReader();
-        reader.onload = e => onLoaded(e.target?.result as string || '');
-        reader.readAsText(file);
-    }
-
-    private parseCsvToTeacherRows(csvText: string): any[] {
-        const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-        if (lines.length < 2) return [];
-        const headers = this.splitCsvRow(lines[0]).map(h => h.toLowerCase());
-        const idx = (name: string) => headers.indexOf(name);
-        return lines.slice(1).map(line => {
-            const cols = this.splitCsvRow(line);
-            return {
-                idPassportNo: cols[idx('idpassportno')] ?? '',
-                firstName: cols[idx('firstname')] ?? '',
-                lastName: cols[idx('lastname')] ?? '',
-                email: cols[idx('email')] ?? '',
-                phone: cols[idx('phone')] ?? '',
-                subjectName: cols[idx('subjectname')] ?? ''
-            };
-        }).filter(r => r.idPassportNo || r.email);
-    }
-
-    private parseCsvToStudentRows(csvText: string): any[] {
-        const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-        if (lines.length < 2) return [];
-        const headers = this.splitCsvRow(lines[0]).map(h => h.toLowerCase());
-        const idx = (name: string) => headers.indexOf(name);
-        return lines.slice(1).map(line => {
-            const cols = this.splitCsvRow(line);
-            return {
-                idPassportNo: cols[idx('idpassportno')] ?? '',
-                firstName: cols[idx('firstname')] ?? '',
-                lastName: cols[idx('lastname')] ?? '',
-                email: cols[idx('email')] ?? '',
-                phone: cols[idx('phone')] ?? '',
-                gradeName: cols[idx('gradename')] ?? ''
-            };
-        }).filter(r => r.idPassportNo || r.email);
-    }
-
-    private splitCsvRow(row: string): string[] {
-        // Simple CSV split — handles quoted fields with commas inside
-        const result: string[] = [];
-        let current = '';
-        let inQuotes = false;
-        for (let i = 0; i < row.length; i++) {
-            const ch = row[i];
-            if (ch === '"') {
-                if (inQuotes && row[i + 1] === '"') { current += '"'; i++; }
-                else inQuotes = !inQuotes;
-            } else if (ch === ',' && !inQuotes) {
-                result.push(current.trim());
-                current = '';
-            } else {
-                current += ch;
-            }
-        }
-        result.push(current.trim());
-        return result;
-    }
-
-    private triggerCsvDownload(csvContent: string, filename: string): void {
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename; a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    // ─── Edit Teacher ─────────────────────────────────────────────────────────
-    openEditTeacher(teacher: any): void {
-        if (this.subjects.length === 0) {
-            this.adminApi.getSubjects().subscribe({ next: (data: any) => this.subjects = data });
-        }
-        this.editTeacherTarget = teacher;
-        this.editTeacher = {
-            idPassportNo: teacher.idPassportNo,
-            firstName: teacher.firstName,
-            lastName: teacher.lastName,
-            email: teacher.email,
-            phone: teacher.phone,
-            subjectId: teacher.subjectId
-        };
-        this.editError = '';
-    }
-
-    cancelEditTeacher(): void {
-        this.editTeacherTarget = null;
-        this.editError = '';
-    }
-
-    saveEditTeacher(): void {
-        if (this.savingEdit) return;
-        if (!this.editTeacher.idPassportNo || !this.editTeacher.firstName || !this.editTeacher.lastName
-            || !this.editTeacher.email || !this.editTeacher.phone || this.editTeacher.subjectId === 0) {
-            this.editError = 'Please fill in all fields.';
-            return;
-        }
-        this.savingEdit = true; this.editError = '';
-        this.adminApi.updateTeacher(this.editTeacherTarget.teacherId, this.editTeacher).subscribe({
-            next: (updated: any) => {
-                this.teachers = this.teachers.map(t =>
-                    t.teacherId === this.editTeacherTarget.teacherId ? { ...t, ...updated } : t
-                );
-                this.savingEdit = false;
-                this.editTeacherTarget = null;
-                this.showSuccess('Teacher updated successfully.');
-            },
-            error: (err: any) => {
-                this.editError = err?.error?.message || 'Failed to update teacher.';
-                this.savingEdit = false;
-            }
-        });
-    }
-
-    // ─── Edit Student ─────────────────────────────────────────────────────────
-
-    openEditStudent(student: any): void {
-        if (this.grades.length === 0) {
-            this.adminApi.getGrades().subscribe({ next: (data: any) => this.grades = data });
-        }
-        this.editStudentTarget = student;
-        this.editStudent = {
-            idPassportNo: student.idPassportNo,
-            firstName: student.firstName,
-            lastName: student.lastName,
-            email: student.email,
-            phone: student.phone,
-            gradeId: student.gradeId
-        };
-        this.editError = '';
-    }
-
-    cancelEditStudent(): void {
-        this.editStudentTarget = null;
-        this.editError = '';
-    }
-
-    saveEditStudent(): void {
-        if (this.savingEdit) return;
-        if (!this.editStudent.idPassportNo || !this.editStudent.firstName || !this.editStudent.lastName
-            || !this.editStudent.email || !this.editStudent.phone || this.editStudent.gradeId === 0) {
-            this.editError = 'Please fill in all fields.';
-            return;
-        }
-        this.savingEdit = true; this.editError = '';
-        this.adminApi.updateStudent(this.editStudentTarget.id, this.editStudent).subscribe({
-            next: (updated: any) => {
-                this.students = this.students.map(s =>
-                    s.id === this.editStudentTarget.id ? { ...s, ...updated } : s
-                );
-                this.savingEdit = false;
-                this.editStudentTarget = null;
-                this.showSuccess('Student updated successfully.');
-            },
-            error: (err: any) => {
-                this.editError = err?.error?.message || 'Failed to update student.';
-                this.savingEdit = false;
-            }
-        });
-    }
-
-    confirmDeleteTeacher(teacher: any): void {
-        this.deleteTarget = { type: 'teacher', id: teacher.teacherId, data: teacher };
-        this.deleteTargetName = `${teacher.firstName} ${teacher.lastName} (teacher)`;
-    }
-
-    confirmDeleteStudent(student: any): void {
-        this.deleteTarget = { type: 'student', id: student.id, data: student };
-        this.deleteTargetName = `${student.firstName} ${student.lastName} (student)`;
-    }
-
-    cancelDelete(): void { this.deleteTarget = null; }
-
-    executeDelete(): void {
-        if (!this.deleteTarget || this.deleteInProgress) return;
-        const { type, id } = this.deleteTarget;
-        const obs = type === 'teacher'
-            ? this.adminApi.deleteTeacher(id)
-            : this.adminApi.deleteStudent(id);
-
-        this.deleteInProgress = true;
-        if (type === 'teacher') this.deletingTeacherId = id;
-        else this.deletingStudentId = id;
-
-        obs.subscribe({
-            next: () => {
-                this.showSuccess(`${type === 'teacher' ? 'Teacher' : 'Student'} deleted successfully.`);
-                this.deleteTarget = null;
-                this.deleteInProgress = false;
-                this.deletingTeacherId = null;
-                this.deletingStudentId = null;
-                if (type === 'teacher') {
-                    this.teachers = this.teachers.filter(t => t.teacherId !== id);
-                } else {
-                    this.students = this.students.filter(s => s.id !== id);
-                }
-            },
-            error: (err: any) => {
-                this.error = err?.error?.message || 'Delete failed.';
-                this.deleteTarget = null;
-                this.deleteInProgress = false;
-                this.deletingTeacherId = null;
-                this.deletingStudentId = null;
-            }
-        });
-    }
-
-    formatJson(val: string | null): string {
-        if (!val) return '—';
-        try { return JSON.stringify(JSON.parse(val), null, 2); }
-        catch { return val; }
-    }
-
-    logout(): void {
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_info');
-        this.router.navigate(['/admin/login']);
-    }
-
-    private showSuccess(msg: string): void {
-        this.successMsg = msg;
-        setTimeout(() => this.successMsg = '', 3000);
-    }
+  logout(): void {
+    localStorage.removeItem('admin_token');
+    this.router.navigate(['/login']);
+  }
 }

@@ -1,0 +1,92 @@
+<div class="login-page">
+  <!-- Animated blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="login-card">
+
+    <!-- Header -->
+    <div class="card-header">
+      <div class="logo-mark">📊</div>
+      <h1 class="brand">TrackMyGrade</h1>
+      <p class="tagline">Sign in to your account</p>
+    </div>
+
+    <!-- Error banner (all three logins failed) -->
+    <div *ngIf="loginError" class="error-banner" role="alert" id="login-error-banner">
+      <span class="error-icon">⚠️</span>
+      <span>{{ loginError }}</span>
+    </div>
+
+    <!-- Login Form -->
+    <form class="login-form" (ngSubmit)="onSubmit()" novalidate id="login-form">
+
+      <!-- Email -->
+      <div class="form-group" [class.has-error]="fieldErrors['email']">
+        <label for="login-email">Email Address</label>
+        <div class="input-wrapper">
+          <input
+            id="login-email"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            (blur)="validateField('email')"
+            placeholder="you@example.com"
+            autocomplete="email"
+            [disabled]="isSubmitting" />
+        </div>
+        <span class="field-error" *ngIf="fieldErrors['email']" role="alert">
+          {{ fieldErrors['email'] }}
+        </span>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group" [class.has-error]="fieldErrors['password']">
+        <label for="login-password">Password</label>
+        <div class="input-wrapper">
+          <input
+            id="login-password"
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="password"
+            (blur)="validateField('password')"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            [disabled]="isSubmitting" />
+          <button
+            type="button"
+            class="toggle-pw"
+            (click)="togglePassword()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <span class="field-error" *ngIf="fieldErrors['password']" role="alert">
+          {{ fieldErrors['password'] }}
+        </span>
+      </div>
+
+      <!-- Submit -->
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="isSubmitting"
+        id="login-submit-btn">
+        <span *ngIf="!isSubmitting">Sign In</span>
+        <span *ngIf="isSubmitting" class="spinner-wrap">
+          <span class="spinner"></span> Signing in…
+        </span>
+      </button>
+
+    </form>
+    
+    <!-- Back link -->
+    <p class="login-footer">
+      <a routerLink="/" id="back-to-home-link">← Back to Home</a>
+    </p>
+
+  </div>
+</div>

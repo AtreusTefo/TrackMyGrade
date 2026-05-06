@@ -1,7 +1,7 @@
 # FIX_ERRORS — Error Log & Resolutions
 
-> **Project:** TrackMyGrade  
-> **Stack:** Angular 18 (frontend) · ASP.NET Web API / EF6 (backend) · SQL Server  
+> **Project:** TrackMyGrade
+> **Stack:** Angular 18 (frontend) · ASP.NET Web API / EF6 (backend) · SQL Server
 > **Last updated:** 2026-03-13
 
 This document records every error encountered during development, its root cause, and how it was resolved. Entries are ordered chronologically.
@@ -22,6 +22,7 @@ This document records every error encountered during development, its root cause
 
 ### Error Message
 
+### Error Message
 ```
 TS2792: Cannot find module '@angular/router'. Did you mean to set the
 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?

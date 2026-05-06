@@ -3,6 +3,7 @@ using TrackMyGradeAPI.DTOs;
 
 namespace TrackMyGradeAPI.Validators
 {
+    /// <summary>Validates student login credentials.</summary>
     public class StudentLoginValidator : AbstractValidator<StudentLoginDto>
     {
         public StudentLoginValidator()
@@ -13,23 +14,30 @@ namespace TrackMyGradeAPI.Validators
                 .EmailAddress().WithMessage("Email must be a valid email address");
 
             RuleFor(x => x.Password)
-                .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("Password is required");
         }
     }
 
-    public class StudentSubmitAssessmentsValidator : AbstractValidator<StudentSubmitAssessmentsDto>
+    /// <summary>Validates the account activation request (sets first password).</summary>
+    public class ActivateAccountValidator : AbstractValidator<ActivateAccountDto>
     {
-        public StudentSubmitAssessmentsValidator()
+        public ActivateAccountValidator()
         {
-            RuleFor(x => x.Assessment1)
-                .InclusiveBetween(0, 20).WithMessage("Assessment 1 must be between 0 and 20");
+            RuleFor(x => x.Role)
+                .NotEmpty().WithMessage("Role is required")
+                .Must(r => r == "Teacher" || r == "Student")
+                .WithMessage("Role must be 'Teacher' or 'Student'");
 
-            RuleFor(x => x.Assessment2)
-                .InclusiveBetween(0, 20).WithMessage("Assessment 2 must be between 0 and 20");
+            RuleFor(x => x.ActivationToken)
+                .NotEmpty().WithMessage("Activation token is required");
 
-            RuleFor(x => x.Assessment3)
-                .InclusiveBetween(0, 20).WithMessage("Assessment 3 must be between 0 and 20");
+            RuleFor(x => x.NewPassword)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Password is required")
+                .MinimumLength(8).WithMessage("Password must be at least 8 characters");
+
+            RuleFor(x => x.ConfirmPassword)
+                .Equal(x => x.NewPassword).WithMessage("Passwords do not match");
         }
     }
 }

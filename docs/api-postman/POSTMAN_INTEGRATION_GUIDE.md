@@ -1,6 +1,6 @@
 # Postman Integration Guide
 
-## 📦 Overview
+## Overview
 
 This project is now fully integrated with Postman for easy API testing. The Postman collection includes:
 
@@ -12,7 +12,7 @@ This project is now fully integrated with Postman for easy API testing. The Post
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Import Postman Collection
 

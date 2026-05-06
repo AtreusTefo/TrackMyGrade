@@ -1,4 +1,4 @@
-namespace TrackMyGrade.Application.DTOs
+namespace TrackMyGradeAPI.DTOs
 {
     /// <summary>Request body for registering a new teacher.</summary>
     public class TeacherRegisterDto

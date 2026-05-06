@@ -1,152 +1,139 @@
-<div class="container">
-  <div *ngIf="errors.length > 0" class="error-banner">
-    <ul>
-      <li *ngFor="let error of errors">{{ error }}</li>
-    </ul>
-  </div>
+<div class="dashboard-wrapper">
 
-  <div *ngIf="isLoading" class="loading">Loading your profile...</div>
-
-  <div *ngIf="!isLoading && student" class="dashboard">
-    <!-- Profile Section -->
-    <div class="section profile-section">
-      <h2>My Profile</h2>
-      <div class="profile-grid">
-        <div class="profile-item">
-          <label>Student Number:</label>
-          <p>{{ student.studentNumber }}</p>
-        </div>
-        <div class="profile-item">
-          <label>Name:</label>
-          <p>{{ student.firstName }} {{ student.lastName }}</p>
-        </div>
-        <div class="profile-item">
-          <label>Email:</label>
-          <p>{{ student.email }}</p>
-        </div>
-        <div class="profile-item">
-          <label>Phone:</label>
-          <p>{{ student.phone }}</p>
-        </div>
-        <div class="profile-item">
-          <label>Omang / Passport:</label>
-          <p>{{ student.omangOrPassport }}</p>
-        </div>
-        <div class="profile-item">
-          <label>Grade:</label>
-          <p>{{ student.grade }}</p>
-        </div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">🎓</span>
+      <span class="brand-text">TrackMyGrade</span>
+    </div>
+    <div class="student-info" *ngIf="student">
+      <div class="avatar">{{ student.firstName?.[0] }}{{ student.lastName?.[0] }}</div>
+      <div class="student-meta">
+        <p class="student-name">{{ student.firstName }} {{ student.lastName }}</p>
+        <p class="student-number">{{ student.studentNumber }}</p>
+        <span class="role-badge">Student</span>
       </div>
     </div>
+    <nav class="sidebar-nav">
+      <button [class.active]="activeTab==='assignments'" (click)="activeTab='assignments'; loadAssignments()">
+        📝 My Assignments
+      </button>
+      <button [class.active]="activeTab==='results'" (click)="loadResults()">
+        📊 My Results
+      </button>
+    </nav>
+    <button class="logout-btn" (click)="logout()">⬅ Logout</button>
+  </aside>
 
-    <!-- Marks Section -->
-    <div class="section marks-section">
-      <h2>My Marks</h2>
-      <div class="marks-grid">
-        <div class="mark-card">
-          <div class="mark-label">Assessment 1</div>
-          <div class="mark-value">{{ student.assessment1 }}/20</div>
-        </div>
-        <div class="mark-card">
-          <div class="mark-label">Assessment 2</div>
-          <div class="mark-value">{{ student.assessment2 }}/20</div>
-        </div>
-        <div class="mark-card">
-          <div class="mark-label">Assessment 3</div>
-          <div class="mark-value">{{ student.assessment3 }}/20</div>
-        </div>
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <div *ngIf="isLoading" class="loading-row">Loading your profile…</div>
+    <ng-container *ngIf="errors.length > 0">
+      <div class="alert error" *ngFor="let e of errors">{{ e }}</div>
+    </ng-container>
+
+    <!-- ── My Assignments ── -->
+    <section *ngIf="activeTab==='assignments'">
+      <div class="section-header">
+        <h2>My Assignments</h2>
+        <span class="count-badge">{{ assignments.length }} total</span>
       </div>
 
-      <div class="performance-grid">
-        <div class="perf-item">
-          <label>Total:</label>
-          <span class="perf-value">{{ student.total }}/60</span>
-        </div>
-        <div class="perf-item">
-          <label>Average:</label>
-          <span class="perf-value">{{ student.average.toFixed(2) }}</span>
-        </div>
-        <div class="perf-item">
-          <label>Percentage:</label>
-          <span class="perf-value">{{ student.percentage.toFixed(2) }}%</span>
-        </div>
-        <div class="perf-item">
-          <label>Performance:</label>
-          <span class="performance-badge" [ngClass]="getPerformanceLevelClass(student.performanceLevel)">
-            {{ student.performanceLevel }}
-          </span>
-        </div>
-      </div>
-    </div>
+      <div *ngIf="assignmentsLoading" class="loading-row">Loading assignments…</div>
 
-    <!-- Submit Assessments Section -->
-    <div class="section submit-section">
-      <h2>Submit Assessments</h2>
-
-      <div *ngIf="submitSuccess" class="success-banner">
-        Assessments submitted successfully!
+      <div *ngIf="!assignmentsLoading && assignments.length === 0" class="empty-state">
+        No assignments have been set for your classes yet.
       </div>
 
-      <div *ngIf="submitErrors.length > 0" class="error-banner">
-        <ul>
-          <li *ngFor="let error of submitErrors">{{ error }}</li>
-        </ul>
-      </div>
+      <div class="assignment-list" *ngIf="!assignmentsLoading && assignments.length > 0">
+        <div class="assignment-card" *ngFor="let a of assignments">
 
-      <form (ngSubmit)="onSubmitAssessments()" novalidate class="assessments-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="assessment1">Assessment 1 (0-20):</label>
-            <input
-              type="number"
-              id="assessment1"
-              [(ngModel)]="assessment1"
-              name="assessment1"
-              min="0"
-              max="20"
-              [class.input-error]="fieldErrors['assessment1']"
-              (input)="validateField('assessment1')">
-            <span class="field-error" *ngIf="fieldErrors['assessment1']">{{ fieldErrors['assessment1'] }}</span>
+          <div class="assignment-top">
+            <div>
+              <h4>{{ a.title }}</h4>
+              <p class="class-name">{{ a.classGroupName }}</p>
+              <p class="due" [class.overdue]="isOverdue(a.dueDate)">
+                Due: {{ a.dueDate | date:'dd MMM yyyy, HH:mm' }}
+                <span *ngIf="isOverdue(a.dueDate)" class="late-chip">Late</span>
+              </p>
+              <p class="description" *ngIf="a.description">{{ a.description }}</p>
+            </div>
+            <div class="right-meta">
+              <span class="max-score">Max: {{ a.maxScore }}</span>
+              <span class="status-chip" [class]="statusClass(a.studentSubmissionStatus)">
+                {{ a.studentSubmissionStatus }}
+              </span>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="assessment2">Assessment 2 (0-20):</label>
-            <input
-              type="number"
-              id="assessment2"
-              [(ngModel)]="assessment2"
-              name="assessment2"
-              min="0"
-              max="20"
-              [class.input-error]="fieldErrors['assessment2']"
-              (input)="validateField('assessment2')">
-            <span class="field-error" *ngIf="fieldErrors['assessment2']">{{ fieldErrors['assessment2'] }}</span>
+
+          <!-- Submit form — only show if not yet submitted -->
+          <div class="submit-area"
+               *ngIf="a.studentSubmissionStatus === 'Not Submitted' || a.studentSubmissionStatus === undefined">
+            <textarea [(ngModel)]="submissionContent[a.id]" rows="4"
+              placeholder="Write your answer here…"></textarea>
+            <div *ngIf="submitError[a.id]" class="alert error">{{ submitError[a.id] }}</div>
+            <div *ngIf="submitSuccess[a.id]" class="alert success">Submitted successfully! ✓</div>
+            <button class="btn-submit" (click)="submitAssignment(a.id)"
+              [disabled]="submittingId === a.id">
+              <span *ngIf="submittingId !== a.id">Submit Assignment</span>
+              <span *ngIf="submittingId === a.id" class="spinner-inline"></span>
+            </button>
           </div>
-          <div class="form-group">
-            <label for="assessment3">Assessment 3 (0-20):</label>
-            <input
-              type="number"
-              id="assessment3"
-              [(ngModel)]="assessment3"
-              name="assessment3"
-              min="0"
-              max="20"
-              [class.input-error]="fieldErrors['assessment3']"
-              (input)="validateField('assessment3')">
-            <span class="field-error" *ngIf="fieldErrors['assessment3']">{{ fieldErrors['assessment3'] }}</span>
+
+          <!-- Already submitted -->
+          <div class="submitted-note" *ngIf="a.studentSubmissionStatus === 'Pending'">
+            ✅ Submitted — awaiting teacher grading.
+          </div>
+          <div class="submitted-note graded" *ngIf="a.studentSubmissionStatus === 'Graded'">
+            ✅ Graded — check My Results for your score.
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── My Results ── -->
+    <section *ngIf="activeTab==='results'">
+      <div class="section-header">
+        <h2>My Results</h2>
+      </div>
+
+      <div *ngIf="resultsLoading" class="loading-row">Loading your results…</div>
+
+      <div *ngIf="!resultsLoading && mySubmissions.length === 0" class="empty-state">
+        No graded results yet. Submit your assignments and wait for teacher feedback.
+      </div>
+
+      <div class="results-list" *ngIf="!resultsLoading && mySubmissions.length > 0">
+        <div class="result-card" *ngFor="let r of mySubmissions">
+          <div class="result-top">
+            <h4>{{ r.assignmentTitle }}</h4>
+            <span class="status-chip" [class]="statusClass(r.status)">{{ r.status }}</span>
+          </div>
+          <p class="sub-date">Submitted: {{ r.submittedAt | date:'dd MMM yyyy' }}</p>
+
+          <div class="score-section" *ngIf="r.status === 'Graded'">
+            <div class="score-display">
+              <span class="score-num">{{ r.score }}</span>
+              <span class="score-denom">/ {{ r.maxScore }}</span>
+              <span class="score-pct">({{ scorePercent(r.score, r.maxScore) }}%)</span>
+            </div>
+            <div class="score-bar">
+              <div class="score-fill" [style.width.%]="scorePercent(r.score, r.maxScore)"></div>
+            </div>
+            <div class="feedback-box" *ngIf="r.feedback">
+              <p class="feedback-label">Teacher Feedback:</p>
+              <p class="feedback-text">{{ r.feedback }}</p>
+            </div>
+          </div>
+
+          <div class="pending-note" *ngIf="r.status !== 'Graded'">
+            Awaiting grading…
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="live-calc">
-          <span>Total: <strong>{{ total }}/60</strong></span>
-          <span>Average: <strong>{{ average.toFixed(2) }}</strong></span>
-          <span>Percentage: <strong>{{ percentage.toFixed(2) }}%</strong></span>
-          <span>Level: <strong [ngClass]="getPerformanceLevelClass(performanceLevel)">{{ performanceLevel }}</strong></span>
-        </div>
-
-        <button type="submit" [disabled]="isSubmitting" class="btn btn-primary">
-          {{ isSubmitting ? 'Submitting...' : 'Submit Assessments' }}
-        </button>
-      </form>
-    </div>
-  </div>
+  </main>
 </div>
