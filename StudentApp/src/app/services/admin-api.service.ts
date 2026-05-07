@@ -104,4 +104,45 @@ export class AdminApiService {
   }): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/activate`, data);
   }
+
+  // ── Audit Logs ────────────────────────────────────────────────────────
+
+  /**
+   * Get paginated audit logs with optional filtering.
+   * @param filter Filter criteria (entityType, action, performedBy, startDate, endDate, pageNumber, pageSize)
+   */
+  getAuditLogs(filter: any): Observable<any> {
+    let url = `${this.apiUrl}/audit-logs?pageNumber=${filter.pageNumber || 1}&pageSize=${filter.pageSize || 50}`;
+
+    if (filter.entityType) url += `&entityType=${encodeURIComponent(filter.entityType)}`;
+    if (filter.action) url += `&action=${encodeURIComponent(filter.action)}`;
+    if (filter.performedBy) url += `&performedBy=${encodeURIComponent(filter.performedBy)}`;
+    if (filter.startDate) url += `&startDate=${encodeURIComponent(filter.startDate)}`;
+    if (filter.endDate) url += `&endDate=${encodeURIComponent(filter.endDate)}`;
+
+    return this.http.get<any>(url, { headers: this.getHeaders() });
+  }
+
+  /**
+   * Get all audit logs for a specific entity.
+   * @param entityType Entity type (e.g., "Teacher", "Student", "ClassGroup")
+   * @param entityId Primary key of the entity
+   */
+  getAuditLogsByEntity(entityType: string, entityId: number): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/audit-logs/entity/${encodeURIComponent(entityType)}/${entityId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
+   * Get all audit logs performed by a specific admin user.
+   * @param email Admin email address
+   */
+  getAuditLogsByUser(email: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/audit-logs/user/${encodeURIComponent(email)}`,
+      { headers: this.getHeaders() }
+    );
+  }
 }

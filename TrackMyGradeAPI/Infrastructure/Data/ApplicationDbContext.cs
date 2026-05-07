@@ -20,6 +20,7 @@ namespace TrackMyGradeAPI.Data
         public DbSet<Assignment>           Assignments          { get; set; }
         public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
         public DbSet<AuditLog>             AuditLogs            { get; set; }
+        public DbSet<Admin>                Admins               { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -153,6 +154,31 @@ namespace TrackMyGradeAPI.Data
             modelBuilder.Entity<AuditLog>()
                 .HasIndex(a => new { a.PerformedBy, a.PerformedAt })
                 .IsUnique(false);
+
+            // ── Admin ──────────────────────────────────────────────────────
+            modelBuilder.Entity<Admin>().HasKey(a => a.Id);
+            modelBuilder.Entity<Admin>()
+                .Property(a => a.FirstName).IsRequired().HasMaxLength(50);
+            modelBuilder.Entity<Admin>()
+                .Property(a => a.LastName).IsRequired().HasMaxLength(50);
+            modelBuilder.Entity<Admin>()
+                .Property(a => a.Email).IsRequired().HasMaxLength(255);
+            modelBuilder.Entity<Admin>()
+                .Property(a => a.Password).IsRequired().HasMaxLength(255);
+            modelBuilder.Entity<Admin>()
+                .Property(a => a.CreatedAt).IsRequired();
+            modelBuilder.Entity<Admin>()
+                .Property(a => a.UpdatedAt).IsRequired();
+
+            // Unique index on Email (matches IX_Admins_Email)
+            modelBuilder.Entity<Admin>()
+                .HasIndex(a => a.Email)
+                .IsUnique();
+
+            // Enforce lowercase email storage for admins
+            modelBuilder.Entity<Admin>()
+                .ToTable(t => t.HasCheckConstraint("CK_Admins_Email_Lowercase",
+                    "[Email] = LOWER([Email])"));
         }
 
         public static void Initialize()
@@ -168,12 +194,15 @@ namespace TrackMyGradeAPI.Data
                 {
                     ctx.Teachers.Add(new Teacher
                     {
+                        Id = 1,
                         FirstName = "Admin",
                         LastName = "User",
                         Email = "admin@trackmygrade.com",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
                         Subject = "Administration",
-                        IsActivated = true
+                        IsActivated = true,
+                        CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                        UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                     });
                     ctx.SaveChanges();
                 }

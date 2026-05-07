@@ -5,6 +5,18 @@
     background: #f0f2f5;
 }
 
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.error-text {
+    color: #c53030;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
 /* Sidebar */
 .sidebar {
     width: 240px;
@@ -276,6 +288,11 @@ h2 {
         background: #b91c1c;
     }
 
+    .btn-danger-sm:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+    }
+
 .btn-warning-sm {
     padding: 4px 12px;
     background: #d97706;
@@ -291,6 +308,25 @@ h2 {
         background: #b45309;
     }
 
+.btn-primary {
+    padding: 8px 20px;
+    background: #0f3460;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+    .btn-primary:hover {
+        background: #1a5276;
+    }
+
+    .btn-primary:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+    }
+
 .btn-danger {
     padding: 8px 20px;
     background: #dc2626;
@@ -301,6 +337,11 @@ h2 {
     font-weight: 600;
 }
 
+    .btn-danger:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+    }
+
 .btn-secondary {
     padding: 8px 20px;
     background: #6b7280;
@@ -310,6 +351,11 @@ h2 {
     cursor: pointer;
     font-weight: 600;
 }
+
+    .btn-secondary:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+    }
 
 /* Modal */
 .modal-overlay {

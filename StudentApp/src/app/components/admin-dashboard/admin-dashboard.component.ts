@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminApiService } from '../../services/admin-api.service';
+import { Teacher, Student, Course, ClassGroup, CreateTeacherRequest, CreateStudentRequest, CreateCourseRequest, CreateClassGroupRequest } from '../../models/admin.models';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -19,26 +20,26 @@ export class AdminDashboardComponent implements OnInit {
   success = '';
   submitting = false;
 
-  teachers: any[] = [];
-  students: any[] = [];
-  courses: any[] = [];
-  classGroups: any[] = [];
+  teachers: Teacher[] = [];
+  students: Student[] = [];
+  courses: Course[] = [];
+  classGroups: ClassGroup[] = [];
 
   // Create forms
   showTeacherForm = false;
-  newTeacher = { firstName: '', lastName: '', email: '', phone: '', subject: '' };
+  newTeacher: CreateTeacherRequest = { firstName: '', lastName: '', email: '', phone: '', subject: '' };
   teacherErrors: { [key: string]: string } = {};
 
   showStudentForm = false;
-  newStudent = { firstName: '', lastName: '', email: '', phone: '', omangOrPassport: '', grade: 1, teacherId: 0 };
+  newStudent: CreateStudentRequest = { firstName: '', lastName: '', email: '', phone: '', omangOrPassport: '', grade: 1, teacherId: 0 };
   studentErrors: { [key: string]: string } = {};
 
   showCourseForm = false;
-  newCourse = { name: '', code: '', description: '' };
+  newCourse: CreateCourseRequest = { name: '', code: '', description: '' };
   courseErrors: { [key: string]: string } = {};
 
   showClassForm = false;
-  newClass = { name: '', gradeLevel: 1, courseId: 0, teacherId: 0 };
+  newClass: CreateClassGroupRequest = { name: '', gradeLevel: 1, courseId: 0, teacherId: 0 };
   classErrors: { [key: string]: string } = {};
 
   constructor(private adminApi: AdminApiService, private router: Router) {}
@@ -54,12 +55,60 @@ export class AdminDashboardComponent implements OnInit {
   loadData(): void {
     this.loading = true;
     this.error = '';
-    this.adminApi.getAllTeachers().subscribe(data => this.teachers = data);
-    this.adminApi.getAllStudents().subscribe(data => this.students = data);
-    this.adminApi.getAllCourses().subscribe(data => this.courses = data);
-    this.adminApi.getAllClassGroups().subscribe(data => {
-      this.classGroups = data;
-      this.loading = false;
+
+    let completedRequests = 0;
+    const totalRequests = 4;
+
+    this.adminApi.getAllTeachers().subscribe({
+      next: (data) => {
+        this.teachers = data;
+        completedRequests++;
+        if (completedRequests === totalRequests) this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        completedRequests++;
+        if (completedRequests === totalRequests) this.loading = false;
+      }
+    });
+
+    this.adminApi.getAllStudents().subscribe({
+      next: (data) => {
+        this.students = data;
+        completedRequests++;
+        if (completedRequests === totalRequests) this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        completedRequests++;
+        if (completedRequests === totalRequests) this.loading = false;
+      }
+    });
+
+    this.adminApi.getAllCourses().subscribe({
+      next: (data) => {
+        this.courses = data;
+        completedRequests++;
+        if (completedRequests === totalRequests) this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        completedRequests++;
+        if (completedRequests === totalRequests) this.loading = false;
+      }
+    });
+
+    this.adminApi.getAllClassGroups().subscribe({
+      next: (data) => {
+        this.classGroups = data;
+        completedRequests++;
+        if (completedRequests === totalRequests) this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e);
+        completedRequests++;
+        if (completedRequests === totalRequests) this.loading = false;
+      }
     });
   }
 
@@ -72,7 +121,7 @@ export class AdminDashboardComponent implements OnInit {
     return '';
   }
 
-  private validatePhone(phone: string): string {
+  private validatePhone(phone: string | undefined): string {
     if (!phone) return '';
     const phoneRegex = /^\+?[0-9\-\(\)\s]{7,}$/;
     if (!phoneRegex.test(phone)) return 'Invalid phone format';
@@ -112,7 +161,7 @@ export class AdminDashboardComponent implements OnInit {
 
     this.submitting = true;
     this.adminApi.createTeacher(this.newTeacher).subscribe({
-      next: (t) => {
+      next: (t: Teacher) => {
         this.teachers.push(t);
         this.showTeacherForm = false;
         this.newTeacher = { firstName: '', lastName: '', email: '', phone: '', subject: '' };
@@ -135,7 +184,7 @@ export class AdminDashboardComponent implements OnInit {
     this.adminApi.deleteTeacher(id).subscribe({
       next: () => {
         this.teachers = this.teachers.filter(t => t.id !== id);
-        this.showSuccess('Teacher deleted.');
+        this.showSuccess('Teacher deleted successfully.');
         this.submitting = false;
       },
       error: (e) => {
@@ -175,9 +224,15 @@ export class AdminDashboardComponent implements OnInit {
     if (!this.validateStudentForm()) return;
     if (this.submitting) return;
 
+    const selectedTeacher = this.teachers.find(t => t.id === this.newStudent.teacherId);
+    if (!selectedTeacher) {
+      this.showError('Selected teacher is no longer available. Please refresh and try again.');
+      return;
+    }
+
     this.submitting = true;
     this.adminApi.createStudent(this.newStudent).subscribe({
-      next: (s) => {
+      next: (s: Student) => {
         this.students.push(s);
         this.showStudentForm = false;
         this.newStudent = { firstName: '', lastName: '', email: '', phone: '', omangOrPassport: '', grade: 1, teacherId: 0 };
@@ -200,7 +255,10 @@ export class AdminDashboardComponent implements OnInit {
     this.adminApi.deleteStudent(id).subscribe({
       next: () => {
         this.students = this.students.filter(s => s.id !== id);
-        this.showSuccess('Student deleted.');
+        this.classGroups.forEach(cg => {
+          cg.students = cg.students?.filter(st => st.id !== id);
+        });
+        this.showSuccess('Student deleted successfully.');
         this.submitting = false;
       },
       error: (e) => {
@@ -240,12 +298,12 @@ export class AdminDashboardComponent implements OnInit {
 
     this.submitting = true;
     this.adminApi.createCourse(this.newCourse).subscribe({
-      next: (c) => {
+      next: (c: Course) => {
         this.courses.push(c);
         this.showCourseForm = false;
         this.newCourse = { name: '', code: '', description: '' };
         this.clearErrors(this.courseErrors);
-        this.showSuccess('Course created.');
+        this.showSuccess('Course created successfully.');
         this.submitting = false;
       },
       error: (e) => {
@@ -285,14 +343,22 @@ export class AdminDashboardComponent implements OnInit {
     if (!this.validateClassForm()) return;
     if (this.submitting) return;
 
+    const selectedCourse = this.courses.find(c => c.id === this.newClass.courseId);
+    const selectedTeacher = this.teachers.find(t => t.id === this.newClass.teacherId);
+
+    if (!selectedCourse || !selectedTeacher) {
+      this.showError('Selected course or teacher is no longer available. Please refresh and try again.');
+      return;
+    }
+
     this.submitting = true;
     this.adminApi.createClassGroup(this.newClass).subscribe({
-      next: (c) => {
+      next: (c: ClassGroup) => {
         this.classGroups.push(c);
         this.showClassForm = false;
         this.newClass = { name: '', gradeLevel: 1, courseId: 0, teacherId: 0 };
         this.clearErrors(this.classErrors);
-        this.showSuccess('Class created.');
+        this.showSuccess('Class created successfully.');
         this.submitting = false;
       },
       error: (e) => {
@@ -303,13 +369,32 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   enrollStudent(classGroupId: number, studentId: number): void {
+    if (studentId <= 0) {
+      this.showError('Please select a valid student.');
+      return;
+    }
+
     if (this.submitting) return;
+
+    const classGroup = this.classGroups.find(cg => cg.id === classGroupId);
+    const student = this.students.find(s => s.id === studentId);
+
+    if (!classGroup || !student) {
+      this.showError('Class or student not found. Please refresh.');
+      return;
+    }
+
+    if (classGroup.students?.some(st => st.id === studentId)) {
+      this.showError('This student is already enrolled in this class.');
+      return;
+    }
 
     this.submitting = true;
     this.adminApi.enrollStudent(classGroupId, studentId).subscribe({
       next: () => {
-        this.showSuccess('Student enrolled in class.');
-        this.loadData();
+        if (!classGroup.students) classGroup.students = [];
+        classGroup.students.push(student);
+        this.showSuccess('Student enrolled successfully.');
         this.submitting = false;
       },
       error: (e) => {
@@ -326,8 +411,11 @@ export class AdminDashboardComponent implements OnInit {
     this.submitting = true;
     this.adminApi.unenrollStudent(classGroupId, studentId).subscribe({
       next: () => {
-        this.showSuccess('Student removed from class.');
-        this.loadData();
+        const classGroup = this.classGroups.find(cg => cg.id === classGroupId);
+        if (classGroup) {
+          classGroup.students = classGroup.students?.filter(s => s.id !== studentId);
+        }
+        this.showSuccess('Student removed from class successfully.');
         this.submitting = false;
       },
       error: (e) => {
@@ -345,7 +433,15 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private showError(err: any): void {
-    this.error = err?.error?.message || err?.error || 'An error occurred';
+    let errorMsg = 'An error occurred';
+    if (err?.error?.message) {
+      errorMsg = err.error.message;
+    } else if (err?.error) {
+      errorMsg = typeof err.error === 'string' ? err.error : JSON.stringify(err.error);
+    } else if (err?.message) {
+      errorMsg = err.message;
+    }
+    this.error = errorMsg;
     setTimeout(() => this.error = '', 5000);
   }
 

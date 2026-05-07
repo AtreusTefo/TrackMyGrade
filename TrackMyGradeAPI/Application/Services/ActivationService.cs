@@ -146,5 +146,21 @@ namespace TrackMyGradeAPI.Services
                 Dashboard = "/student-dashboard"
             };
         }
+
+        // Add a default admin
+        public void AddDefaultAdmin()
+        {
+            if (! _db.Admins.Any(a => a.Email == "admin@trackmygrade.com"))
+            {
+                _db.Admins.Add(new Admin
+                {
+                    FirstName = "Admin",
+                    LastName = "User",
+                    Email = "admin@trackmygrade.com",
+                    Password = BCrypt.Net.BCrypt.HashPassword("Admin@123")  // Hash the password
+                });
+                _db.SaveChanges();
+            }
+        }
     }
 }
