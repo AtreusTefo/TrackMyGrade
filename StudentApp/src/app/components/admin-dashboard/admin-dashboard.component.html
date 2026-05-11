@@ -24,7 +24,7 @@
     <section *ngIf="activeTab === 'teachers'">
       <div class="section-header">
         <h2>Teachers</h2>
-        <button class="btn-primary" (click)="showTeacherForm = !showTeacherForm">
+        <button class="btn-primary" (click)="showTeacherForm = !showTeacherForm" [disabled]="submitting">
           {{ showTeacherForm ? 'Cancel' : '+ New Teacher' }}
         </button>
       </div>
@@ -32,20 +32,37 @@
       <div *ngIf="showTeacherForm" class="card">
         <h3>Create Teacher</h3>
         <div class="form-grid">
-          <input [(ngModel)]="newTeacher.firstName" placeholder="First Name" />
-          <input [(ngModel)]="newTeacher.lastName" placeholder="Last Name" />
-          <input [(ngModel)]="newTeacher.email" placeholder="Email" />
-          <input [(ngModel)]="newTeacher.phone" placeholder="Phone" />
-          <input [(ngModel)]="newTeacher.subject" placeholder="Subject" />
+          <div class="form-group">
+            <input [(ngModel)]="newTeacher.firstName" placeholder="First Name" [disabled]="submitting" />
+            <span class="error-text" *ngIf="teacherErrors['firstName']">{{ teacherErrors['firstName'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newTeacher.lastName" placeholder="Last Name" [disabled]="submitting" />
+            <span class="error-text" *ngIf="teacherErrors['lastName']">{{ teacherErrors['lastName'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newTeacher.email" placeholder="Email" [disabled]="submitting" />
+            <span class="error-text" *ngIf="teacherErrors['email']">{{ teacherErrors['email'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newTeacher.phone" placeholder="Phone" [disabled]="submitting" />
+            <span class="error-text" *ngIf="teacherErrors['phone']">{{ teacherErrors['phone'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newTeacher.subject" placeholder="Subject" [disabled]="submitting" />
+            <span class="error-text" *ngIf="teacherErrors['subject']">{{ teacherErrors['subject'] }}</span>
+          </div>
         </div>
-        <button class="btn-primary" style="margin-top:1rem" (click)="createTeacher()">Save</button>
+        <button class="btn-primary" style="margin-top:1rem" (click)="createTeacher()" [disabled]="submitting">
+          {{ submitting ? 'Saving...' : 'Save' }}
+        </button>
       </div>
 
       <div class="card" *ngFor="let t of teachers">
         <h4>{{ t.firstName }} {{ t.lastName }}</h4>
         <p>{{ t.email }} | {{ t.subject }}</p>
         <p *ngIf="t.activationToken">Activation Link: <code>/activate?role=teacher&token={{ t.activationToken }}</code></p>
-        <button class="btn-danger-sm" (click)="deleteTeacher(t.id, t.firstName + ' ' + t.lastName)">Delete</button>
+        <button class="btn-danger-sm" (click)="deleteTeacher(t.id, t.firstName + ' ' + t.lastName)" [disabled]="submitting">Delete</button>
       </div>
     </section>
 
@@ -53,7 +70,7 @@
     <section *ngIf="activeTab === 'students'">
       <div class="section-header">
         <h2>Students</h2>
-        <button class="btn-primary" (click)="showStudentForm = !showStudentForm">
+        <button class="btn-primary" (click)="showStudentForm = !showStudentForm" [disabled]="submitting">
           {{ showStudentForm ? 'Cancel' : '+ New Student' }}
         </button>
       </div>
@@ -61,24 +78,44 @@
       <div *ngIf="showStudentForm" class="card">
         <h3>Create Student</h3>
         <div class="form-grid">
-          <input [(ngModel)]="newStudent.firstName" placeholder="First Name" />
-          <input [(ngModel)]="newStudent.lastName" placeholder="Last Name" />
-          <input [(ngModel)]="newStudent.email" placeholder="Email" />
-          <input [(ngModel)]="newStudent.omangOrPassport" placeholder="Omang / Passport" />
-          <input type="number" [(ngModel)]="newStudent.grade" placeholder="Grade (Year)" />
-          <select [(ngModel)]="newStudent.teacherId">
-            <option value="0" disabled>Select Primary Teacher</option>
-            <option *ngFor="let t of teachers" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</option>
-          </select>
+          <div class="form-group">
+            <input [(ngModel)]="newStudent.firstName" placeholder="First Name" [disabled]="submitting" />
+            <span class="error-text" *ngIf="studentErrors['firstName']">{{ studentErrors['firstName'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newStudent.lastName" placeholder="Last Name" [disabled]="submitting" />
+            <span class="error-text" *ngIf="studentErrors['lastName']">{{ studentErrors['lastName'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newStudent.email" placeholder="Email" [disabled]="submitting" />
+            <span class="error-text" *ngIf="studentErrors['email']">{{ studentErrors['email'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newStudent.omangOrPassport" placeholder="Omang / Passport" [disabled]="submitting" />
+            <span class="error-text" *ngIf="studentErrors['omangOrPassport']">{{ studentErrors['omangOrPassport'] }}</span>
+          </div>
+          <div class="form-group">
+            <input type="number" [(ngModel)]="newStudent.grade" placeholder="Grade (Year)" [disabled]="submitting" />
+            <span class="error-text" *ngIf="studentErrors['grade']">{{ studentErrors['grade'] }}</span>
+          </div>
+          <div class="form-group">
+            <select [(ngModel)]="newStudent.teacherId" [disabled]="submitting">
+              <option value="0" disabled>Select Primary Teacher</option>
+              <option *ngFor="let t of teachers" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</option>
+            </select>
+            <span class="error-text" *ngIf="studentErrors['teacherId']">{{ studentErrors['teacherId'] }}</span>
+          </div>
         </div>
-        <button class="btn-primary" style="margin-top:1rem" (click)="createStudent()">Save</button>
+        <button class="btn-primary" style="margin-top:1rem" (click)="createStudent()" [disabled]="submitting">
+          {{ submitting ? 'Saving...' : 'Save' }}
+        </button>
       </div>
 
       <div class="card" *ngFor="let s of students">
         <h4>{{ s.firstName }} {{ s.lastName }}</h4>
         <p>{{ s.email }} | Grade: {{ s.grade }}</p>
         <p *ngIf="s.activationToken">Activation Link: <code>/activate?role=student&token={{ s.activationToken }}</code></p>
-        <button class="btn-danger-sm" (click)="deleteStudent(s.id, s.firstName + ' ' + s.lastName)">Delete</button>
+        <button class="btn-danger-sm" (click)="deleteStudent(s.id, s.firstName + ' ' + s.lastName)" [disabled]="submitting">Delete</button>
       </div>
     </section>
 
@@ -86,7 +123,7 @@
     <section *ngIf="activeTab === 'courses'">
       <div class="section-header">
         <h2>Courses</h2>
-        <button class="btn-primary" (click)="showCourseForm = !showCourseForm">
+        <button class="btn-primary" (click)="showCourseForm = !showCourseForm" [disabled]="submitting">
           {{ showCourseForm ? 'Cancel' : '+ New Course' }}
         </button>
       </div>
@@ -94,11 +131,22 @@
       <div *ngIf="showCourseForm" class="card">
         <h3>Create Course</h3>
         <div class="form-grid">
-          <input [(ngModel)]="newCourse.name" placeholder="Course Name (e.g. Mathematics)" />
-          <input [(ngModel)]="newCourse.code" placeholder="Course Code (e.g. MAT101)" />
-          <input [(ngModel)]="newCourse.description" placeholder="Description" />
+          <div class="form-group">
+            <input [(ngModel)]="newCourse.name" placeholder="Course Name (e.g. Mathematics)" [disabled]="submitting" />
+            <span class="error-text" *ngIf="courseErrors['name']">{{ courseErrors['name'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newCourse.code" placeholder="Course Code (e.g. MAT101)" [disabled]="submitting" />
+            <span class="error-text" *ngIf="courseErrors['code']">{{ courseErrors['code'] }}</span>
+          </div>
+          <div class="form-group">
+            <input [(ngModel)]="newCourse.description" placeholder="Description" [disabled]="submitting" />
+            <span class="error-text" *ngIf="courseErrors['description']">{{ courseErrors['description'] }}</span>
+          </div>
         </div>
-        <button class="btn-primary" style="margin-top:1rem" (click)="createCourse()">Save</button>
+        <button class="btn-primary" style="margin-top:1rem" (click)="createCourse()" [disabled]="submitting">
+          {{ submitting ? 'Saving...' : 'Save' }}
+        </button>
       </div>
 
       <div class="card" *ngFor="let c of courses">
@@ -111,7 +159,7 @@
     <section *ngIf="activeTab === 'classes'">
       <div class="section-header">
         <h2>Class Groups</h2>
-        <button class="btn-primary" (click)="showClassForm = !showClassForm">
+        <button class="btn-primary" (click)="showClassForm = !showClassForm" [disabled]="submitting">
           {{ showClassForm ? 'Cancel' : '+ New Class' }}
         </button>
       </div>
@@ -119,39 +167,53 @@
       <div *ngIf="showClassForm" class="card">
         <h3>Create Class Group</h3>
         <div class="form-grid">
-          <input [(ngModel)]="newClass.name" placeholder="Class Name (e.g. 10A Math)" />
-          <input type="number" [(ngModel)]="newClass.gradeLevel" placeholder="Grade Level" />
-          <select [(ngModel)]="newClass.courseId">
-            <option value="0" disabled>Select Course</option>
-            <option *ngFor="let c of courses" [value]="c.id">{{ c.name }}</option>
-          </select>
-          <select [(ngModel)]="newClass.teacherId">
-            <option value="0" disabled>Select Teacher</option>
-            <option *ngFor="let t of teachers" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</option>
-          </select>
+          <div class="form-group">
+            <input [(ngModel)]="newClass.name" placeholder="Class Name (e.g. 10A Math)" [disabled]="submitting" />
+            <span class="error-text" *ngIf="classErrors['name']">{{ classErrors['name'] }}</span>
+          </div>
+          <div class="form-group">
+            <input type="number" [(ngModel)]="newClass.gradeLevel" placeholder="Grade Level" [disabled]="submitting" />
+            <span class="error-text" *ngIf="classErrors['gradeLevel']">{{ classErrors['gradeLevel'] }}</span>
+          </div>
+          <div class="form-group">
+            <select [(ngModel)]="newClass.courseId" [disabled]="submitting">
+              <option value="0" disabled>Select Course</option>
+              <option *ngFor="let c of courses" [value]="c.id">{{ c.name }}</option>
+            </select>
+            <span class="error-text" *ngIf="classErrors['courseId']">{{ classErrors['courseId'] }}</span>
+          </div>
+          <div class="form-group">
+            <select [(ngModel)]="newClass.teacherId" [disabled]="submitting">
+              <option value="0" disabled>Select Teacher</option>
+              <option *ngFor="let t of teachers" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</option>
+            </select>
+            <span class="error-text" *ngIf="classErrors['teacherId']">{{ classErrors['teacherId'] }}</span>
+          </div>
         </div>
-        <button class="btn-primary" style="margin-top:1rem" (click)="createClassGroup()">Save</button>
+        <button class="btn-primary" style="margin-top:1rem" (click)="createClassGroup()" [disabled]="submitting">
+          {{ submitting ? 'Saving...' : 'Save' }}
+        </button>
       </div>
 
       <div class="card" *ngFor="let cg of classGroups">
         <h4>{{ cg.name }} (Grade {{ cg.gradeLevel }})</h4>
         <p>Course: {{ cg.course?.name }} | Teacher: {{ cg.teacher?.firstName }} {{ cg.teacher?.lastName }}</p>
-        
+
         <!-- Student Enrollments -->
         <div style="margin-top:1rem; border-top:1px solid #eee; padding-top:1rem">
           <h5>Enrolled Students:</h5>
           <ul>
             <li *ngFor="let st of cg.students">
               {{ st.firstName }} {{ st.lastName }} 
-              <button class="btn-danger-sm" (click)="unenrollStudent(cg.id, st.id)">Unenroll</button>
+              <button class="btn-danger-sm" (click)="unenrollStudent(cg.id, st.id)" [disabled]="submitting">Unenroll</button>
             </li>
           </ul>
-          
-          <select #studentSelect>
+
+          <select #studentSelect [disabled]="submitting">
             <option value="0">Select a student to enroll...</option>
             <option *ngFor="let s of students" [value]="s.id">{{ s.firstName }} {{ s.lastName }}</option>
           </select>
-          <button class="btn-secondary" (click)="enrollStudent(cg.id, +studentSelect.value)">Enroll</button>
+          <button class="btn-secondary" (click)="enrollStudent(cg.id, +studentSelect.value)" [disabled]="submitting">Enroll</button>
         </div>
       </div>
     </section>

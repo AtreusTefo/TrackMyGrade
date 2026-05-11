@@ -17,6 +17,15 @@
 - **Style:** Professional, technical, and objective. 
 - **Format:** Use standard Markdown (headings, tables, lists).
 - **Prohibition:** Strictly zero emojis allowed in `.md` files or code documentation.
+- **Organization:** All documentation files MUST be created in their rightful folders under `docs/`:
+  - `docs/architecture/` - System design, data flow, architectural patterns
+  - `docs/implementation/` - Implementation guides, code summaries, completion reports
+  - `docs/project/` - Project requirements, planning, deliverables, scope documentation
+  - `docs/guides/` - Quick start guides, testing guides, how-to documentation
+  - `docs/api-postman/` - API testing, Postman workflows, integration guides
+  - `docs/error-fixes/` - Bug fixes, error resolutions, issue tracking
+  - `docs/daily-reports/` - Daily progress reports and status updates
+- **Never** leave documentation files in the `docs/` root directory.
 
 ## Coding Standards & Patterns
 - **Backend (C#):**
@@ -35,8 +44,9 @@
 - **Documentation:** `docs/` (Refer to `DOCUMENTATION_INDEX.md`).
 
 ## Environment Commands
-- **Build API:** `Ctrl+Shift+B` (Visual Studio)
+- **Build API:** `cd TrackMyGradeAPI && msbuild TrackMyGradeAPI.csproj`
 - **Run API:** `cd TrackMyGradeAPI && .\bin\TrackMyGradeAPI.exe`
+- **Build Angular:** `cd StudentApp && npm run build`
 - **Run Angular:** `cd StudentApp && npm start`
 
 ## Critical Rules

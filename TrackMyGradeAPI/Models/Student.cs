@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 namespace TrackMyGradeAPI.Models
 {
-    // ── Existing models (Teacher & Student) updated below ─────────────
+    // ── Existing models (Admin, Teacher & Student) updated below ─────────────
 
+    
     public class Teacher
     {
         public int    Id           { get; set; }
@@ -154,5 +155,19 @@ namespace TrackMyGradeAPI.Models
         public DateTime PerformedAt     { get; set; }      // UTC timestamp
         public string   IpAddress       { get; set; }      // Optional: requester IP
         public string   UserAgent       { get; set; }      // Optional: requester user agent
+    }
+
+    /// <summary>
+    /// Administrative user with system access.
+    /// </summary>
+    public class Admin
+    {
+        public int      Id        { get; set; }
+        public string   FirstName { get; set; }
+        public string   LastName  { get; set; }
+        public string   Email     { get; set; }
+        public string   Password  { get; set; }  // Store as BCrypt hash
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }

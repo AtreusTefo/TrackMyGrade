@@ -1,0 +1,115 @@
+<div class="audit-logs-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Audit Logs</h1>
+    <p>View immutable system activity and compliance records.</p>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="loading" class="alert info">Loading audit logs...</div>
+  <div *ngIf="error" class="alert error">{{ error }}</div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <h3>Filters</h3>
+    <div class="filter-grid">
+      <div class="filter-group">
+        <label for="entity-type">Entity Type:</label>
+        <select id="entity-type" [(ngModel)]="filterEntityType" class="form-control">
+          <option value="">All Types</option>
+          <option *ngFor="let type of entityTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="action">Action:</label>
+        <select id="action" [(ngModel)]="filterAction" class="form-control">
+          <option value="">All Actions</option>
+          <option *ngFor="let act of actions" [value]="act">{{ act }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="performed-by">Performed By (Email):</label>
+        <input id="performed-by" type="text" [(ngModel)]="filterPerformedBy" placeholder="e.g. admin@trackmygrade.com" class="form-control" />
+      </div>
+
+      <div class="filter-group">
+        <label for="start-date">Start Date:</label>
+        <input id="start-date" type="datetime-local" [(ngModel)]="filterStartDate" class="form-control" />
+      </div>
+
+      <div class="filter-group">
+        <label for="end-date">End Date:</label>
+        <input id="end-date" type="datetime-local" [(ngModel)]="filterEndDate" class="form-control" />
+      </div>
+
+      <div class="filter-group">
+        <label for="page-size">Records Per Page:</label>
+        <select id="page-size" [(ngModel)]="pageSize" (change)="currentPage = 1; loadAuditLogs()" class="form-control">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-primary" (click)="applyFilters()">Apply Filters</button>
+      <button class="btn-secondary" (click)="resetFilters()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="results-summary" *ngIf="!loading && auditLogs.length > 0">
+    <p>Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, totalCount) }} of {{ totalCount }} records</p>
+  </div>
+
+  <!-- Audit Logs Table -->
+  <div class="audit-logs-table" *ngIf="!loading && auditLogs.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Date & Time (UTC)</th>
+          <th>Entity Type</th>
+          <th>Entity ID</th>
+          <th>Action</th>
+          <th>Performed By</th>
+          <th>Changes</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of auditLogs" [class.log-created]="log.action === 'Created'" [class.log-updated]="log.action === 'Updated'" [class.log-deleted]="log.action === 'Deleted'">
+          <td>{{ formatDate(log.performedAt) }}</td>
+          <td><span class="badge entity-type">{{ log.entityType }}</span></td>
+          <td>{{ log.entityId }}</td>
+          <td>
+            <span [class]="'badge action-' + log.action.toLowerCase()">{{ log.action }}</span>
+          </td>
+          <td>{{ log.performedBy }}</td>
+          <td>
+            <details>
+              <summary>View</summary>
+              <pre>{{ parseChanges(log.changes) | json }}</pre>
+            </details>
+          </td>
+          <td>{{ log.ipAddress || 'N/A' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && auditLogs.length === 0">
+    <p>No audit logs found matching your filters.</p>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && auditLogs.length > 0">
+    <button class="btn-secondary" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} of {{ getPageCount() }}</span>
+    <button class="btn-secondary" (click)="nextPage()" [disabled]="currentPage === getPageCount()">Next</button>
+  </div>
+</div>
