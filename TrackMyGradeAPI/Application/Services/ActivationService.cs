@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using TrackMyGradeAPI.Data;
 using TrackMyGradeAPI.DTOs;
+using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Services
 {

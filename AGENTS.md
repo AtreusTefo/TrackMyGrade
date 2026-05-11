@@ -16,7 +16,7 @@
 ## Documentation Standards
 - **Style:** Professional, technical, and objective. 
 - **Format:** Use standard Markdown (headings, tables, lists).
-- **Prohibition:** Strictly zero emojis allowed in `.md` files or code documentation.
+- **Prohibition:** Strictly zero emojis allowed in `.md` files.
 - **Organization:** All documentation files MUST be created in their rightful folders under `docs/`:
   - `docs/architecture/` - System design, data flow, architectural patterns
   - `docs/implementation/` - Implementation guides, code summaries, completion reports
@@ -35,6 +35,7 @@
 - **Frontend (Angular 18):**
   - Use **CanActivateFn** for route guards.
   - Component location: `StudentApp/src/app/components/`.
+  - Ensure all services and components use consistent token key names (camelCase preferred, e.g., 'adminToken' not 'admin_token') for frontend authentication with localStorage. Token key mismatches can cause redirect loops. Use a shared constant for key names across all files.
 - **Naming:** PascalCase for C#; camelCase for JSON and TypeScript.
 
 ## Project Structure Reference

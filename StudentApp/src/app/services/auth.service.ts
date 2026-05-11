@@ -10,6 +10,8 @@ export type UserRole = 'admin' | 'teacher' | 'student' | null;
   providedIn: 'root'
 })
 export class AuthService {
+  private lastRedirectTime = 0;
+  private readonly REDIRECT_DEBOUNCE_MS = 500;
 
   constructor(
     private adminAuthService: AdminAuthService,
@@ -39,8 +41,15 @@ export class AuthService {
   /**
    * Redirects the current user to their role-specific dashboard.
    * Returns true if a redirect occurred (user was logged in), false otherwise.
+   * Uses debouncing to prevent rapid successive redirects.
    */
   redirectToDashboard(): boolean {
+    const now = Date.now();
+    if (now - this.lastRedirectTime < this.REDIRECT_DEBOUNCE_MS) {
+      return false; // Debounce: ignore rapid successive calls
+    }
+    this.lastRedirectTime = now;
+
     const role = this.getActiveRole();
     switch (role) {
       case 'admin':

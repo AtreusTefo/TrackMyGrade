@@ -56,15 +56,62 @@ namespace TrackMyGradeAPI.Services
 
         public AdminResponseDto Login(AdminLoginDto request)
         {
-            string adminEmail    = System.Configuration.ConfigurationManager.AppSettings["AdminEmail"]    ?? "admin@trackmygrade.com";
-            string adminPassword = System.Configuration.ConfigurationManager.AppSettings["AdminPassword"] ?? "Admin@2026";
+            try
+            {
+                if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+                    throw new ArgumentException("Email and password are required.");
 
-            if (!request.Email.Trim().Equals(adminEmail, StringComparison.OrdinalIgnoreCase) ||
-                request.Password != adminPassword)
-                throw new UnauthorizedAccessException("Invalid admin credentials.");
+                // Normalize email for case-insensitive lookup
+                string normalizedEmail = request.Email.Trim().ToLower();
 
-            var token = _tokenService.GenerateToken(0, "Admin", adminEmail);
-            return new AdminResponseDto { Email = adminEmail, Token = token };
+                System.Diagnostics.Debug.WriteLine($"[AdminService] Login attempt for email: {normalizedEmail}");
+
+                // Query database for admin account
+                var admin = _db.Admins.FirstOrDefault(a => a.Email == normalizedEmail);
+
+                if (admin == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AdminService] No admin found with email: {normalizedEmail}");
+                    System.Diagnostics.Debug.WriteLine($"[AdminService] Total admins in database: {_db.Admins.Count()}");
+                    throw new UnauthorizedAccessException("Invalid admin credentials.");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[AdminService] Admin found: {admin.Email}, checking password...");
+
+                // Verify password using BCrypt
+                bool passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, admin.Password);
+
+                if (!passwordValid)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AdminService] Password verification failed for admin: {admin.Email}");
+                    throw new UnauthorizedAccessException("Invalid admin credentials.");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[AdminService] Password verified successfully for admin: {admin.Email}");
+
+                var token = _tokenService.GenerateToken(admin.Id, "Admin", admin.Email);
+                System.Diagnostics.Debug.WriteLine($"[AdminService] Login successful. Token issued for: {admin.Email}");
+
+                return new AdminResponseDto
+                {
+                    Id = admin.Id,
+                    FirstName = admin.FirstName,
+                    LastName = admin.LastName,
+                    Email = admin.Email,
+                    Phone = admin.Phone,
+                    Token = token
+                };
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AdminService] Unexpected error during login: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[AdminService] Exception: {ex.GetType().Name} - {ex.StackTrace}");
+                throw;
+            }
         }
 
         // ── Teachers ──────────────────────────────────────────────────────

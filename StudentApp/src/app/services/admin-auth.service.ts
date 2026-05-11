@@ -69,7 +69,7 @@ export class AdminAuthService {
         const token = this.getToken();
         let headers = new HttpHeaders();
         if (token) {
-            headers = headers.set('X-AdminToken', token);
+            headers = headers.set('Authorization', `Bearer ${token}`);
         }
         return headers;
     }

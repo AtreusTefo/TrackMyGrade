@@ -45,7 +45,7 @@ export class AdminDashboardComponent implements OnInit {
   constructor(private adminApi: AdminApiService, private router: Router) {}
 
   ngOnInit(): void {
-    if (!localStorage.getItem('admin_token')) {
+    if (!localStorage.getItem('adminToken')) {
       this.router.navigate(['/login']);
       return;
     }

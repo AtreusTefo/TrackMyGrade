@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Description;
 using TrackMyGradeAPI.DTOs;
@@ -30,6 +32,35 @@ namespace TrackMyGradeAPI.Controllers
             try { return Ok(_adminService.Login(request)); }
             catch (UnauthorizedAccessException ex) { return Unauthorized(); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
+        }
+
+        // GET: api/admin/diagnostic
+        /// <summary>Returns diagnostic information about admin account setup (for debugging only).</summary>
+        [HttpGet, Route("diagnostic")]
+        [ResponseType(typeof(object))]
+        public IHttpActionResult GetDiagnostic()
+        {
+            try
+            {
+                using (var context = new TrackMyGradeAPI.Data.ApplicationDbContext())
+                {
+                    var adminCount = context.Admins.Count();
+                    var admins = context.Admins.Select(a => new { a.Id, a.Email, a.FirstName, a.LastName }).ToList();
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Admin account diagnostic information",
+                        adminCount = adminCount,
+                        admins = admins,
+                        timestamp = DateTime.UtcNow
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"{ex.GetType().Name}: {ex.Message}");
+            }
         }
 
         // ── Teachers ──────────────────────────────────────────────────────
