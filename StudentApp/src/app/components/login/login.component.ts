@@ -35,7 +35,9 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     // If already authenticated, skip the form and go straight to the dashboard
-    this.authService.redirectToDashboard();
+    if (this.authService.isAnyUserLoggedIn()) {
+      this.authService.redirectToDashboard();
+    }
   }
 
   togglePassword(): void {
@@ -80,34 +82,42 @@ export class LoginComponent implements OnInit {
 
     const creds = { email: this.email.trim(), password: this.password };
 
-    // 1️⃣  Try Admin
+    // Try each role sequentially
+    this.tryAdminLogin(creds);
+  }
+
+  private tryAdminLogin(creds: any): void {
     this.adminAuthService.login(creds).subscribe({
       next: (res) => {
         this.adminAuthService.setCurrentAdmin(res);
+        this.isSubmitting = false;
         this.router.navigate(['/admin-dashboard']);
       },
+      error: () => this.tryTeacherLogin(creds)
+    });
+  }
+
+  private tryTeacherLogin(creds: any): void {
+    this.teacherAuthService.login(creds).subscribe({
+      next: (res) => {
+        this.teacherAuthService.setCurrentTeacher(res);
+        this.isSubmitting = false;
+        this.router.navigate(['/teacher-dashboard']);
+      },
+      error: () => this.tryStudentLogin(creds)
+    });
+  }
+
+  private tryStudentLogin(creds: any): void {
+    this.studentAuthService.login(creds).subscribe({
+      next: (res) => {
+        this.studentAuthService.setCurrentStudent(res);
+        this.isSubmitting = false;
+        this.router.navigate(['/student-dashboard']);
+      },
       error: () => {
-        // 2️⃣  Try Teacher
-        this.teacherAuthService.login(creds).subscribe({
-          next: (res) => {
-            this.teacherAuthService.setCurrentTeacher(res);
-            this.router.navigate(['/teacher-dashboard']);
-          },
-          error: () => {
-            // 3️⃣  Try Student
-            this.studentAuthService.login(creds).subscribe({
-              next: (res) => {
-                this.studentAuthService.setCurrentStudent(res);
-                this.router.navigate(['/student-dashboard']);
-              },
-              error: () => {
-                // All three failed — show a friendly error
-                this.loginError  = 'Invalid email or password. Please try again.';
-                this.isSubmitting = false;
-              }
-            });
-          }
-        });
+        this.loginError  = 'Invalid email or password. Please try again.';
+        this.isSubmitting = false;
       }
     });
   }

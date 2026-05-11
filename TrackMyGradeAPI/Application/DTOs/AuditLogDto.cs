@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace TrackMyGradeAPI.DTOs
 {
@@ -71,6 +72,6 @@ namespace TrackMyGradeAPI.DTOs
         public int PageSize { get; set; }
 
         /// <summary>Audit log records for this page.</summary>
-        public List<AuditLogDto> Records { get; set; } = new();
+        public List<AuditLogDto> Records { get; set; } = new List<AuditLogDto>();
     }
 }

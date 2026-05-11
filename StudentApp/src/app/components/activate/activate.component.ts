@@ -224,6 +224,7 @@ export class ActivateComponent implements OnInit {
 
   onSubmit(): void {
     if (this.newPassword !== this.confirmPassword) { return; }
+    if (this.submitting) { return; } // Prevent double-submission
     this.submitting = true;
     this.errorMsg   = '';
 
@@ -240,7 +241,14 @@ export class ActivateComponent implements OnInit {
         localStorage.setItem(`${this.role.toLowerCase()}_user`, JSON.stringify(res));
         this.submitting = false;
         this.activated  = true;
-        setTimeout(() => this.router.navigateByUrl(res.dashboard), 1800);
+        // Navigate after a short delay to allow UI to update
+        setTimeout(() => {
+          if (res.dashboard) {
+            this.router.navigateByUrl(res.dashboard).catch(() => {
+              this.router.navigate(['/login']);
+            });
+          }
+        }, 1800);
       },
       error: (err) => {
         this.submitting = false;

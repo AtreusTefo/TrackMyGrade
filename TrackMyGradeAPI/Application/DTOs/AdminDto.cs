@@ -11,10 +11,14 @@ namespace TrackMyGradeAPI.DTOs
         public string Password { get; set; }
     }
 
-    /// <summary>Admin login response — JWT only (no personal profile).</summary>
+    /// <summary>Admin login response — returns admin profile with JWT token.</summary>
     public class AdminResponseDto
     {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string Email { get; set; }
+        public string Phone { get; set; }
         public string Token { get; set; }
     }
 

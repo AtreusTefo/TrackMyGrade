@@ -49,7 +49,8 @@ namespace TrackMyGradeAPI.Infrastructure
             // ── New controllers ────────────────────────────────────────────
             if (serviceType == typeof(AdminController))
                 return new AdminController(
-                    new AdminService(_db, _mapper, _tokenService));
+                    new AdminService(_db, _mapper, _tokenService, new AuditLogService(_db)),
+                    new AuditLogService(_db));
 
             if (serviceType == typeof(ActivationController))
                 return new ActivationController(

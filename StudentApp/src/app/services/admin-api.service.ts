@@ -11,7 +11,7 @@ export class AdminApiService {
 
   // ── Auth header (real JWT Bearer token) ──────────────────────────────
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('adminToken');
     return new HttpHeaders({
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {})
