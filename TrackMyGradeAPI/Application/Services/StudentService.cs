@@ -8,19 +8,37 @@ using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Services
 {
+    /// <summary>
+    /// Service interface for student retrieval operations.
+    /// Allows teachers to view their enrolled students.
+    /// </summary>
     public interface IStudentService
     {
-        // Teachers can READ students in their classes
+        /// <summary>Retrieves all students enrolled in any class taught by a specific teacher.</summary>
+        /// <param name="teacherId">The ID of the teacher.</param>
+        /// <returns>List of student response DTOs.</returns>
         List<StudentResponseDto> GetByTeacher(int teacherId);
+
+        /// <summary>Retrieves a specific student by ID, with authorization check for the teacher.</summary>
+        /// <param name="studentId">The ID of the student.</param>
+        /// <param name="teacherId">The ID of the teacher (for authorization).</param>
+        /// <returns>The student response DTO.</returns>
         StudentResponseDto       GetById(int studentId, int teacherId);
-        // Create / Update / Delete moved to IAdminService
     }
 
+    /// <summary>
+    /// Implementation of IStudentService for student retrieval.
+    /// </summary>
     public class StudentService : IStudentService
     {
         private readonly ApplicationDbContext _db;
         private readonly IMapper              _mapper;
 
+        /// <summary>
+        /// Initializes a new instance of the StudentService class.
+        /// </summary>
+        /// <param name="db">The application database context.</param>
+        /// <param name="mapper">The AutoMapper instance for entity-to-DTO mapping.</param>
         public StudentService(ApplicationDbContext db, IMapper mapper)
         {
             _db     = db;

@@ -6,11 +6,11 @@ using TrackMyGradeAPI.Logging;
 
 namespace TrackMyGradeAPI.Handlers
 {
-    /// <summary>
-    /// Global exception handler for Web API that logs errors to ELMAH
-    /// </summary>
+    /// <summary>Global exception handler for Web API that logs errors to ELMAH.</summary>
     public class ElmahExceptionHandler : ExceptionHandler
     {
+        /// <summary>Handles exceptions by creating a generic error response.</summary>
+        /// <param name="context">The exception handler context.</param>
         public override void Handle(ExceptionHandlerContext context)
         {
             var response = context.Request.CreateResponse(
@@ -20,6 +20,9 @@ namespace TrackMyGradeAPI.Handlers
             context.Result = new ResponseMessageResult(response);
         }
 
+        /// <summary>Determines whether this handler should handle the exception.</summary>
+        /// <param name="context">The exception handler context.</param>
+        /// <returns>True to handle all exceptions; false otherwise.</returns>
         public override bool ShouldHandle(ExceptionHandlerContext context)
         {
             // Handle all exceptions
@@ -27,11 +30,11 @@ namespace TrackMyGradeAPI.Handlers
         }
     }
 
-    /// <summary>
-    /// Exception logger that logs to ELMAH
-    /// </summary>
+    /// <summary>Exception logger that logs unhandled exceptions to ELMAH.</summary>
     public class ElmahExceptionLogger : ExceptionLogger
     {
+        /// <summary>Logs the exception to ELMAH with request context information.</summary>
+        /// <param name="context">The exception logger context.</param>
         public override void Log(ExceptionLoggerContext context)
         {
             ErrorLoggingConfig.LogErrorWithMessage(
@@ -39,6 +42,9 @@ namespace TrackMyGradeAPI.Handlers
                 context.Exception);
         }
 
+        /// <summary>Determines whether this logger should log the exception.</summary>
+        /// <param name="context">The exception logger context.</param>
+        /// <returns>True if exception exists and should be logged; false otherwise.</returns>
         public override bool ShouldLog(ExceptionLoggerContext context)
         {
             return context.Exception != null;

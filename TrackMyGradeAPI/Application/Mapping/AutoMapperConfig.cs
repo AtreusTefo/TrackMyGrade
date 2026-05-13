@@ -2,11 +2,17 @@ using AutoMapper;
 
 namespace TrackMyGradeAPI.Mapping
 {
+    /// <summary>
+    /// Static configuration class for AutoMapper initialization and lazy-loaded singleton mapper instance.
+    /// </summary>
     public static class AutoMapperConfig
     {
         private static volatile IMapper _mapper;
         private static readonly object _lock = new object();
 
+        /// <summary>
+        /// Gets the lazy-loaded singleton IMapper instance. Initializes on first access.
+        /// </summary>
         public static IMapper Mapper
         {
             get
@@ -17,6 +23,10 @@ namespace TrackMyGradeAPI.Mapping
             }
         }
 
+        /// <summary>
+        /// Initializes the AutoMapper configuration and creates the mapper instance.
+        /// Thread-safe using double-checked locking pattern.
+        /// </summary>
         public static void Initialize()
         {
             if (_mapper != null) return;

@@ -6,6 +6,9 @@ namespace TrackMyGradeAPI.Validators
     /// <summary>Validates student login credentials.</summary>
     public class StudentLoginValidator : AbstractValidator<StudentLoginDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the StudentLoginValidator class.
+        /// </summary>
         public StudentLoginValidator()
         {
             RuleFor(x => x.Email)
@@ -21,6 +24,9 @@ namespace TrackMyGradeAPI.Validators
     /// <summary>Validates the account activation request (sets first password).</summary>
     public class ActivateAccountValidator : AbstractValidator<ActivateAccountDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the ActivateAccountValidator class.
+        /// </summary>
         public ActivateAccountValidator()
         {
             RuleFor(x => x.Role)

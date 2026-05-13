@@ -13,6 +13,8 @@ namespace TrackMyGradeAPI.Controllers
     {
         private readonly IActivationService _activationService;
 
+        /// <summary>Initializes a new instance of the ActivationController class.</summary>
+        /// <param name="activationService">The activation service dependency.</param>
         public ActivationController(IActivationService activationService)
         {
             _activationService = activationService;

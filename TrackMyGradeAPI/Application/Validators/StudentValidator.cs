@@ -10,6 +10,9 @@ namespace TrackMyGradeAPI.Validators
     /// </summary>
     public class AdminCreateStudentValidator : AbstractValidator<AdminCreateStudentDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the AdminCreateStudentValidator class.
+        /// </summary>
         public AdminCreateStudentValidator()
         {
             RuleFor(x => x.FirstName)
@@ -47,8 +50,14 @@ namespace TrackMyGradeAPI.Validators
         }
     }
 
+    /// <summary>
+    /// Validates admin student update records.
+    /// </summary>
     public class AdminUpdateStudentValidator : AbstractValidator<AdminUpdateStudentDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the AdminUpdateStudentValidator class.
+        /// </summary>
         public AdminUpdateStudentValidator()
         {
             RuleFor(x => x.FirstName)

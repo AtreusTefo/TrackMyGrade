@@ -7,8 +7,11 @@ using TrackMyGradeAPI.Infrastructure;
 
 namespace TrackMyGradeAPI
 {
+    /// <summary>Web API configuration class for registering routes, filters, and services.</summary>
     public static class WebApiConfig
     {
+        /// <summary>Registers the Web API configuration including dependency resolution, CORS, and error handling.</summary>
+        /// <param name="config">The HTTP configuration object.</param>
         public static void Register(HttpConfiguration config)
         {
             // Register dependency resolver so controllers with constructor injection work
@@ -17,8 +20,11 @@ namespace TrackMyGradeAPI
             // Register FluentValidation as a global action filter
             config.Filters.Add(new FluentValidationFilter());
 
-            // Enable CORS
-            var cors = new EnableCorsAttribute("http://localhost:4200", "*", "*");
+            // Enable CORS with explicit origins
+            var cors = new EnableCorsAttribute(
+                origins: "http://localhost:4200",
+                headers: "*",
+                methods: "*");
             config.EnableCors(cors);
 
             // Configure ELMAH exception handling

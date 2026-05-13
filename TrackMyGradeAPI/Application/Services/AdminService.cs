@@ -10,33 +10,68 @@ using TrackMyGradeAPI.Validators;
 
 namespace TrackMyGradeAPI.Services
 {
+    /// <summary>Service interface for administrative operations: teachers, students, courses, and class groups.</summary>
     public interface IAdminService
     {
-        // ── Auth ─────────────────────────────────────────────────────────
+        /// <summary>Authenticates an admin user and returns a JWT token.</summary>
+        /// <param name="request">The admin login request.</param>
+        /// <returns>The admin response with profile and token.</returns>
         AdminResponseDto Login(AdminLoginDto request);
 
-        // ── Teachers ─────────────────────────────────────────────────────
+        /// <summary>Gets all teacher accounts.</summary>
+        /// <returns>A list of all teacher DTOs.</returns>
         List<AdminTeacherDto>  GetAllTeachers();
+        /// <summary>Creates a new teacher account.</summary>
+        /// <param name="request">The teacher creation request.</param>
+        /// <returns>The created teacher DTO.</returns>
         AdminTeacherDto        CreateTeacher(AdminCreateTeacherDto request);
+        /// <summary>Deletes a teacher account.</summary>
+        /// <param name="id">The teacher ID to delete.</param>
         void                   DeleteTeacher(int id);
 
-        // ── Students ─────────────────────────────────────────────────────
+        /// <summary>Gets all student accounts.</summary>
+        /// <returns>A list of all student DTOs.</returns>
         List<AdminStudentDto>  GetAllStudents();
+        /// <summary>Creates a new student account.</summary>
+        /// <param name="request">The student creation request.</param>
+        /// <returns>The created student DTO.</returns>
         AdminStudentDto        CreateStudent(AdminCreateStudentDto request);
+        /// <summary>Updates a student's personal details.</summary>
+        /// <param name="id">The student ID to update.</param>
+        /// <param name="request">The student update request.</param>
+        /// <returns>The updated student DTO.</returns>
         AdminStudentDto        UpdateStudent(int id, AdminUpdateStudentDto request);
+        /// <summary>Deletes a student account.</summary>
+        /// <param name="id">The student ID to delete.</param>
         void                   DeleteStudent(int id);
 
-        // ── Courses ───────────────────────────────────────────────────────
+        /// <summary>Gets all courses.</summary>
+        /// <returns>A list of all course DTOs.</returns>
         List<CourseDto>        GetAllCourses();
+        /// <summary>Creates a new course.</summary>
+        /// <param name="request">The course creation request.</param>
+        /// <returns>The created course DTO.</returns>
         CourseDto              CreateCourse(CreateCourseDto request);
 
-        // ── Class Groups ─────────────────────────────────────────────────
+        /// <summary>Gets all class groups.</summary>
+        /// <returns>A list of all class group DTOs.</returns>
         List<ClassGroupDto>    GetAllClassGroups();
+        /// <summary>Creates a new class group.</summary>
+        /// <param name="request">The class group creation request.</param>
+        /// <returns>The created class group DTO.</returns>
         ClassGroupDto          CreateClassGroup(CreateClassGroupDto request);
+        /// <summary>Enrolls a student in a class group.</summary>
+        /// <param name="classGroupId">The class group ID.</param>
+        /// <param name="studentId">The student ID to enroll.</param>
+        /// <returns>The updated class group DTO.</returns>
         ClassGroupDto          EnrollStudent(int classGroupId, int studentId);
+        /// <summary>Unenrolls a student from a class group.</summary>
+        /// <param name="classGroupId">The class group ID.</param>
+        /// <param name="studentId">The student ID to unenroll.</param>
         void                   UnenrollStudent(int classGroupId, int studentId);
     }
 
+    /// <summary>Service implementation for administrative operations.</summary>
     public class AdminService : IAdminService
     {
         private readonly ApplicationDbContext _db;
@@ -44,6 +79,11 @@ namespace TrackMyGradeAPI.Services
         private readonly ITokenService        _tokenService;
         private readonly IAuditLogService     _auditLogService;
 
+        /// <summary>Initializes a new instance of the AdminService class.</summary>
+        /// <param name="db">The application database context.</param>
+        /// <param name="mapper">The AutoMapper instance.</param>
+        /// <param name="tokenService">The token service dependency.</param>
+        /// <param name="auditLogService">The audit log service dependency.</param>
         public AdminService(ApplicationDbContext db, IMapper mapper, ITokenService tokenService, IAuditLogService auditLogService)
         {
             _db                = db;
@@ -54,6 +94,11 @@ namespace TrackMyGradeAPI.Services
 
         // ── Auth ──────────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Authenticates an admin with email and password, returning a JWT token.
+        /// </summary>
+        /// <param name="request">The admin login credentials.</param>
+        /// <returns>The admin response DTO with JWT token.</returns>
         public AdminResponseDto Login(AdminLoginDto request)
         {
             try
@@ -116,6 +161,10 @@ namespace TrackMyGradeAPI.Services
 
         // ── Teachers ──────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Retrieves a list of all teachers in the system.
+        /// </summary>
+        /// <returns>List of teacher DTOs.</returns>
         public List<AdminTeacherDto> GetAllTeachers()
         {
             return _db.Teachers
@@ -133,6 +182,11 @@ namespace TrackMyGradeAPI.Services
                 }).ToList();
         }
 
+        /// <summary>
+        /// Creates a new teacher account with the provided information.
+        /// </summary>
+        /// <param name="request">The teacher creation DTO.</param>
+        /// <returns>The created teacher response DTO.</returns>
         public AdminTeacherDto CreateTeacher(AdminCreateTeacherDto request)
         {
             // ── Validate input ─────────────────────────────────────────────
@@ -168,6 +222,10 @@ namespace TrackMyGradeAPI.Services
             };
         }
 
+        /// <summary>
+        /// Deletes a teacher account. Only succeeds if teacher has no assigned classes or assignments.
+        /// </summary>
+        /// <param name="id">The ID of the teacher to delete.</param>
         public void DeleteTeacher(int id)
         {
             var teacher = _db.Teachers.Find(id);
@@ -199,6 +257,10 @@ namespace TrackMyGradeAPI.Services
 
         // ── Students ──────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Retrieves a list of all students in the system.
+        /// </summary>
+        /// <returns>List of student DTOs.</returns>
         public List<AdminStudentDto> GetAllStudents()
         {
             return _db.Students
@@ -214,6 +276,11 @@ namespace TrackMyGradeAPI.Services
                 }).ToList();
         }
 
+        /// <summary>
+        /// Creates a new student account with the provided information.
+        /// </summary>
+        /// <param name="request">The student creation DTO.</param>
+        /// <returns>The created student response DTO.</returns>
         public AdminStudentDto CreateStudent(AdminCreateStudentDto request)
         {
             // ── Validate input ─────────────────────────────────────────────
@@ -266,6 +333,12 @@ namespace TrackMyGradeAPI.Services
             };
         }
 
+        /// <summary>
+        /// Updates an existing student account with new information.
+        /// </summary>
+        /// <param name="id">The ID of the student to update.</param>
+        /// <param name="request">The student update DTO.</param>
+        /// <returns>The updated student response DTO.</returns>
         public AdminStudentDto UpdateStudent(int id, AdminUpdateStudentDto request)
         {
             // ── Validate input ─────────────────────────────────────────────
@@ -316,6 +389,10 @@ namespace TrackMyGradeAPI.Services
             };
         }
 
+        /// <summary>
+        /// Deletes a student account. Cascades delete related enrollments and submissions.
+        /// </summary>
+        /// <param name="id">The ID of the student to delete.</param>
         public void DeleteStudent(int id)
         {
             var student = _db.Students.Find(id);
@@ -333,6 +410,10 @@ namespace TrackMyGradeAPI.Services
 
         // ── Courses ───────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Retrieves a list of all courses in the system.
+        /// </summary>
+        /// <returns>List of course DTOs.</returns>
         public List<CourseDto> GetAllCourses()
         {
             return _db.Courses
@@ -340,6 +421,11 @@ namespace TrackMyGradeAPI.Services
                 .ToList();
         }
 
+        /// <summary>
+        /// Creates a new course in the system.
+        /// </summary>
+        /// <param name="request">The course creation DTO.</param>
+        /// <returns>The created course DTO.</returns>
         public CourseDto CreateCourse(CreateCourseDto request)
         {
             // ── Validate input ─────────────────────────────────────────────
@@ -366,6 +452,10 @@ namespace TrackMyGradeAPI.Services
 
         // ── Class Groups ──────────────────────────────────────────────────
 
+        /// <summary>
+        /// Retrieves a list of all class groups in the system.
+        /// </summary>
+        /// <returns>List of class group DTOs.</returns>
         public List<ClassGroupDto> GetAllClassGroups()
         {
             return _db.ClassGroups
@@ -378,6 +468,11 @@ namespace TrackMyGradeAPI.Services
                 }).ToList();
         }
 
+        /// <summary>
+        /// Creates a new class group with the provided information.
+        /// </summary>
+        /// <param name="request">The class group creation DTO.</param>
+        /// <returns>The created class group DTO.</returns>
         public ClassGroupDto CreateClassGroup(CreateClassGroupDto request)
         {
             // ── Validate input ─────────────────────────────────────────────
@@ -415,6 +510,12 @@ namespace TrackMyGradeAPI.Services
             };
         }
 
+        /// <summary>
+        /// Enrolls a student into a class group.
+        /// </summary>
+        /// <param name="classGroupId">The ID of the class group.</param>
+        /// <param name="studentId">The ID of the student to enroll.</param>
+        /// <returns>The class group DTO after enrollment.</returns>
         public ClassGroupDto EnrollStudent(int classGroupId, int studentId)
         {
             // ── Verify class group exists ──────────────────────────────────
@@ -448,6 +549,11 @@ namespace TrackMyGradeAPI.Services
             return GetAllClassGroups().First(cg => cg.Id == classGroupId);
         }
 
+        /// <summary>
+        /// Unenrolls a student from a class group.
+        /// </summary>
+        /// <param name="classGroupId">The ID of the class group.</param>
+        /// <param name="studentId">The ID of the student to unenroll.</param>
         public void UnenrollStudent(int classGroupId, int studentId)
         {
             var enrollment = _db.StudentEnrollments.FirstOrDefault(

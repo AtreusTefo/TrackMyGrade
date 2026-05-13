@@ -4,8 +4,14 @@ using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Mapping
 {
+    /// <summary>
+    /// AutoMapper profile defining all entity-to-DTO mappings for the application.
+    /// </summary>
     public class MappingProfile : Profile
     {
+        /// <summary>
+        /// Initializes a new instance of the MappingProfile class and configures entity mappings.
+        /// </summary>
         public MappingProfile()
         {
             // ── Teacher ────────────────────────────────────────────────────

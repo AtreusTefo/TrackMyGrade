@@ -8,36 +8,82 @@ using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Services
 {
+    /// <summary>
+    /// Service interface for audit logging operations.
+    /// Tracks all create, update, and delete operations for compliance and debugging.
+    /// </summary>
     public interface IAuditLogService
     {
         /// <summary>Log a create operation to the audit trail.</summary>
+        /// <param name="entityType">The type of entity being created.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <param name="newValues">The new values of the entity.</param>
+        /// <param name="performedBy">The user or system that performed the action.</param>
+        /// <param name="ipAddress">Optional IP address of the user.</param>
+        /// <param name="userAgent">Optional user agent string.</param>
         void LogCreate(string entityType, int entityId, object newValues, string performedBy, string ipAddress = null, string userAgent = null);
 
         /// <summary>Log an update operation to the audit trail.</summary>
+        /// <param name="entityType">The type of entity being updated.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <param name="oldValues">The old values of the entity.</param>
+        /// <param name="newValues">The new values of the entity.</param>
+        /// <param name="performedBy">The user or system that performed the action.</param>
+        /// <param name="ipAddress">Optional IP address of the user.</param>
+        /// <param name="userAgent">Optional user agent string.</param>
         void LogUpdate(string entityType, int entityId, object oldValues, object newValues, string performedBy, string ipAddress = null, string userAgent = null);
 
         /// <summary>Log a delete operation to the audit trail.</summary>
+        /// <param name="entityType">The type of entity being deleted.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <param name="oldValues">The values of the deleted entity.</param>
+        /// <param name="performedBy">The user or system that performed the action.</param>
+        /// <param name="ipAddress">Optional IP address of the user.</param>
+        /// <param name="userAgent">Optional user agent string.</param>
         void LogDelete(string entityType, int entityId, object oldValues, string performedBy, string ipAddress = null, string userAgent = null);
 
         /// <summary>Retrieve paginated audit logs with optional filtering.</summary>
+        /// <param name="filter">The filter criteria.</param>
+        /// <returns>A paginated response containing filtered audit logs.</returns>
         AuditLogPagedResponseDto GetAuditLogs(AuditLogFilterDto filter);
 
         /// <summary>Retrieve all audit logs for a specific entity.</summary>
+        /// <param name="entityType">The type of entity.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <returns>List of audit log DTOs for the specified entity.</returns>
         List<AuditLogDto> GetAuditLogsByEntity(string entityType, int entityId);
 
         /// <summary>Retrieve all audit logs performed by a specific user.</summary>
+        /// <param name="email">The email of the user.</param>
+        /// <returns>List of audit log DTOs for the specified user.</returns>
         List<AuditLogDto> GetAuditLogsByUser(string email);
     }
 
+    /// <summary>
+    /// Implementation of IAuditLogService for audit trail logging.
+    /// </summary>
     public class AuditLogService : IAuditLogService
     {
         private readonly ApplicationDbContext _db;
 
+        /// <summary>
+        /// Initializes a new instance of the AuditLogService class.
+        /// </summary>
+        /// <param name="db">The application database context.</param>
         public AuditLogService(ApplicationDbContext db)
         {
             _db = db;
         }
 
+        /// <summary>
+        /// Logs a create operation to the audit trail.
+        /// </summary>
+        /// <param name="entityType">The type of entity being created.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <param name="newValues">The new values of the entity.</param>
+        /// <param name="performedBy">The user or system that performed the action.</param>
+        /// <param name="ipAddress">Optional IP address of the user.</param>
+        /// <param name="userAgent">Optional user agent string.</param>
         public void LogCreate(string entityType, int entityId, object newValues, string performedBy, string ipAddress = null, string userAgent = null)
         {
             if (string.IsNullOrWhiteSpace(performedBy))
@@ -59,6 +105,16 @@ namespace TrackMyGradeAPI.Services
             _db.SaveChanges();
         }
 
+        /// <summary>
+        /// Logs an update operation to the audit trail.
+        /// </summary>
+        /// <param name="entityType">The type of entity being updated.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <param name="oldValues">The old values of the entity.</param>
+        /// <param name="newValues">The new values of the entity.</param>
+        /// <param name="performedBy">The user or system that performed the action.</param>
+        /// <param name="ipAddress">Optional IP address of the user.</param>
+        /// <param name="userAgent">Optional user agent string.</param>
         public void LogUpdate(string entityType, int entityId, object oldValues, object newValues, string performedBy, string ipAddress = null, string userAgent = null)
         {
             if (string.IsNullOrWhiteSpace(performedBy))
@@ -82,6 +138,15 @@ namespace TrackMyGradeAPI.Services
             _db.SaveChanges();
         }
 
+        /// <summary>
+        /// Logs a delete operation to the audit trail.
+        /// </summary>
+        /// <param name="entityType">The type of entity being deleted.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <param name="oldValues">The values of the deleted entity.</param>
+        /// <param name="performedBy">The user or system that performed the action.</param>
+        /// <param name="ipAddress">Optional IP address of the user.</param>
+        /// <param name="userAgent">Optional user agent string.</param>
         public void LogDelete(string entityType, int entityId, object oldValues, string performedBy, string ipAddress = null, string userAgent = null)
         {
             if (string.IsNullOrWhiteSpace(performedBy))
@@ -103,6 +168,11 @@ namespace TrackMyGradeAPI.Services
             _db.SaveChanges();
         }
 
+        /// <summary>
+        /// Retrieves paginated audit logs with optional filtering.
+        /// </summary>
+        /// <param name="filter">The filter criteria for querying audit logs.</param>
+        /// <returns>A paginated response containing audit logs matching the filter.</returns>
         public AuditLogPagedResponseDto GetAuditLogs(AuditLogFilterDto filter)
         {
             if (filter == null)
@@ -160,6 +230,12 @@ namespace TrackMyGradeAPI.Services
             };
         }
 
+        /// <summary>
+        /// Retrieves all audit logs for a specific entity.
+        /// </summary>
+        /// <param name="entityType">The type of the entity.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <returns>List of audit log DTOs for the specified entity, ordered by most recent first.</returns>
         public List<AuditLogDto> GetAuditLogsByEntity(string entityType, int entityId)
         {
             return _db.AuditLogs
@@ -179,6 +255,11 @@ namespace TrackMyGradeAPI.Services
                 }).ToList();
         }
 
+        /// <summary>
+        /// Retrieves all audit logs performed by a specific user.
+        /// </summary>
+        /// <param name="email">The email of the user who performed the actions.</param>
+        /// <returns>List of audit log DTOs for the specified user, ordered by most recent first.</returns>
         public List<AuditLogDto> GetAuditLogsByUser(string email)
         {
             return _db.AuditLogs
