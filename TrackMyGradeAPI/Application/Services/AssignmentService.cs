@@ -7,28 +7,74 @@ using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Services
 {
+    /// <summary>
+    /// Service interface for assignment-related operations.
+    /// Handles assignment creation, submission grading, and retrieval for both teachers and students.
+    /// </summary>
     public interface IAssignmentService
     {
-        // Teacher actions
+        /// <summary>Retrieves all assignments created by a specific teacher.</summary>
+        /// <param name="teacherId">The ID of the teacher.</param>
+        /// <returns>List of assignment response DTOs.</returns>
         List<AssignmentResponseDto>    GetMyAssignments(int teacherId);
+
+        /// <summary>Creates a new assignment for a teacher.</summary>
+        /// <param name="teacherId">The ID of the teacher creating the assignment.</param>
+        /// <param name="request">The assignment creation DTO.</param>
+        /// <returns>The created assignment response DTO.</returns>
         AssignmentResponseDto          CreateAssignment(int teacherId, AssignmentCreateDto request);
+
+        /// <summary>Retrieves all submissions for a specific assignment.</summary>
+        /// <param name="assignmentId">The ID of the assignment.</param>
+        /// <param name="teacherId">The ID of the teacher (for authorization).</param>
+        /// <returns>List of submission response DTOs.</returns>
         List<SubmissionResponseDto>    GetSubmissions(int assignmentId, int teacherId);
+
+        /// <summary>Grades a student submission.</summary>
+        /// <param name="submissionId">The ID of the submission to grade.</param>
+        /// <param name="teacherId">The ID of the teacher grading (for authorization).</param>
+        /// <param name="request">The grading DTO containing score and feedback.</param>
+        /// <returns>The updated submission response DTO.</returns>
         SubmissionResponseDto          GradeSubmission(int submissionId, int teacherId, GradingDto request);
 
-        // Student actions
+        /// <summary>Retrieves all assignments assigned to a specific student.</summary>
+        /// <param name="studentId">The ID of the student.</param>
+        /// <returns>List of assignment response DTOs.</returns>
         List<AssignmentResponseDto>    GetStudentAssignments(int studentId);
+
+        /// <summary>Submits an assignment for a student.</summary>
+        /// <param name="assignmentId">The ID of the assignment being submitted.</param>
+        /// <param name="studentId">The ID of the student submitting.</param>
+        /// <param name="request">The submission creation DTO.</param>
+        /// <returns>The created submission response DTO.</returns>
         SubmissionResponseDto          SubmitAssignment(int assignmentId, int studentId, SubmissionCreateDto request);
+
+        /// <summary>Retrieves all submissions made by a specific student.</summary>
+        /// <param name="studentId">The ID of the student.</param>
+        /// <returns>List of submission response DTOs.</returns>
         List<SubmissionResponseDto>    GetMySubmissions(int studentId);
     }
 
+    /// <summary>
+    /// Implementation of IAssignmentService for managing assignments and submissions.
+    /// </summary>
     public class AssignmentService : IAssignmentService
     {
         private readonly ApplicationDbContext _db;
 
+        /// <summary>
+        /// Initializes a new instance of the AssignmentService class.
+        /// </summary>
+        /// <param name="db">The application database context.</param>
         public AssignmentService(ApplicationDbContext db) { _db = db; }
 
         // ── Teacher: view my assignments ───────────────────────────────────
 
+        /// <summary>
+        /// Retrieves all assignments created by a specific teacher.
+        /// </summary>
+        /// <param name="teacherId">The ID of the teacher.</param>
+        /// <returns>List of assignment response DTOs.</returns>
         public List<AssignmentResponseDto> GetMyAssignments(int teacherId)
         {
             return _db.Assignments
@@ -50,6 +96,12 @@ namespace TrackMyGradeAPI.Services
 
         // ── Teacher: create assignment ─────────────────────────────────────
 
+        /// <summary>
+        /// Creates a new assignment for a teacher's class group.
+        /// </summary>
+        /// <param name="teacherId">The ID of the teacher creating the assignment.</param>
+        /// <param name="request">The assignment creation DTO.</param>
+        /// <returns>The created assignment response DTO.</returns>
         public AssignmentResponseDto CreateAssignment(int teacherId, AssignmentCreateDto request)
         {
             var classGroup = _db.ClassGroups.Find(request.ClassGroupId);
@@ -92,6 +144,12 @@ namespace TrackMyGradeAPI.Services
 
         // ── Teacher: view submissions for an assignment ────────────────────
 
+        /// <summary>
+        /// Retrieves all submissions for a specific assignment.
+        /// </summary>
+        /// <param name="assignmentId">The ID of the assignment.</param>
+        /// <param name="teacherId">The ID of the teacher (for authorization).</param>
+        /// <returns>List of submission response DTOs.</returns>
         public List<SubmissionResponseDto> GetSubmissions(int assignmentId, int teacherId)
         {
             var assignment = _db.Assignments.Find(assignmentId);
@@ -121,6 +179,13 @@ namespace TrackMyGradeAPI.Services
 
         // ── Teacher: grade a submission ────────────────────────────────────
 
+        /// <summary>
+        /// Grades a student submission with a score and optional feedback.
+        /// </summary>
+        /// <param name="submissionId">The ID of the submission to grade.</param>
+        /// <param name="teacherId">The ID of the teacher grading (for authorization).</param>
+        /// <param name="request">The grading DTO containing score and feedback.</param>
+        /// <returns>The updated submission response DTO.</returns>
         public SubmissionResponseDto GradeSubmission(int submissionId, int teacherId, GradingDto request)
         {
             var submission = _db.AssignmentSubmissions.Find(submissionId);
@@ -144,6 +209,11 @@ namespace TrackMyGradeAPI.Services
 
         // ── Student: view assignments in enrolled classes ──────────────────
 
+        /// <summary>
+        /// Retrieves all assignments assigned to a specific student across enrolled classes.
+        /// </summary>
+        /// <param name="studentId">The ID of the student.</param>
+        /// <returns>List of assignment response DTOs.</returns>
         public List<AssignmentResponseDto> GetStudentAssignments(int studentId)
         {
             // Get all class IDs the student is enrolled in
@@ -175,6 +245,13 @@ namespace TrackMyGradeAPI.Services
 
         // ── Student: submit an assignment ──────────────────────────────────
 
+        /// <summary>
+        /// Submits an assignment for a student.
+        /// </summary>
+        /// <param name="assignmentId">The ID of the assignment being submitted.</param>
+        /// <param name="studentId">The ID of the student submitting.</param>
+        /// <param name="request">The submission creation DTO.</param>
+        /// <returns>The created submission response DTO.</returns>
         public SubmissionResponseDto SubmitAssignment(int assignmentId, int studentId, SubmissionCreateDto request)
         {
             var assignment = _db.Assignments.Find(assignmentId);
@@ -215,6 +292,11 @@ namespace TrackMyGradeAPI.Services
 
         // ── Student: view own submissions ──────────────────────────────────
 
+        /// <summary>
+        /// Retrieves all submissions made by a specific student.
+        /// </summary>
+        /// <param name="studentId">The ID of the student.</param>
+        /// <returns>List of submission response DTOs.</returns>
         public List<SubmissionResponseDto> GetMySubmissions(int studentId)
         {
             return _db.AssignmentSubmissions

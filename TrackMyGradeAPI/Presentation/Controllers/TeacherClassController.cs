@@ -16,6 +16,9 @@ namespace TrackMyGradeAPI.Controllers
         private readonly IAssignmentService _assignmentService;
         private readonly IStudentService    _studentService;
 
+        /// <summary>Initializes a new instance of the TeacherClassController class.</summary>
+        /// <param name="assignmentService">The assignment service dependency.</param>
+        /// <param name="studentService">The student service dependency.</param>
         public TeacherClassController(IAssignmentService assignmentService, IStudentService studentService)
         {
             _assignmentService = assignmentService;
@@ -47,7 +50,7 @@ namespace TrackMyGradeAPI.Controllers
                 int teacherId = Request.GetUserId();
                 return Ok(_studentService.GetById(id, teacherId));
             }
-            catch (UnauthorizedAccessException ex) { return Unauthorized(); }
+            catch (UnauthorizedAccessException) { return Unauthorized(); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }
 
@@ -76,7 +79,7 @@ namespace TrackMyGradeAPI.Controllers
                 int teacherId = Request.GetUserId();
                 return Created("", _assignmentService.CreateAssignment(teacherId, request));
             }
-            catch (UnauthorizedAccessException ex) { return Unauthorized(); }
+            catch (UnauthorizedAccessException) { return Unauthorized(); }
             catch (ArgumentException ex)           { return BadRequest(ex.Message); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }
@@ -92,7 +95,7 @@ namespace TrackMyGradeAPI.Controllers
                 int teacherId = Request.GetUserId();
                 return Ok(_assignmentService.GetSubmissions(id, teacherId));
             }
-            catch (UnauthorizedAccessException ex) { return Unauthorized(); }
+            catch (UnauthorizedAccessException) { return Unauthorized(); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }
 
@@ -107,7 +110,7 @@ namespace TrackMyGradeAPI.Controllers
                 int teacherId = Request.GetUserId();
                 return Ok(_assignmentService.GradeSubmission(id, teacherId, request));
             }
-            catch (UnauthorizedAccessException ex) { return Unauthorized(); }
+            catch (UnauthorizedAccessException) { return Unauthorized(); }
             catch (ArgumentException ex)           { return BadRequest(ex.Message); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }

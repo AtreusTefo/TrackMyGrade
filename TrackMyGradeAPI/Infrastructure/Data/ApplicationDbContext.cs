@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Annotations;
 using System.Data.Entity.Migrations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using TrackMyGradeAPI.Models;
 using TrackMyGradeAPI.Migrations;
+using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Data
 {
@@ -14,11 +14,7 @@ namespace TrackMyGradeAPI.Data
     public class ApplicationDbContext : DbContext
     {
         /// <summary>Creates a new database context using the DefaultConnection connection string.</summary>
-        public ApplicationDbContext() : base("DefaultConnection") 
-        { 
-            Configuration.LazyLoadingEnabled = true;
-            Configuration.ProxyCreationEnabled = true;
-        }
+        public ApplicationDbContext() : base("DefaultConnection") { }
 
         /// <summary>Teachers managed by the application.</summary>
         public DbSet<Teacher> Teachers { get; set; }
@@ -255,39 +251,87 @@ namespace TrackMyGradeAPI.Data
             admin.Property(e => e.UpdatedAt).IsRequired();
         }
 
-        /// <summary>Initializes the database with Code First Migrations and seed data.</summary>
+        /// <summary>
+        /// Initializes the database by running all pending Code First Migrations.
+        /// Uses MigrateDatabaseToLatestVersion so the EF model hash stays in sync
+        /// with the schema after every model change — replacing the old
+        /// CreateDatabaseIfNotExists initializer that threw on schema drift.
+        /// </summary>
         public static void Initialize()
         {
-            try
+            // MigrateDatabaseToLatestVersion applies any pending migrations (including
+            // AddPhoneToAdmin) and keeps __MigrationHistory current, preventing the
+            // "model has changed" InvalidOperationException.
+            Database.SetInitializer(
+                new MigrateDatabaseToLatestVersion<ApplicationDbContext, Configuration>());
+
+            using (var context = new ApplicationDbContext())
             {
-                // Enable Code First Migrations initializer
-                Database.SetInitializer(new MigrateDatabaseToLatestVersion<ApplicationDbContext, Configuration>());
+                // Triggers migration run and model-hash update.
+                context.Database.Initialize(true);
+                EnsureSqlServerCheckConstraints(context);
 
-                using (var context = new ApplicationDbContext())
+                // Fallback seed: Configuration.Seed() handles this via migrations,
+                // but this guard ensures the default admin exists on first run.
+                if (!context.Admins.Any(a => a.Email == "admin@school.com"))
                 {
-                    // Initialize database and apply all pending migrations
-                    context.Database.Initialize(true);
-
-                    // Log successful initialization
-                    System.Diagnostics.Debug.WriteLine("✓ Database initialization completed successfully");
-
-                    // Verify admin account exists
-                    var adminCount = context.Admins.Count();
-                    System.Diagnostics.Debug.WriteLine($"✓ Admin accounts in database: {adminCount}");
-
-                    if (adminCount > 0)
+                    context.Admins.Add(new Admin
                     {
-                        var adminEmail = context.Admins.FirstOrDefault()?.Email;
-                        System.Diagnostics.Debug.WriteLine($"✓ Default admin email: {adminEmail}");
-                    }
+                        FirstName = "System",
+                        LastName = "Admin",
+                        Email = "admin@school.com",
+                        Phone = "71234567",
+                        Password = "$2a$11$F/NmweY.Jk.ddRIkhzD4Du.pTCIHHaBDr1YArTiX4PR65ddykJ0km",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                    context.SaveChanges();
                 }
             }
-            catch (Exception ex)
+        }
+
+        private static void EnsureSqlServerCheckConstraints(ApplicationDbContext context)
+        {
+            if (context.Database.Connection.State != ConnectionState.Open)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Database initialization failed: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"✗ Inner exception: {ex.InnerException?.Message}");
-                throw;
+                context.Database.Connection.Open();
             }
+
+            context.Database.ExecuteSqlCommand(
+                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Phone_Format')
+                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Phone_Format]
+                   CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
+            );
+
+            context.Database.ExecuteSqlCommand(
+                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Teachers_Phone_Format')
+                   ALTER TABLE [Teachers] ADD CONSTRAINT [CK_Teachers_Phone_Format]
+                   CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
+            );
+
+            context.Database.ExecuteSqlCommand(
+                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Email_Lowercase')
+                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Email_Lowercase]
+                   CHECK ([Email] = LOWER([Email]));"
+            );
+
+            context.Database.ExecuteSqlCommand(
+                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Teachers_Email_Lowercase')
+                   ALTER TABLE [Teachers] ADD CONSTRAINT [CK_Teachers_Email_Lowercase]
+                   CHECK ([Email] = LOWER([Email]));"
+            );
+
+            context.Database.ExecuteSqlCommand(
+                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Grade_Range')
+                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Grade_Range]
+                   CHECK ([Grade] BETWEEN 7 AND 12);"
+            );
+
+            context.Database.ExecuteSqlCommand(
+                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_AssignmentSubmissions_Score_Positive')
+                   ALTER TABLE [AssignmentSubmissions] ADD CONSTRAINT [CK_AssignmentSubmissions_Score_Positive]
+                   CHECK ([Score] IS NULL OR [Score] >= 0);"
+            );
         }
     }
 }

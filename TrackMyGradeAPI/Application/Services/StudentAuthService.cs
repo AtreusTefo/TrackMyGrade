@@ -7,19 +7,38 @@ using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Services
 {
+    /// <summary>
+    /// Service interface for student authentication operations.
+    /// Handles login and profile retrieval for students.
+    /// </summary>
     public interface IStudentAuthService
     {
+        /// <summary>Authenticates a student with email and password, returning a JWT token.</summary>
+        /// <param name="request">The student login credentials.</param>
+        /// <returns>The student authentication response with JWT token.</returns>
         StudentAuthResponseDto Login(StudentLoginDto request);
+
+        /// <summary>Retrieves the profile of an authenticated student using a JWT token.</summary>
+        /// <param name="token">The JWT token of the student.</param>
+        /// <returns>The student authentication response with profile information.</returns>
         StudentAuthResponseDto GetProfile(string token);
-        // NOTE: SubmitAssessments removed — students submit assignments, teachers grade them.
     }
 
+    /// <summary>
+    /// Implementation of IStudentAuthService for student authentication.
+    /// </summary>
     public class StudentAuthService : IStudentAuthService
     {
         private readonly ApplicationDbContext _db;
         private readonly IMapper              _mapper;
         private readonly ITokenService        _tokenService;
 
+        /// <summary>
+        /// Initializes a new instance of the StudentAuthService class.
+        /// </summary>
+        /// <param name="db">The application database context.</param>
+        /// <param name="mapper">The AutoMapper instance for entity-to-DTO mapping.</param>
+        /// <param name="tokenService">The token service for JWT operations.</param>
         public StudentAuthService(ApplicationDbContext db, IMapper mapper, ITokenService tokenService)
         {
             _db           = db;

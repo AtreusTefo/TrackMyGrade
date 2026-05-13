@@ -9,6 +9,9 @@ namespace TrackMyGradeAPI.Validators
     /// </summary>
     public class TeacherLoginValidator : AbstractValidator<TeacherLoginDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the TeacherLoginValidator class.
+        /// </summary>
         public TeacherLoginValidator()
         {
             RuleFor(x => x.Email)
@@ -24,6 +27,9 @@ namespace TrackMyGradeAPI.Validators
     /// <summary>Validates admin-created teacher accounts.</summary>
     public class AdminCreateTeacherValidator : AbstractValidator<AdminCreateTeacherDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the AdminCreateTeacherValidator class.
+        /// </summary>
         public AdminCreateTeacherValidator()
         {
             RuleFor(x => x.FirstName)
@@ -45,6 +51,9 @@ namespace TrackMyGradeAPI.Validators
     /// <summary>Validates assignment creation by a teacher.</summary>
     public class AssignmentCreateValidator : AbstractValidator<AssignmentCreateDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the AssignmentCreateValidator class.
+        /// </summary>
         public AssignmentCreateValidator()
         {
             RuleFor(x => x.Title)

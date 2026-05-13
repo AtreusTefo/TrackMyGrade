@@ -6,27 +6,38 @@ using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Services
 {
+    /// <summary>Service interface for account activation operations.</summary>
     public interface IActivationService
     {
+        /// <summary>Activates a new user account with a password.</summary>
+        /// <param name="request">The account activation request containing token and password.</param>
+        /// <returns>An activation response with user details and JWT token.</returns>
         ActivationResponseDto Activate(ActivateAccountDto request);
+        /// <summary>Checks the status of an activation token without activating.</summary>
+        /// <param name="token">The activation token.</param>
+        /// <param name="role">The user role (Teacher or Student).</param>
+        /// <returns>The activation status with user details if valid.</returns>
         ActivationStatusDto   CheckStatus(string token, string role);
     }
 
+    /// <summary>Service implementation for account activation operations.</summary>
     public class ActivationService : IActivationService
     {
         private readonly ApplicationDbContext _db;
         private readonly ITokenService        _tokenService;
 
+        /// <summary>Initializes a new instance of the ActivationService class.</summary>
+        /// <param name="db">The application database context.</param>
+        /// <param name="tokenService">The token service dependency.</param>
         public ActivationService(ApplicationDbContext db, ITokenService tokenService)
         {
             _db           = db;
             _tokenService = tokenService;
         }
 
-        /// <summary>
-        /// Activates a new teacher or student account.
-        /// Validates the activation token, hashes the new password, and issues a JWT.
-        /// </summary>
+        /// <summary>Activates a new teacher or student account. Validates token, hashes password, and issues JWT.</summary>
+        /// <param name="request">The account activation request.</param>
+        /// <returns>An activation response with user details and JWT token.</returns>
         public ActivationResponseDto Activate(ActivateAccountDto request)
         {
             if (string.IsNullOrWhiteSpace(request.NewPassword))
@@ -148,7 +159,10 @@ namespace TrackMyGradeAPI.Services
             };
         }
 
-        // Add a default admin
+        /// <summary>
+        /// Adds a default admin account if one does not already exist.
+        /// Called during application startup for initial setup.
+        /// </summary>
         public void AddDefaultAdmin()
         {
             if (! _db.Admins.Any(a => a.Email == "admin@trackmygrade.com"))

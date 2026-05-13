@@ -1,0 +1,83 @@
+<div class="activate-wrapper">
+      <div class="activate-card">
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="state-msg">
+          <div class="spinner"></div>
+          <p>Verifying your activation link…</p>
+        </div>
+
+        <!-- Already activated -->
+        <div *ngIf="!loading && alreadyActivated" class="state-msg">
+          <div class="icon">✅</div>
+          <h2>Already Activated</h2>
+          <p>This account has already been activated. Please <a routerLink="/login">log in</a>.</p>
+        </div>
+
+        <!-- Token error -->
+        <div *ngIf="!loading && tokenError" class="state-msg error">
+          <div class="icon">❌</div>
+          <h2>Invalid Link</h2>
+          <p>{{ tokenError }}</p>
+          <p>Please contact your administrator for a new activation link.</p>
+        </div>
+
+        <!-- Activation form -->
+        <div *ngIf="!loading && !alreadyActivated && !tokenError && userInfo">
+          <div class="card-header">
+            <div class="role-badge" [class]="userInfo.role.toLowerCase()">{{ userInfo.role }}</div>
+            <h1>Welcome, {{ userInfo.fullName }}!</h1>
+            <p class="subtitle">Set your password to activate your account.</p>
+            <p class="email-display">{{ userInfo.email }}</p>
+          </div>
+
+          <form (ngSubmit)="onSubmit()" #form="ngForm" class="activate-form">
+            <div class="field-group">
+              <label for="newPassword">New Password</label>
+              <input id="newPassword" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="newPassword"
+                name="newPassword" required minlength="8"
+                placeholder="Minimum 8 characters" />
+           
+            </div>
+
+            <div class="field-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input id="confirmPassword" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword"
+                name="confirmPassword" required
+                placeholder="Repeat your password" />
+              <button
+                type="button"
+                class="toggle-pw"
+                (click)="togglePassword()"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                {{ showPassword ? 'Hide' : 'Show' }}
+              </button>
+              <span class="hint error-hint" *ngIf="confirmPassword && newPassword !== confirmPassword">
+                Passwords do not match
+              </span>
+            </div>
+
+            <div class="strength-bar">
+              <div class="bar" [style.width.%]="passwordStrength" [class]="strengthClass"></div>
+            </div>
+            <p class="strength-label">{{ strengthLabel }}</p>
+
+            <div *ngIf="errorMsg" class="alert error">{{ errorMsg }}</div>
+
+            <button type="submit" class="btn-activate"
+              [disabled]="submitting || newPassword !== confirmPassword || newPassword.length < 8">
+              <span *ngIf="!submitting">Activate Account</span>
+              <span *ngIf="submitting" class="spinner-inline"></span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Success state -->
+        <div *ngIf="activated" class="state-msg success">
+          <div class="icon">🎉</div>
+          <h2>Account Activated!</h2>
+          <p>Redirecting you to your dashboard…</p>
+        </div>
+
+      </div>
+    </div>

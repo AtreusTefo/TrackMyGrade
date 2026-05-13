@@ -14,6 +14,8 @@ namespace TrackMyGradeAPI.Controllers
     {
         private readonly ITeacherService _teacherService;
 
+        /// <summary>Initializes a new instance of the TeachersController class.</summary>
+        /// <param name="teacherService">The teacher service dependency.</param>
         public TeachersController(ITeacherService teacherService)
         {
             _teacherService = teacherService;

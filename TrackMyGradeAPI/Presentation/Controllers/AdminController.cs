@@ -17,6 +17,9 @@ namespace TrackMyGradeAPI.Controllers
         private readonly IAdminService       _adminService;
         private readonly IAuditLogService    _auditLogService;
 
+        /// <summary>Initializes a new instance of the AdminController class.</summary>
+        /// <param name="adminService">The admin service dependency.</param>
+        /// <param name="auditLogService">The audit log service dependency.</param>
         public AdminController(IAdminService adminService, IAuditLogService auditLogService)
         {
             _adminService    = adminService;
@@ -30,7 +33,7 @@ namespace TrackMyGradeAPI.Controllers
         public IHttpActionResult Login([FromBody] AdminLoginDto request)
         {
             try { return Ok(_adminService.Login(request)); }
-            catch (UnauthorizedAccessException ex) { return Unauthorized(); }
+            catch (UnauthorizedAccessException) { return Unauthorized(); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }
 
@@ -96,7 +99,7 @@ namespace TrackMyGradeAPI.Controllers
         public IHttpActionResult DeleteTeacher(int id)
         {
             try { _adminService.DeleteTeacher(id); return Ok(new { message = "Teacher deleted." }); }
-            catch (KeyNotFoundException ex) { return NotFound(); }
+            catch (KeyNotFoundException) { return NotFound(); }
             catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
         }
@@ -137,7 +140,7 @@ namespace TrackMyGradeAPI.Controllers
         {
             try { return Ok(_adminService.UpdateStudent(id, request)); }
             catch (ArgumentException ex) { return BadRequest(ex.Message); }
-            catch (KeyNotFoundException ex) { return NotFound(); }
+            catch (KeyNotFoundException) { return NotFound(); }
             catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
         }
@@ -149,13 +152,17 @@ namespace TrackMyGradeAPI.Controllers
         public IHttpActionResult DeleteStudent(int id)
         {
             try { _adminService.DeleteStudent(id); return Ok(new { message = "Student deleted." }); }
-            catch (KeyNotFoundException ex) { return NotFound(); }
+            catch (KeyNotFoundException) { return NotFound(); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
         }
 
-        // ── Courses ───────────────────────────────────────────────────────
+        // ── Courses
 
         // GET: api/admin/courses
+        /// <summary>
+        /// Retrieves a list of all courses in the system.
+        /// </summary>
+        /// <returns>List of course DTOs.</returns>
         [HttpGet, Route("courses")]
         [TokenAuthorize("Admin")]
         [ResponseType(typeof(System.Collections.Generic.List<CourseDto>))]
@@ -166,6 +173,11 @@ namespace TrackMyGradeAPI.Controllers
         }
 
         // POST: api/admin/courses
+        /// <summary>
+        /// Creates a new course in the system.
+        /// </summary>
+        /// <param name="request">The course creation DTO.</param>
+        /// <returns>The created course DTO.</returns>
         [HttpPost, Route("courses")]
         [TokenAuthorize("Admin")]
         [ResponseType(typeof(CourseDto))]
@@ -180,6 +192,10 @@ namespace TrackMyGradeAPI.Controllers
         // ── Class Groups ──────────────────────────────────────────────────
 
         // GET: api/admin/class-groups
+        /// <summary>
+        /// Retrieves a list of all class groups in the system.
+        /// </summary>
+        /// <returns>List of class group DTOs.</returns>
         [HttpGet, Route("class-groups")]
         [TokenAuthorize("Admin")]
         [ResponseType(typeof(System.Collections.Generic.List<ClassGroupDto>))]
@@ -190,6 +206,7 @@ namespace TrackMyGradeAPI.Controllers
         }
 
         // POST: api/admin/class-groups
+        /// <summary>Creates a new class group. Validates course and teacher existence.</summary>
         [HttpPost, Route("class-groups")]
         [TokenAuthorize("Admin")]
         [ResponseType(typeof(ClassGroupDto))]

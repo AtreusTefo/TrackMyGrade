@@ -15,6 +15,8 @@ namespace TrackMyGradeAPI.Controllers
     {
         private readonly IStudentAuthService _studentAuthService;
 
+        /// <summary>Initializes a new instance of the StudentAuthController class.</summary>
+        /// <param name="studentAuthService">The student authentication service dependency.</param>
         public StudentAuthController(IStudentAuthService studentAuthService)
         {
             _studentAuthService = studentAuthService;
@@ -27,7 +29,7 @@ namespace TrackMyGradeAPI.Controllers
         public IHttpActionResult Login([FromBody] StudentLoginDto request)
         {
             try { return Ok(_studentAuthService.Login(request)); }
-            catch (UnauthorizedAccessException ex) { return Unauthorized(); }
+            catch (UnauthorizedAccessException) { return Unauthorized(); }
             catch (InvalidOperationException ex)   { return BadRequest(ex.Message); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }

@@ -9,14 +9,25 @@ using TrackMyGradeAPI.Services;
 
 namespace TrackMyGradeAPI.Infrastructure
 {
+    /// <summary>Simple dependency resolver for Web API constructor injection.</summary>
     public class SimpleDependencyResolver : IDependencyResolver
     {
+        /// <summary>Begins a dependency scope for this request.</summary>
+        /// <returns>A new SimpleDependencyScope instance.</returns>
         public IDependencyScope BeginScope() => new SimpleDependencyScope();
+        /// <summary>Gets a service instance of the specified type.</summary>
+        /// <param name="serviceType">The service type to resolve.</param>
+        /// <returns>Null; resolution is handled by SimpleDependencyScope.</returns>
         public object GetService(Type serviceType) => null;
+        /// <summary>Gets all service instances of the specified type.</summary>
+        /// <param name="serviceType">The service type to resolve.</param>
+        /// <returns>An empty list; resolution is handled by SimpleDependencyScope.</returns>
         public IEnumerable<object> GetServices(Type serviceType) => new List<object>();
+        /// <summary>Disposes resources used by this resolver.</summary>
         public void Dispose() { }
     }
 
+    /// <summary>Dependency scope that instantiates and manages services for a single request.</summary>
     public class SimpleDependencyScope : IDependencyScope
     {
         private readonly ApplicationDbContext _db;
@@ -24,6 +35,7 @@ namespace TrackMyGradeAPI.Infrastructure
         private readonly ITokenService        _tokenService;
         private bool _disposed;
 
+        /// <summary>Initializes a new instance of the SimpleDependencyScope class.</summary>
         public SimpleDependencyScope()
         {
             _db           = new ApplicationDbContext();
@@ -31,6 +43,9 @@ namespace TrackMyGradeAPI.Infrastructure
             _tokenService = new TokenService();
         }
 
+        /// <summary>Gets a service instance of the specified type using manual constructor injection.</summary>
+        /// <param name="serviceType">The service type to resolve and instantiate.</param>
+        /// <returns>An instance of the requested service, or null if type is not recognized.</returns>
         public object GetService(Type serviceType)
         {
             // ── Existing controllers ───────────────────────────────────────
@@ -68,8 +83,12 @@ namespace TrackMyGradeAPI.Infrastructure
             return null;
         }
 
+        /// <summary>Gets all service instances of the specified type.</summary>
+        /// <param name="serviceType">The service type to resolve.</param>
+        /// <returns>An empty list.</returns>
         public IEnumerable<object> GetServices(Type serviceType) => new List<object>();
 
+        /// <summary>Disposes resources managed by this scope, including the database context.</summary>
         public void Dispose()
         {
             if (!_disposed)

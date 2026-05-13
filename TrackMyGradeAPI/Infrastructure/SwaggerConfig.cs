@@ -5,8 +5,11 @@ using System.Web.Http;
 
 namespace TrackMyGradeAPI.Infrastructure
 {
+    /// <summary>Swagger/Swashbuckle configuration for API documentation.</summary>
     public static class SwaggerConfig
     {
+        /// <summary>Registers Swagger documentation and UI for the Web API.</summary>
+        /// <param name="config">The HTTP configuration object.</param>
         public static void Register(HttpConfiguration config)
         {
             config

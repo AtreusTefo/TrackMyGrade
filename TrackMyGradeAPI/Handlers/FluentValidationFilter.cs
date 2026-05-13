@@ -7,8 +7,11 @@ using FluentValidation;
 
 namespace TrackMyGradeAPI.Handlers
 {
+    /// <summary>Action filter that validates request DTOs using FluentValidation validators.</summary>
     public class FluentValidationFilter : ActionFilterAttribute
     {
+        /// <summary>Called before each Web API action is executed to validate request parameters.</summary>
+        /// <param name="actionContext">The action context for the current request.</param>
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
             var scope = actionContext.Request.GetDependencyScope();

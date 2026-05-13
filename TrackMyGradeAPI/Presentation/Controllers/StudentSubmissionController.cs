@@ -15,6 +15,8 @@ namespace TrackMyGradeAPI.Controllers
     {
         private readonly IAssignmentService _assignmentService;
 
+        /// <summary>Initializes a new instance of the StudentSubmissionController class.</summary>
+        /// <param name="assignmentService">The assignment service dependency.</param>
         public StudentSubmissionController(IAssignmentService assignmentService)
         {
             _assignmentService = assignmentService;
@@ -51,7 +53,7 @@ namespace TrackMyGradeAPI.Controllers
                 int studentId = Request.GetUserId();
                 return Created("", _assignmentService.SubmitAssignment(id, studentId, request));
             }
-            catch (UnauthorizedAccessException ex)  { return Unauthorized(); }
+            catch (UnauthorizedAccessException)  { return Unauthorized(); }
             catch (InvalidOperationException ex)     { return BadRequest(ex.Message); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }

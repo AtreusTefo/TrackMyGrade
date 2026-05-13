@@ -23,11 +23,14 @@ namespace TrackMyGradeAPI.Handlers
         public TokenAuthorizeAttribute() : this(Array.Empty<string>()) { }
 
         /// <summary>Allows only users whose role matches one of the provided roles.</summary>
+        /// <param name="roles">The allowed roles. If empty, any authenticated user is allowed.</param>
         public TokenAuthorizeAttribute(params string[] roles)
         {
             _allowedRoles = roles ?? Array.Empty<string>();
         }
 
+        /// <summary>Enforces JWT token validation and optional role authorization before action execution.</summary>
+        /// <param name="actionContext">The action context for the current request.</param>
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
             var request = actionContext.Request;
