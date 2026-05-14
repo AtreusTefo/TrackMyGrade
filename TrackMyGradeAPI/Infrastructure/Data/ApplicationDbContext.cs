@@ -119,6 +119,9 @@ namespace TrackMyGradeAPI.Data
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                     new IndexAnnotation(new IndexAttribute("IX_Courses_Code") { IsUnique = true }));
             course.Property(e => e.Description).IsOptional().HasMaxLength(1000);
+            course.Property(e => e.CreatedAt).IsRequired();
+            course.Property(e => e.UpdatedAt).IsRequired();
+            course.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
 
             course.HasMany(c => c.ClassGroups)
                 .WithRequired(g => g.Course)
@@ -136,6 +139,9 @@ namespace TrackMyGradeAPI.Data
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                     new IndexAnnotation(new IndexAttribute("IX_ClassGroups_TeacherId_Name", 1) { IsUnique = true }));
             classGroup.Property(e => e.TeacherId).IsRequired();
+            classGroup.Property(e => e.CreatedAt).IsRequired();
+            classGroup.Property(e => e.UpdatedAt).IsRequired();
+            classGroup.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
 
             classGroup.HasRequired(e => e.Course)
                 .WithMany(c => c.ClassGroups)
@@ -161,6 +167,12 @@ namespace TrackMyGradeAPI.Data
             var enrollment = modelBuilder.Entity<StudentEnrollment>();
             enrollment.HasKey(e => e.Id);
             enrollment.Property(e => e.EnrolledAt).IsRequired();
+            enrollment.Property(e => e.UpdatedAt).IsRequired();
+            enrollment.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+            enrollment.Property(e => e.StudentId).HasColumnAnnotation(IndexAnnotation.AnnotationName,
+                new IndexAnnotation(new IndexAttribute("IX_StudentEnrollment_StudentId_ClassGroupId", 1) { IsUnique = true }));
+            enrollment.Property(e => e.ClassGroupId).HasColumnAnnotation(IndexAnnotation.AnnotationName,
+                new IndexAnnotation(new IndexAttribute("IX_StudentEnrollment_StudentId_ClassGroupId", 2) { IsUnique = true }));
 
             enrollment.HasRequired(e => e.Student)
                 .WithMany(s => s.Enrollments)
@@ -181,6 +193,8 @@ namespace TrackMyGradeAPI.Data
             assignment.Property(e => e.MaxScore).IsRequired();
             assignment.Property(e => e.CreatedByTeacherId).IsRequired();
             assignment.Property(e => e.CreatedAt).IsRequired();
+            assignment.Property(e => e.UpdatedAt).IsRequired();
+            assignment.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
 
             assignment.HasRequired(e => e.ClassGroup)
                 .WithMany(cg => cg.Assignments)
@@ -201,10 +215,12 @@ namespace TrackMyGradeAPI.Data
             var submission = modelBuilder.Entity<AssignmentSubmission>();
             submission.HasKey(e => e.Id);
             submission.Property(e => e.SubmittedAt).IsRequired();
+            submission.Property(e => e.UpdatedAt).IsRequired();
             submission.Property(e => e.Content).IsRequired().HasMaxLength(2000);
             submission.Property(e => e.Score).IsOptional();
             submission.Property(e => e.Feedback).IsOptional().HasMaxLength(2000);
             submission.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            submission.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
 
             submission.HasRequired(e => e.Assignment)
                 .WithMany(a => a.Submissions)
@@ -245,7 +261,7 @@ namespace TrackMyGradeAPI.Data
             admin.Property(e => e.Email).IsRequired().HasMaxLength(255)
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                     new IndexAnnotation(new IndexAttribute("IX_Admins_Email") { IsUnique = true }));
-            admin.Property(e => e.Phone).IsOptional().HasMaxLength(20);
+            admin.Property(e => e.Phone).IsRequired().HasMaxLength(8);
             admin.Property(e => e.Password).IsRequired().HasMaxLength(255);
             admin.Property(e => e.CreatedAt).IsRequired();
             admin.Property(e => e.UpdatedAt).IsRequired();
@@ -306,6 +322,12 @@ namespace TrackMyGradeAPI.Data
             context.Database.ExecuteSqlCommand(
                 @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Teachers_Phone_Format')
                    ALTER TABLE [Teachers] ADD CONSTRAINT [CK_Teachers_Phone_Format]
+                   CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
+            );
+
+            context.Database.ExecuteSqlCommand(
+                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Admins_Phone_Format')
+                   ALTER TABLE [Admins] ADD CONSTRAINT [CK_Admins_Phone_Format]
                    CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
             );
 

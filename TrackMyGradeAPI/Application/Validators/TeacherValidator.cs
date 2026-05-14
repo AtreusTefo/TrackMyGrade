@@ -43,6 +43,11 @@ namespace TrackMyGradeAPI.Validators
                 .NotEmpty().WithMessage("Email is required")
                 .EmailAddress().WithMessage("Valid email is required");
 
+            RuleFor(x => x.Phone)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Phone is required")
+                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits");
+
             RuleFor(x => x.Subject)
                 .NotEmpty().MaximumLength(100).WithMessage("Subject is required (max 100 chars)");
         }

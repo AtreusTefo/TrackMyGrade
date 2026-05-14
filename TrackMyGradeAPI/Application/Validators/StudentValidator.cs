@@ -33,8 +33,9 @@ namespace TrackMyGradeAPI.Validators
                 .EmailAddress().WithMessage("Email must be a valid email address");
 
             RuleFor(x => x.Phone)
-                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits")
-                .When(x => !string.IsNullOrEmpty(x.Phone));
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Phone is required")
+                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits");
 
             RuleFor(x => x.OmangOrPassport)
                 .Cascade(CascadeMode.Stop)
@@ -68,6 +69,11 @@ namespace TrackMyGradeAPI.Validators
 
             RuleFor(x => x.Email)
                 .NotEmpty().EmailAddress().WithMessage("Valid email is required");
+
+            RuleFor(x => x.Phone)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Phone is required")
+                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits");
 
             RuleFor(x => x.OmangOrPassport)
                 .NotEmpty().Length(9).WithMessage("Must be exactly 9 characters");

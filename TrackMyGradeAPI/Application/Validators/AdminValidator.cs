@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using TrackMyGradeAPI.DTOs;
 
@@ -37,17 +38,17 @@ namespace TrackMyGradeAPI.Validators
             if (!EmailRegex.IsMatch(request.Email))
                 throw new ArgumentException("Email format is invalid.");
 
+            if (string.IsNullOrWhiteSpace(request.Phone))
+                throw new ArgumentException("Phone is required.");
+
+            if (request.Phone.Length != 8 || !request.Phone.All(char.IsDigit))
+                throw new ArgumentException("Phone must be exactly 8 digits.");
+
             if (request.FirstName.Length > 100)
                 throw new ArgumentException("First name cannot exceed 100 characters.");
 
             if (request.LastName.Length > 100)
                 throw new ArgumentException("Last name cannot exceed 100 characters.");
-
-            if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone.Length > 20)
-                throw new ArgumentException("Phone number cannot exceed 20 characters.");
-
-            if (!string.IsNullOrWhiteSpace(request.Phone) && !PhoneRegex.IsMatch(request.Phone))
-                throw new ArgumentException("Phone number format is invalid.");
 
             if (!string.IsNullOrWhiteSpace(request.Subject) && request.Subject.Length > 100)
                 throw new ArgumentException("Subject cannot exceed 100 characters.");
@@ -79,6 +80,12 @@ namespace TrackMyGradeAPI.Validators
             if (request.OmangOrPassport.Length > 20)
                 throw new ArgumentException("OMANG or Passport cannot exceed 20 characters.");
 
+            if (string.IsNullOrWhiteSpace(request.Phone))
+                throw new ArgumentException("Phone is required.");
+
+            if (request.Phone.Length != 8 || !request.Phone.All(char.IsDigit))
+                throw new ArgumentException("Phone must be exactly 8 digits.");
+
             if (request.Grade < 1 || request.Grade > 12)
                 throw new ArgumentException("Grade must be between 1 and 12.");
 
@@ -90,12 +97,6 @@ namespace TrackMyGradeAPI.Validators
 
             if (request.LastName.Length > 100)
                 throw new ArgumentException("Last name cannot exceed 100 characters.");
-
-            if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone.Length > 20)
-                throw new ArgumentException("Phone number cannot exceed 20 characters.");
-
-            if (!string.IsNullOrWhiteSpace(request.Phone) && !PhoneRegex.IsMatch(request.Phone))
-                throw new ArgumentException("Phone number format is invalid.");
         }
 
         /// <summary>Validate admin update student request.</summary>

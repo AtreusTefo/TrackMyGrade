@@ -10,6 +10,8 @@ import {
   CreateTeacherRequest, CreateStudentRequest,
   CreateCourseRequest, CreateClassGroupRequest
 } from '../../models/admin.models';
+import DataTable, { Api } from 'datatables.net-dt';
+import { ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 
 // ── Token key constant (matches auth components) ──────────────────────────────
 export const ADMIN_TOKEN_KEY = 'adminToken';
@@ -27,6 +29,18 @@ interface ClassGroupUI extends ClassGroup {
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
+
+  // ── ViewChild references for DataTables ──────────────────────────────────────
+  @ViewChild('teachersTable') teachersTableEl!: ElementRef;
+  @ViewChild('studentsTable') studentsTableEl!: ElementRef;
+  @ViewChild('coursesTable') coursesTableEl!: ElementRef;
+  @ViewChild('auditTable') auditTableEl!: ElementRef;
+
+  // ── DataTable instances ──────────────────────────────────────────────────────
+  private dtTeachers: Api<any> | null = null;
+  private dtStudents: Api<any> | null = null;
+  private dtCourses: Api<any> | null = null;
+  private dtAuditLogs: Api<any> | null = null;
 
   // ── Active tab ──────────────────────────────────────────────────────────────
   activeTab: 'teachers' | 'students' | 'courses' | 'classes' | 'audit' = 'teachers';
@@ -85,7 +99,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   // ── Destroy signal for subscriptions ─────────────────────────────────────────
   private destroy$ = new Subject<void>();
 
-  constructor(private adminApi: AdminApiService, private router: Router) {}
+  constructor(
+    private adminApi: AdminApiService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -100,8 +118,74 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyAllDataTables();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  // ── DataTable initialization & cleanup ────────────────────────────────────────
+
+  private destroyAllDataTables(): void {
+    if (this.dtTeachers) {
+      this.dtTeachers.destroy();
+      this.dtTeachers = null;
+    }
+    if (this.dtStudents) {
+      this.dtStudents.destroy();
+      this.dtStudents = null;
+    }
+    if (this.dtCourses) {
+      this.dtCourses.destroy();
+      this.dtCourses = null;
+    }
+    if (this.dtAuditLogs) {
+      this.dtAuditLogs.destroy();
+      this.dtAuditLogs = null;
+    }
+  }
+
+  private initDataTableTeachers(): void {
+    if (!this.teachersTableEl) return;
+    this.dtTeachers = new DataTable(this.teachersTableEl.nativeElement, {
+      pageLength: 10,
+      lengthMenu: [5, 10, 25, 50],
+      order: [[0, 'asc']],
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+      language: { emptyTable: 'No teachers found.' }
+    });
+  }
+
+  private initDataTableStudents(): void {
+    if (!this.studentsTableEl) return;
+    this.dtStudents = new DataTable(this.studentsTableEl.nativeElement, {
+      pageLength: 10,
+      lengthMenu: [5, 10, 25, 50],
+      order: [[0, 'asc']],
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+      language: { emptyTable: 'No students found.' }
+    });
+  }
+
+  private initDataTableCourses(): void {
+    if (!this.coursesTableEl) return;
+    this.dtCourses = new DataTable(this.coursesTableEl.nativeElement, {
+      pageLength: 10,
+      lengthMenu: [5, 10, 25, 50],
+      order: [[0, 'asc']],
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+      language: { emptyTable: 'No courses found.' }
+    });
+  }
+
+  private initDataTableAuditLogs(): void {
+    if (!this.auditTableEl) return;
+    this.dtAuditLogs = new DataTable(this.auditTableEl.nativeElement, {
+      pageLength: 25,
+      lengthMenu: [10, 25, 50, 100],
+      order: [[5, 'desc']],
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+      language: { emptyTable: 'No audit logs found.' }
+    });
   }
 
   // ── JWT helper ────────────────────────────────────────────────────────────────
@@ -143,6 +227,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   loadData(): void {
     this.loading = true;
     this.error   = '';
+    this.destroyAllDataTables();
 
     forkJoin({
       teachers:    this.adminApi.getAllTeachers(),
@@ -160,6 +245,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.students    = students;
         this.courses     = courses;
         this.classGroups = classGroups.map((cg: ClassGroup) => ({ ...cg, selectedStudentId: 0 }));
+        this.cdr.detectChanges();
+        this.initDataTableTeachers();
+        this.initDataTableStudents();
+        this.initDataTableCourses();
       },
       error: (e) => { this.showError(e); }
     });
@@ -172,10 +261,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     if (this.teachers.length > 0) return;
 
     this.loading = true;
+    this.destroyAllDataTables();
     this.adminApi.getAllTeachers()
       .pipe(takeUntil(this.destroy$), finalize(() => { this.loading = false; }))
       .subscribe({
-        next: (data) => { this.teachers = data; },
+        next: (data) => {
+          this.teachers = data;
+          this.cdr.detectChanges();
+          this.initDataTableTeachers();
+        },
         error: (e)   => { this.showError(e); }
       });
   }
@@ -184,10 +278,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     if (this.students.length > 0) return;
 
     this.loading = true;
+    this.destroyAllDataTables();
     this.adminApi.getAllStudents()
       .pipe(takeUntil(this.destroy$), finalize(() => { this.loading = false; }))
       .subscribe({
-        next: (data) => { this.students = data; },
+        next: (data) => {
+          this.students = data;
+          this.cdr.detectChanges();
+          this.initDataTableStudents();
+        },
         error: (e)   => { this.showError(e); }
       });
   }
@@ -199,6 +298,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   refreshAuditLogs(): void {
     this.loading = true;
+    this.destroyAllDataTables();
     this.adminApi.getAuditLogs({ pageNumber: 1, pageSize: 100 })
       .pipe(takeUntil(this.destroy$), finalize(() => { this.loading = false; }))
       .subscribe({
@@ -207,6 +307,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           this.auditLogs         = response?.records ?? (Array.isArray(response) ? response : []);
           this.filteredAuditLogs = this.auditLogs;
           this.applyAuditFilter();
+          this.cdr.detectChanges();
+          this.initDataTableAuditLogs();
         },
         error: (e) => { this.showError(e); }
       });

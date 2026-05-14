@@ -127,6 +127,15 @@ namespace TrackMyGradeAPI.Models
         /// <summary>Detailed description of the course.</summary>
         public string Description { get; set; }
 
+        /// <summary>UTC timestamp when the course was created.</summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>UTC timestamp when the course was last updated.</summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>Flag indicating whether this course has been soft-deleted.</summary>
+        public bool IsDeleted { get; set; } = false;
+
         /// <summary>Class groups offered under this course.</summary>
         public virtual ICollection<ClassGroup> ClassGroups { get; set; }
     }
@@ -151,6 +160,15 @@ namespace TrackMyGradeAPI.Models
 
         /// <summary>Identifier of the teacher assigned to this class group.</summary>
         public int TeacherId { get; set; }
+
+        /// <summary>UTC timestamp when the class group was created.</summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>UTC timestamp when the class group was last updated.</summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>Flag indicating whether this class group has been soft-deleted.</summary>
+        public bool IsDeleted { get; set; } = false;
 
         /// <summary>Course associated with this class group.</summary>
         public virtual Course Course { get; set; }
@@ -179,6 +197,12 @@ namespace TrackMyGradeAPI.Models
 
         /// <summary>UTC timestamp when the student enrolled.</summary>
         public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>UTC timestamp when the enrollment was last updated.</summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>Flag indicating whether this enrollment has been soft-deleted.</summary>
+        public bool IsDeleted { get; set; } = false;
 
         /// <summary>Student linked to this enrollment.</summary>
         public virtual Student Student { get; set; }
@@ -213,7 +237,11 @@ namespace TrackMyGradeAPI.Models
 
         /// <summary>UTC timestamp when the assignment was created.</summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        /// <summary>UTC timestamp when the assignment was last updated (used for optimistic concurrency).</summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        /// <summary>Flag indicating whether this assignment has been soft-deleted.</summary>
+        public bool IsDeleted { get; set; } = false;
         /// <summary>Class group navigation property.</summary>
         public virtual ClassGroup ClassGroup { get; set; }
 
@@ -242,6 +270,9 @@ namespace TrackMyGradeAPI.Models
         /// <summary>UTC timestamp when the submission was made.</summary>
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
+        /// <summary>UTC timestamp when the submission was last updated (used for optimistic concurrency).</summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
         /// <summary>Submission content or answer body.</summary>
         public string Content { get; set; }
 
@@ -253,6 +284,9 @@ namespace TrackMyGradeAPI.Models
 
         /// <summary>Status of the submission.</summary>
         public string Status { get; set; } = SubmissionStatus.Pending;
+
+        /// <summary>Flag indicating whether this submission has been soft-deleted.</summary>
+        public bool IsDeleted { get; set; } = false;
 
         /// <summary>Assignment associated with this submission.</summary>
         public virtual Assignment Assignment { get; set; }

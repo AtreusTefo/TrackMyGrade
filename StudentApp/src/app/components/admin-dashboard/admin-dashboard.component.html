@@ -114,7 +114,7 @@
       <div *ngIf="!loading && teachers.length === 0" class="empty-state">
         No teachers found. Use "Add Teacher" to create one.
       </div>
-      <table *ngIf="teachers.length > 0" aria-label="Teachers list">
+      <table #teachersTable *ngIf="teachers.length > 0" aria-label="Teachers list">
         <thead>
           <tr>
             <th scope="col">Name</th>
@@ -237,7 +237,7 @@
       <div *ngIf="!loading && students.length === 0" class="empty-state">
         No students found. Use "Add Student" to create one.
       </div>
-      <table *ngIf="students.length > 0" aria-label="Students list">
+      <table #studentsTable *ngIf="students.length > 0" aria-label="Students list">
         <thead>
           <tr>
             <th scope="col">Name</th>
@@ -325,7 +325,7 @@
       <div *ngIf="!loading && courses.length === 0" class="empty-state">
         No courses found. Use "Add Course" to create one.
       </div>
-      <table *ngIf="courses.length > 0" aria-label="Courses list">
+      <table #coursesTable *ngIf="courses.length > 0" aria-label="Courses list">
         <thead>
           <tr>
             <th scope="col">Code</th>
@@ -506,7 +506,7 @@
       <div *ngIf="!loading && filteredAuditLogs.length === 0" class="empty-state">
         No audit log entries match the current filters.
       </div>
-      <table *ngIf="filteredAuditLogs.length > 0" aria-label="Audit log entries">
+      <table #auditTable *ngIf="filteredAuditLogs.length > 0" aria-label="Audit log entries">
         <thead>
           <tr>
             <th scope="col">Timestamp</th>
