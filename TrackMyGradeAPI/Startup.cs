@@ -14,7 +14,10 @@ namespace TrackMyGradeAPI
         /// <param name="app">The OWIN application builder.</param>
         public void Configuration(IAppBuilder app)
         {
-            // Add security headers middleware (must be first)
+            // Add error handling middleware (must be first to catch all exceptions)
+            app.Use<ErrorHandlingMiddleware>();
+
+            // Add security headers middleware (second in pipeline)
             app.Use<SecurityHeadersMiddleware>();
 
             // Initialize AutoMapper profiles

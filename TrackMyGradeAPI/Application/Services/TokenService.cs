@@ -40,7 +40,7 @@ namespace TrackMyGradeAPI.Services
         private const string SecretKey   = "TrackMyGrade-JWT-Secret-Key-2026-Min32Chars!";
         private const string Issuer      = "TrackMyGradeAPI";
         private const string Audience    = "TrackMyGradeApp";
-        private const int    ExpiryHours = 12;
+        private const int    ExpiryHours = 24;  // Extended from 12 to 24 hours for better UX
 
         private SymmetricSecurityKey GetKey() =>
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
@@ -88,7 +88,7 @@ namespace TrackMyGradeAPI.Services
                     ValidateAudience         = true,
                     ValidAudience            = Audience,
                     ValidateLifetime         = true,
-                    ClockSkew                = TimeSpan.Zero
+                    ClockSkew                = TimeSpan.FromSeconds(30)  // Allow 30s clock skew tolerance
                 };
 
                 return handler.ValidateToken(token, parameters, out _);
@@ -105,11 +105,20 @@ namespace TrackMyGradeAPI.Services
         /// </summary>
         public (int UserId, string Role) ExtractClaims(string token)
         {
+            // Trim whitespace to handle token corruption during transmission
+            if (string.IsNullOrWhiteSpace(token))
+                return (-1, null);
+                
+            token = token.Trim();
+            
             var principal = ValidateToken(token);
             if (principal == null) return (-1, null);
 
             var idClaim   = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var roleClaim = principal.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (string.IsNullOrWhiteSpace(idClaim) || string.IsNullOrWhiteSpace(roleClaim))
+                return (-1, null);
 
             return int.TryParse(idClaim, out int userId)
                 ? (userId, roleClaim)

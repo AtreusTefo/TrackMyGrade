@@ -121,7 +121,7 @@ namespace TrackMyGradeAPI.Data
             course.Property(e => e.Description).IsOptional().HasMaxLength(1000);
             course.Property(e => e.CreatedAt).IsRequired();
             course.Property(e => e.UpdatedAt).IsRequired();
-            course.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+            course.Property(e => e.IsDeleted).IsRequired();
 
             course.HasMany(c => c.ClassGroups)
                 .WithRequired(g => g.Course)
@@ -141,7 +141,7 @@ namespace TrackMyGradeAPI.Data
             classGroup.Property(e => e.TeacherId).IsRequired();
             classGroup.Property(e => e.CreatedAt).IsRequired();
             classGroup.Property(e => e.UpdatedAt).IsRequired();
-            classGroup.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+            classGroup.Property(e => e.IsDeleted).IsRequired();
 
             classGroup.HasRequired(e => e.Course)
                 .WithMany(c => c.ClassGroups)
@@ -168,7 +168,7 @@ namespace TrackMyGradeAPI.Data
             enrollment.HasKey(e => e.Id);
             enrollment.Property(e => e.EnrolledAt).IsRequired();
             enrollment.Property(e => e.UpdatedAt).IsRequired();
-            enrollment.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+            enrollment.Property(e => e.IsDeleted).IsRequired();
             enrollment.Property(e => e.StudentId).HasColumnAnnotation(IndexAnnotation.AnnotationName,
                 new IndexAnnotation(new IndexAttribute("IX_StudentEnrollment_StudentId_ClassGroupId", 1) { IsUnique = true }));
             enrollment.Property(e => e.ClassGroupId).HasColumnAnnotation(IndexAnnotation.AnnotationName,
@@ -194,7 +194,7 @@ namespace TrackMyGradeAPI.Data
             assignment.Property(e => e.CreatedByTeacherId).IsRequired();
             assignment.Property(e => e.CreatedAt).IsRequired();
             assignment.Property(e => e.UpdatedAt).IsRequired();
-            assignment.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+            assignment.Property(e => e.IsDeleted).IsRequired();
 
             assignment.HasRequired(e => e.ClassGroup)
                 .WithMany(cg => cg.Assignments)
@@ -220,7 +220,7 @@ namespace TrackMyGradeAPI.Data
             submission.Property(e => e.Score).IsOptional();
             submission.Property(e => e.Feedback).IsOptional().HasMaxLength(2000);
             submission.Property(e => e.Status).IsRequired().HasMaxLength(50);
-            submission.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+            submission.Property(e => e.IsDeleted).IsRequired();
 
             submission.HasRequired(e => e.Assignment)
                 .WithMany(a => a.Submissions)
