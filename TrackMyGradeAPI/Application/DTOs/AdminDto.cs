@@ -139,29 +139,29 @@ namespace TrackMyGradeAPI.DTOs
         public DateTime? ActivatedAt     { get; set; }
     }
 
-    // ── Admin → Course / ClassGroup ───────────────────────────────────────
+    // ── Admin → Subject / ClassGroup ───────────────────────────────────────
 
-    /// <summary>Request to create a new course.</summary>
-    public class CreateCourseDto
+    /// <summary>Request to create a new subject.</summary>
+    public class CreateSubjectDto
     {
-        /// <summary>Gets or sets the course name.</summary>
+        /// <summary>Gets or sets the subject name.</summary>
         public string Name        { get; set; }
-        /// <summary>Gets or sets the course code.</summary>
+        /// <summary>Gets or sets the subject code.</summary>
         public string Code        { get; set; }
-        /// <summary>Gets or sets the course description.</summary>
+        /// <summary>Gets or sets the subject description.</summary>
         public string Description { get; set; }
     }
 
-    /// <summary>Course data transfer object.</summary>
-    public class CourseDto
+    /// <summary>Subject data transfer object.</summary>
+    public class SubjectDto
     {
-        /// <summary>Gets or sets the course ID.</summary>
+        /// <summary>Gets or sets the subject ID.</summary>
         public int    Id          { get; set; }
-        /// <summary>Gets or sets the course name.</summary>
+        /// <summary>Gets or sets the subject name.</summary>
         public string Name        { get; set; }
-        /// <summary>Gets or sets the course code.</summary>
+        /// <summary>Gets or sets the subject code.</summary>
         public string Code        { get; set; }
-        /// <summary>Gets or sets the course description.</summary>
+        /// <summary>Gets or sets the subject description.</summary>
         public string Description { get; set; }
     }
 
@@ -172,8 +172,8 @@ namespace TrackMyGradeAPI.DTOs
         public string Name       { get; set; }
         /// <summary>Gets or sets the grade level of the class.</summary>
         public int    GradeLevel { get; set; }
-        /// <summary>Gets or sets the course ID.</summary>
-        public int    CourseId   { get; set; }
+        /// <summary>Gets or sets the subject ID.</summary>
+        public int    SubjectId   { get; set; }
         /// <summary>Gets or sets the teacher ID assigned to the class.</summary>
         public int    TeacherId  { get; set; }
     }
@@ -187,10 +187,10 @@ namespace TrackMyGradeAPI.DTOs
         public string Name        { get; set; }
         /// <summary>Gets or sets the grade level of the class.</summary>
         public int    GradeLevel  { get; set; }
-        /// <summary>Gets or sets the course ID.</summary>
-        public int    CourseId    { get; set; }
-        /// <summary>Gets or sets the course name.</summary>
-        public string CourseName  { get; set; }
+        /// <summary>Gets or sets the subject ID.</summary>
+        public int    SubjectId    { get; set; }
+        /// <summary>Gets or sets the subject name.</summary>
+        public string SubjectName  { get; set; }
         /// <summary>Gets or sets the teacher ID assigned to the class.</summary>
         public int    TeacherId   { get; set; }
         /// <summary>Gets or sets the teacher name.</summary>

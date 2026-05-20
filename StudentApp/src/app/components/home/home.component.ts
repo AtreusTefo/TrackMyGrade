@@ -29,8 +29,8 @@ export class HomeComponent implements OnInit {
     },
     {
       icon: '📚',
-      title: 'Courses & Subjects',
-      desc: 'Manage multiple subjects per teacher, assign students to courses, and organise classes with ease.'
+      title: 'Subjects & Subjects',
+      desc: 'Manage multiple subjects per teacher, assign students to subjects, and organise classes with ease.'
     },
     {
       icon: '📊',
@@ -56,7 +56,7 @@ export class HomeComponent implements OnInit {
     { value: '∞', label: 'Students Supported' }
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   ngOnInit(): void {
     const role = this.authService.getActiveRole();
@@ -65,7 +65,7 @@ export class HomeComponent implements OnInit {
       this.userRole = role;
       this.userName = this.authService.getCurrentUserName();
       switch (role) {
-        case 'admin':   this.dashboardRoute = '/admin-dashboard';   break;
+        case 'admin': this.dashboardRoute = '/admin-dashboard'; break;
         case 'teacher': this.dashboardRoute = '/teacher-dashboard'; break;
         case 'student': this.dashboardRoute = '/student-dashboard'; break;
       }
@@ -74,19 +74,19 @@ export class HomeComponent implements OnInit {
 
   getRoleLabel(): string {
     switch (this.userRole) {
-      case 'admin':   return 'Administrator';
+      case 'admin': return 'Administrator';
       case 'teacher': return 'Teacher';
       case 'student': return 'Student';
-      default:        return '';
+      default: return '';
     }
   }
 
   getRoleIcon(): string {
     switch (this.userRole) {
-      case 'admin':   return '🛡️';
+      case 'admin': return '🛡️';
       case 'teacher': return '📚';
       case 'student': return '🎓';
-      default:        return '👤';
+      default: return '👤';
     }
   }
 }

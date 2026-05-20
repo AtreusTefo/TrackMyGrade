@@ -35,14 +35,14 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
   filterEndDate = '';
 
   // Entity types and actions for dropdown
-  entityTypes = ['Teacher', 'Student', 'ClassGroup', 'Course', 'StudentEnrollment', 'Assignment'];
+  entityTypes = ['Teacher', 'Student', 'ClassGroup', 'Subject', 'StudentEnrollment', 'Assignment'];
   actions = ['Created', 'Updated', 'Deleted'];
 
   constructor(
     private adminApi: AdminApiService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     if (!localStorage.getItem('admin_token')) {

@@ -22,7 +22,7 @@ ISSUES FIXED
 
 CHANGES
 - StudentApp/src/app/models/admin.models.ts (NEW)
-  * Added typed interfaces: Teacher, Student, Course, ClassGroup
+  * Added typed interfaces: Teacher, Student, Subject, ClassGroup
   * Added request DTOs: CreateTeacherRequest, CreateStudentRequest, etc.
 
 - StudentApp/src/app/components/admin-dashboard/admin-dashboard.component.html
@@ -35,7 +35,7 @@ CHANGES
 - StudentApp/src/app/components/admin-dashboard/admin-dashboard.component.ts
   * Replaced any[] with typed arrays (Teacher[], Student[], etc.)
   * Enhanced createStudent() with teacher existence validation
-  * Enhanced createClassGroup() with dual validation (course + teacher)
+  * Enhanced createClassGroup() with dual validation (subject + teacher)
   * Enhanced enrollStudent() with duplicate prevention
   * Optimized enrollStudent() and unenrollStudent() (no full reload)
   * Added cascade delete to classGroups when student deleted

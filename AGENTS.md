@@ -159,7 +159,7 @@ When creating new error fix documentation:
     - Use check constraints for valid ranges: `[Range(0, 100)]` for GradeValue, `[Range(0.0, 4.0)]` for GPA.
 
 11. **Uniqueness Constraints**
-    - Enforce unique constraints on Email, UserName, CourseCode using `[Index(IsUnique = true)]` data annotation.
+    - Enforce unique constraints on Email, UserName, SubjectCode using `[Index(IsUnique = true)]` data annotation.
     - Prevent duplicate enrollments: Add composite unique constraint on StudentId + ClassGroupId.
     - Duplicates detected at database level; backend returns `409 Conflict` on violation.
 

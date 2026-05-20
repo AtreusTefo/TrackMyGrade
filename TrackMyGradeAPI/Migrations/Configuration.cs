@@ -14,7 +14,7 @@ namespace TrackMyGradeAPI.Migrations
         public Configuration()
         {
             AutomaticMigrationsEnabled = true;
-            AutomaticMigrationDataLossAllowed = false;
+            AutomaticMigrationDataLossAllowed = true;
             MigrationsNamespace = "TrackMyGradeAPI.Migrations";
             MigrationsDirectory = "Migrations";
         }

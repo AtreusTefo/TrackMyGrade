@@ -5,7 +5,7 @@ using TrackMyGradeAPI.DTOs;
 
 namespace TrackMyGradeAPI.Validators
 {
-    /// <summary>Validation rules for all admin operations (teachers, students, courses, class groups).</summary>
+    /// <summary>Validation rules for all admin operations (teachers, students, subjects, class groups).</summary>
     public static class AdminValidator
     {
         private static readonly Regex EmailRegex = new Regex(
@@ -117,28 +117,28 @@ namespace TrackMyGradeAPI.Validators
             });
         }
 
-        // ── Course Validation ──────────────────────────────────────────────
+        // ── Subject Validation ──────────────────────────────────────────────
 
-        /// <summary>Validate course creation request.</summary>
-        public static void ValidateCreateCourse(CreateCourseDto request)
+        /// <summary>Validate subject creation request.</summary>
+        public static void ValidateCreateSubject(CreateSubjectDto request)
         {
             if (request == null)
-                throw new ArgumentException("Course data is required.");
+                throw new ArgumentException("Subject data is required.");
 
             if (string.IsNullOrWhiteSpace(request.Name))
-                throw new ArgumentException("Course name is required.");
+                throw new ArgumentException("Subject name is required.");
 
             if (string.IsNullOrWhiteSpace(request.Code))
-                throw new ArgumentException("Course code is required.");
+                throw new ArgumentException("Subject code is required.");
 
             if (request.Name.Length > 200)
-                throw new ArgumentException("Course name cannot exceed 200 characters.");
+                throw new ArgumentException("Subject name cannot exceed 200 characters.");
 
             if (request.Code.Length > 20)
-                throw new ArgumentException("Course code cannot exceed 20 characters.");
+                throw new ArgumentException("Subject code cannot exceed 20 characters.");
 
             if (!string.IsNullOrWhiteSpace(request.Description) && request.Description.Length > 500)
-                throw new ArgumentException("Course description cannot exceed 500 characters.");
+                throw new ArgumentException("Subject description cannot exceed 500 characters.");
         }
 
         // ── Class Group Validation ─────────────────────────────────────────
@@ -158,8 +158,8 @@ namespace TrackMyGradeAPI.Validators
             if (request.GradeLevel < 1 || request.GradeLevel > 12)
                 throw new ArgumentException("Grade level must be between 1 and 12.");
 
-            if (request.CourseId <= 0)
-                throw new ArgumentException("Valid course ID is required.");
+            if (request.SubjectId <= 0)
+                throw new ArgumentException("Valid subject ID is required.");
 
             if (request.TeacherId <= 0)
                 throw new ArgumentException("Valid teacher ID is required.");

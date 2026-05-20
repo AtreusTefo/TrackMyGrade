@@ -56,11 +56,11 @@ Comprehensive data integrity analysis and implementation across TrackMyGrade sys
 
 #### 2. Timestamp Fields Missing for Concurrency Control
 **Severity**: CRITICAL - Concurrency Conflicts Possible
-**Issue**: 5 entities missing UpdatedAt (Course, ClassGroup, StudentEnrollment, Assignment, AssignmentSubmission)
+**Issue**: 5 entities missing UpdatedAt (Subject, ClassGroup, StudentEnrollment, Assignment, AssignmentSubmission)
 **Impact**: No concurrency detection; simultaneous updates cause data loss
 
 **Resolution**:
-- **Course** entity - Added fields:
+- **Subject** entity - Added fields:
   - `public DateTime CreatedAt { get; set; } = DateTime.UtcNow;`
   - `public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;`
   
@@ -89,7 +89,7 @@ Comprehensive data integrity analysis and implementation across TrackMyGrade sys
 
 #### 3. Soft Delete IsDeleted Flags Missing
 **Severity**: CRITICAL - Audit Trail Corruption Risk
-**Issue**: 5 entities missing IsDeleted soft-delete flag (Course, ClassGroup, StudentEnrollment, Assignment, AssignmentSubmission)
+**Issue**: 5 entities missing IsDeleted soft-delete flag (Subject, ClassGroup, StudentEnrollment, Assignment, AssignmentSubmission)
 **Impact**: Hard deletes lose audit data; compliance requirement violated
 
 **Resolution**:
@@ -107,9 +107,9 @@ Comprehensive data integrity analysis and implementation across TrackMyGrade sys
 
 - **Example Service Pattern**:
   ```csharp
-  public IQueryable<Course> GetActiveCourses()
+  public IQueryable<Subject> GetActiveSubjects()
   {
-    return context.Courses.Where(c => !c.IsDeleted);
+    return context.Subjects.Where(c => !c.IsDeleted);
   }
   ```
 
@@ -174,10 +174,10 @@ Comprehensive data integrity analysis and implementation across TrackMyGrade sys
 
 ---
 
-#### 7. Course & ClassGroup: Missing CreatedAt Tracking
+#### 7. Subject & ClassGroup: Missing CreatedAt Tracking
 **Severity**: CRITICAL - Audit Trail Incomplete
-**Issue**: Course and ClassGroup had no creation timestamp
-**Impact**: Cannot track when course/class created; audit compliance gap
+**Issue**: Subject and ClassGroup had no creation timestamp
+**Impact**: Cannot track when subject/class created; audit compliance gap
 
 **Resolution**:
 - Added CreatedAt field to both entities
@@ -197,7 +197,7 @@ Comprehensive data integrity analysis and implementation across TrackMyGrade sys
 - **admin-dashboard.component.ts/html** - 100% Complete:
   - Added DataTable library imports
   - Added 4 ViewChild references for all tables
-  - Implemented initDataTableTeachers/Students/Courses/AuditLogs methods
+  - Implemented initDataTableTeachers/Students/Subjects/AuditLogs methods
   - Wire-up in loadData() and lazy-load methods
   - Added template references to all 4 tables
   
@@ -213,7 +213,7 @@ Comprehensive data integrity analysis and implementation across TrackMyGrade sys
 **Configuration**:
 - Teachers: pageLength 10, order [[0, 'asc']], actions column non-sortable
 - Students: pageLength 10, order [[0, 'asc']], actions column non-sortable
-- Courses: pageLength 10, order [[0, 'asc']], actions column non-sortable
+- Subjects: pageLength 10, order [[0, 'asc']], actions column non-sortable
 - Audit Logs: pageLength 25, order [[5, 'desc']] (by PerformedAt), lengthMenu [10, 25, 50, 100]
 
 **Status**: ✓ COMPLETE
@@ -252,7 +252,7 @@ next: (data) => {
 #### 1. FK Relationship: Teacher → ClassGroup Not Indexed
 **Resolution**: Verified Teacher FK on ClassGroup has index (existing, no change needed)
 
-#### 2. FK Relationship: Course → ClassGroup Missing Explicit Configuration
+#### 2. FK Relationship: Subject → ClassGroup Missing Explicit Configuration
 **Resolution**: Verified explicit configuration in OnModelCreating() (existing, no change needed)
 
 #### 3. Student Phone Validation: Frontend-Only (No Backend Enforcement)
@@ -293,7 +293,7 @@ next: (data) => {
 
 #### 1. TrackMyGradeAPI/Models/Student.cs
 **Changes**: Added timestamp and soft-delete fields to 5 entities
-- Course: +CreatedAt, +UpdatedAt, +IsDeleted (3 new properties)
+- Subject: +CreatedAt, +UpdatedAt, +IsDeleted (3 new properties)
 - ClassGroup: +CreatedAt, +UpdatedAt, +IsDeleted (3 new properties)
 - StudentEnrollment: +UpdatedAt, +IsDeleted (2 new properties)
 - Assignment: +UpdatedAt, +IsDeleted (2 new properties)
@@ -304,7 +304,7 @@ next: (data) => {
 
 #### 2. TrackMyGradeAPI/Infrastructure/Data/ApplicationDbContext.cs
 **Changes**: Hardened OnModelCreating() and EnsureSqlServerCheckConstraints()
-- Course configuration: Required CreatedAt, UpdatedAt, IsDeleted
+- Subject configuration: Required CreatedAt, UpdatedAt, IsDeleted
 - ClassGroup configuration: Required CreatedAt, UpdatedAt, IsDeleted + unique index
 - StudentEnrollment configuration: Required UpdatedAt, IsDeleted + composite unique constraint
 - Assignment configuration: Required UpdatedAt, IsDeleted
@@ -345,10 +345,10 @@ next: (data) => {
 #### 6. StudentApp/src/app/components/admin-dashboard/admin-dashboard.component.ts
 **Changes**: Complete DataTables integration for 4 tables
 - Imports: +DataTable, Api, ElementRef, ViewChild, ChangeDetectorRef
-- Class fields: +teachersTableEl, +studentsTableEl, +coursesTableEl, +auditTableEl ViewChild references
-- Class fields: +dtTeachers, dtStudents, dtCourses, dtAuditLogs DataTable instances
+- Class fields: +teachersTableEl, +studentsTableEl, +subjectsTableEl, +auditTableEl ViewChild references
+- Class fields: +dtTeachers, dtStudents, dtSubjects, dtAuditLogs DataTable instances
 - Constructor: +ChangeDetectorRef injection
-- New methods: +destroyAllDataTables, +initDataTableTeachers, +initDataTableStudents, +initDataTableCourses, +initDataTableAuditLogs
+- New methods: +destroyAllDataTables, +initDataTableTeachers, +initDataTableStudents, +initDataTableSubjects, +initDataTableAuditLogs
 - Updated ngOnDestroy: Calls destroyAllDataTables()
 - Updated loadData(): Destroys tables, calls cdr.detectChanges(), initializes all tables
 - Updated loadTeachersIfNeeded(): Initializes DataTable on load
@@ -362,7 +362,7 @@ next: (data) => {
 **Changes**: Added template references for DataTable initialization
 - Teachers table: +#teachersTable
 - Students table: +#studentsTable
-- Courses table: +#coursesTable
+- Subjects table: +#subjectsTable
 - Audit logs table: +#auditTable
 
 **Lines Changed**: 4 template references added
@@ -423,7 +423,7 @@ next: (data) => {
 ✓ 8. **Consistent Error Responses**: Proper HTTP status codes (200, 201, 400, 409, 422)
 ✓ 9. **Audit Trail & Logging**: All mutations logged to AuditLog with UserId, EntityType, Operation, Timestamp
 ✓ 10. **Column Constraints**: NOT NULL, data types, check constraints enforced at database level
-✓ 11. **Uniqueness Constraints**: Unique indexes on Email, UserName, CourseCode, StudentEnrollment (StudentId + ClassGroupId)
+✓ 11. **Uniqueness Constraints**: Unique indexes on Email, UserName, SubjectCode, StudentEnrollment (StudentId + ClassGroupId)
 ✓ 12. **Explicit Foreign Key Configuration**: All FK relationships defined in OnModelCreating() with cascade behavior
 ✓ 13. **Concurrency Control**: UpdatedAt timestamp fields enable EF6 OptimisticConcurrency detection
 ✓ 14. **Soft Delete Strategy**: IsDeleted flags on grading entities; queries filter `&& IsDeleted == false`
@@ -439,8 +439,8 @@ next: (data) => {
 The following schema changes will be applied when ApplicationDbContext.Initialize() is called:
 
 ```sql
--- Add timestamp and soft-delete fields to Course
-ALTER TABLE [Courses] ADD 
+-- Add timestamp and soft-delete fields to Subject
+ALTER TABLE [Subjects] ADD 
   [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
   [UpdatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
   [IsDeleted] BIT NOT NULL DEFAULT 0;
@@ -502,7 +502,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Admins_Phone
 
 - [ ] Admin Dashboard: Teachers table initializes DataTable with sort
 - [ ] Admin Dashboard: Students table pagination works (10 records per page)
-- [ ] Admin Dashboard: Courses table search filters correctly
+- [ ] Admin Dashboard: Subjects table search filters correctly
 - [ ] Admin Dashboard: Audit Logs table sorts by PerformedAt descending
 - [ ] Audit Logs: Page loads without errors
 - [ ] Audit Logs: DataTable initializes with 25 records per page

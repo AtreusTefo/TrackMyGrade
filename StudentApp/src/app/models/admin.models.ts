@@ -21,7 +21,7 @@ export interface Student {
   activationToken?: string;
 }
 
-export interface Course {
+export interface Subject {
   id: number;
   name: string;
   code: string;
@@ -32,8 +32,8 @@ export interface ClassGroup {
   id: number;
   name: string;
   gradeLevel: number;
-  courseId: number;
-  course?: Course;
+  subjectId: number;
+  subject?: Subject;
   teacherId: number;
   teacher?: Teacher;
   students?: Student[];
@@ -57,7 +57,7 @@ export interface CreateStudentRequest {
   teacherId: number;
 }
 
-export interface CreateCourseRequest {
+export interface CreateSubjectRequest {
   name: string;
   code: string;
   description?: string;
@@ -66,7 +66,7 @@ export interface CreateCourseRequest {
 export interface CreateClassGroupRequest {
   name: string;
   gradeLevel: number;
-  courseId: number;
+  subjectId: number;
   teacherId: number;
 }
 

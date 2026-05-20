@@ -259,7 +259,7 @@ All database operations wrapped in `DbContext.SaveChanges()`:
 
 - **Email** (Teachers & Students): Case-insensitive, database index
 - **OMANG/Passport** (Students only): Database index
-- **Course Code**: Case-insensitive, database index
+- **Subject Code**: Case-insensitive, database index
 - **(StudentId, ClassGroupId)**: Composite unique index
 
 ### Foreign Key Constraints
@@ -268,7 +268,7 @@ All database operations wrapped in `DbContext.SaveChanges()`:
 - **StudentEnrollment.StudentId** → Student.Id (Required, Cascade Delete)
 - **StudentEnrollment.ClassGroupId** → ClassGroup.Id (Required, No Cascade)
 - **ClassGroup.TeacherId** → Teacher.Id (Required, No Cascade)
-- **ClassGroup.CourseId** → Course.Id (Required, No Cascade)
+- **ClassGroup.SubjectId** → Subject.Id (Required, No Cascade)
 
 ### Validation Pipeline
 
@@ -277,8 +277,8 @@ All database operations wrapped in `DbContext.SaveChanges()`:
    - Grade range (1-12), OMANG length (max 9)
 
 2. **Business Rules** (Service Layer)
-   - Uniqueness checks (email, OMANG, course code)
-   - Referential integrity checks (teacher/course existence)
+   - Uniqueness checks (email, OMANG, subject code)
+   - Referential integrity checks (teacher/subject existence)
    - Duplicate prevention (enrollment uniqueness)
 
 3. **Database Constraints** (EF6 Configuration)

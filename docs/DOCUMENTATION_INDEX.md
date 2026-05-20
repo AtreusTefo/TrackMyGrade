@@ -69,7 +69,7 @@
 1. Teacher deletion allowed orphaned classes → **FIXED**
 2. Student update allowed duplicate emails → **FIXED**
 3. Student creation didn't validate teacher exists → **FIXED**
-4. Class groups could reference non-existent courses → **FIXED**
+4. Class groups could reference non-existent subjects → **FIXED**
 
 ### HIGH (6 issues)
 5. No phone format validation → **FIXED**
@@ -237,7 +237,7 @@ StudentApp\src\app\components\admin-dashboard\admin-dashboard.component.ts
 | Student email duplicate on update | [Issue 2.1](DATA_INTEGRITY_IMPROVEMENTS.md) |
 | OMANG duplicate on update | [Issue 2.2](DATA_INTEGRITY_IMPROVEMENTS.md) |
 | Invalid teacher in student creation | [Issue 1.2](DATA_INTEGRITY_IMPROVEMENTS.md) |
-| Invalid course in class group | [Issue 1.3](DATA_INTEGRITY_IMPROVEMENTS.md) |
+| Invalid subjects in class group | [Issue 1.3](DATA_INTEGRITY_IMPROVEMENTS.md) |
 | Invalid teacher in class group | [Issue 1.4](DATA_INTEGRITY_IMPROVEMENTS.md) |
 | Phone format validation | [Issue 2.5](DATA_INTEGRITY_IMPROVEMENTS.md) |
 | Email format validation | [Issue 2.6](DATA_INTEGRITY_IMPROVEMENTS.md) |

@@ -27,7 +27,7 @@ export interface Student {
   activationToken?: string;
 }
 
-export interface Course {
+export interface Subject {
   id: number;
   name: string;
   code: string;
@@ -38,8 +38,8 @@ export interface ClassGroup {
   id: number;
   name: string;
   gradeLevel: number;
-  courseId: number;
-  course?: Course;
+  subjectId: number;
+  subject?: Subject;
   teacherId: number;
   teacher?: Teacher;
   students?: Student[];
@@ -64,11 +64,11 @@ if (!selectedTeacher) {
   return;
 }
 
-Dual Validation (Course + Teacher):
-const selectedCourse = this.courses.find(c => c.id === this.newClass.courseId);
+Dual Validation (Subject + Teacher):
+const selectedSubject = this.subjects.find(c => c.id === this.newClass.subjectId);
 const selectedTeacher = this.teachers.find(t => t.id === this.newClass.teacherId);
-if (!selectedCourse || !selectedTeacher) {
-  this.showError('Selected course or teacher is no longer available. Please refresh and try again.');
+if (!selectedSubject || !selectedTeacher) {
+  this.showError('Selected subject or teacher is no longer available. Please refresh and try again.');
   return;
 }
 

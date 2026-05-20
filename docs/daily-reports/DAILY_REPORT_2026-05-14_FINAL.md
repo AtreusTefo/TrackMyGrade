@@ -24,7 +24,7 @@ Conducted a complete analysis and implementation of data integrity, referential 
 
 Systematically updated 5 entities with missing fields:
 
-- **Course entity**:
+- **Subject entity**:
   - Added: `public DateTime CreatedAt { get; set; } = DateTime.UtcNow;`
   - Added: `public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;`
   - Added: `public bool IsDeleted { get; set; } = false;`
@@ -53,7 +53,7 @@ Systematically updated 5 entities with missing fields:
 
 Configured all new fields in `OnModelCreating()`:
 
-- **Course configuration**:
+- **Subject configuration**:
   ```csharp
   property(e => e.CreatedAt).IsRequired()
   property(e => e.UpdatedAt).IsRequired()
@@ -61,7 +61,7 @@ Configured all new fields in `OnModelCreating()`:
   ```
 
 - **ClassGroup configuration**:
-  - Same field configurations as Course
+  - Same field configurations as Subject
   - Added unique index: `IX_ClassGroup_StudentId_ClassGroupId`
   - Prevents duplicate enrollments at database level
 
@@ -144,7 +144,7 @@ import { ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 ```typescript
 @ViewChild('teachersTable') teachersTableEl!: ElementRef;
 @ViewChild('studentsTable') studentsTableEl!: ElementRef;
-@ViewChild('coursesTable') coursesTableEl!: ElementRef;
+@ViewChild('subjectsTable') subjectsTableEl!: ElementRef;
 @ViewChild('auditTable') auditTableEl!: ElementRef;
 ```
 
@@ -152,7 +152,7 @@ import { ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 ```typescript
 private dtTeachers: Api<any> | null = null;
 private dtStudents: Api<any> | null = null;
-private dtCourses: Api<any> | null = null;
+private dtSubjects: Api<any> | null = null;
 private dtAuditLogs: Api<any> | null = null;
 ```
 
@@ -169,7 +169,7 @@ constructor(
 - `destroyAllDataTables()`: Destroys all 4 DataTable instances on cleanup
 - `initDataTableTeachers()`: Teachers table config (pageLength 10, sort by ID asc)
 - `initDataTableStudents()`: Students table config (pageLength 10, sort by ID asc)
-- `initDataTableCourses()`: Courses table config (pageLength 10, sort by ID asc)
+- `initDataTableSubjects()`: Subjects table config (pageLength 10, sort by ID asc)
 - `initDataTableAuditLogs()`: Audit Logs config (pageLength 25, sort by PerformedAt desc)
 
 **Lifecycle Updates**:
@@ -182,7 +182,7 @@ constructor(
 **HTML Template Updates**:
 - Teachers table: Added `#teachersTable` template reference
 - Students table: Added `#studentsTable` template reference
-- Courses table: Added `#coursesTable` template reference
+- Subjects table: Added `#subjectsTable` template reference
 - Audit Logs table: Added `#auditTable` template reference
 
 ##### audit-logs.component.ts (Standalone Audit Component)
@@ -259,7 +259,7 @@ private destroy$ = new Subject<void>();
 - Added missing `using System.Linq;` for LINQ methods
 
 #### Phase 4: DataTables Integration ✓ COMPLETE
-- **admin-dashboard component**: 4 tables integrated (Teachers, Students, Courses, Audit Logs)
+- **admin-dashboard component**: 4 tables integrated (Teachers, Students, Subjects, Audit Logs)
 - **audit-logs component**: Standalone audit table fully integrated
 - Proper lifecycle management with OnDestroy
 - Change detection triggers before DataTable initialization
@@ -479,9 +479,9 @@ ngOnDestroy(): void {
 - Added IsDeleted flag with default value `false` in database
 - Documented query filter pattern:
   ```csharp
-  public IQueryable<Course> GetActiveCourses()
+  public IQueryable<Subject> GetActiveSubjects()
   {
-    return context.Courses.Where(c => !c.IsDeleted);
+    return context.Subjects.Where(c => !c.IsDeleted);
   }
   ```
 - Service layer responsible for filtering deleted records

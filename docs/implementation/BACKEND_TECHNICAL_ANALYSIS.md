@@ -80,7 +80,7 @@ All domain models are consolidated in a single file. Below is the complete prope
 
 ---
 
-#### **Course**
+#### **Subject**
 | Property | Type | Database Config | Required | Validation Status | Notes |
 |----------|------|-----------------|----------|-------------------|-------|
 | Id | int | PK | Yes | N/A | Identity column |
@@ -97,13 +97,13 @@ All domain models are consolidated in a single file. Below is the complete prope
 | Property | Type | Database Config | Required | Validation Status | Notes |
 |----------|------|-----------------|----------|-------------------|-------|
 | Id | int | PK | Yes | N/A | Identity column |
-| Name | string(100) | NOT NULL, COMPOSITE UNIQUE IX | Yes | ✓ AdminValidator | Composite with CourseId/TeacherId |
+| Name | string(100) | NOT NULL, COMPOSITE UNIQUE IX | Yes | ✓ AdminValidator | Composite with SubjectId/TeacherId |
 | GradeLevel | int | NOT NULL | Yes | ✓ AdminValidator | 1-12 range in validator |
-| CourseId | int | NOT NULL, FK, COMPOSITE UNIQUE IX | Yes | ✓ AdminValidator | References Course |
+| SubjectId | int | NOT NULL, FK, COMPOSITE UNIQUE IX | Yes | ✓ AdminValidator | References Subject |
 | TeacherId | int | NOT NULL, FK, COMPOSITE UNIQUE IX | Yes | ✓ AdminValidator | References Teacher |
 
 **Navigation Properties:**
-- `Course` (Course): N:1 required (Cascade: false)
+- `Subject` (Subject): N:1 required (Cascade: false)
 - `Teacher` (Teacher): N:1 required (Cascade: false)
 - `Enrollments` (ICollection<StudentEnrollment>): 1:N (Cascade: true)
 - `Assignments` (ICollection<Assignment>): 1:N (Cascade: true)
@@ -291,7 +291,7 @@ Location: `TrackMyGradeAPI/Application/Validators/AdminValidator.cs`
 - `ValidateUpdateStudent(AdminUpdateStudentDto)`
   - Delegates to ValidateCreateStudent with mapped fields
 
-- `ValidateCreateCourse(CreateCourseDto)`
+- `ValidateCreateSubject(CreateSubjectDto)`
   - Name: NotNull, Length <= 200
   - Code: NotNull, Length <= 20
   - Description: !null && Length <= 500
@@ -299,7 +299,7 @@ Location: `TrackMyGradeAPI/Application/Validators/AdminValidator.cs`
 - `ValidateCreateClassGroup(CreateClassGroupDto)`
   - Name: NotNull, Length <= 100
   - GradeLevel: 1-12
-  - CourseId: > 0
+  - SubjectId: > 0
   - TeacherId: > 0
 
 ---
@@ -318,7 +318,7 @@ Location: `TrackMyGradeAPI/Application/Validators/AdminValidator.cs`
 | **Teacher** | ✓ Partial | N/A | ✗ Missing | Phone not validated in FluentValidator |
 | **Student** | ✓ Complete | ✗ Inconsistent | ✓ Partial | Phone regex vs DB CHECK mismatch |
 | **Admin** | ✗ None | ✓ Static | ✗ Optional | Admin phone is optional (inconsistent) |
-| **Course** | ✗ None | ✓ Static | N/A | Uses static methods |
+| **Subject** | ✗ None | ✓ Static | N/A | Uses static methods |
 | **ClassGroup** | ✗ None | ✓ Static | N/A | Empty ClassGroupValidator.cs file |
 
 ---
@@ -367,10 +367,10 @@ Student (1) ──────────────── (N) AssignmentSubmi
 
 ---
 
-#### **Course Entity**
+#### **Subject Entity**
 ```
-Course (1) ──────────────── (N) ClassGroup
-  FK: CourseId
+Subject (1) ──────────────── (N) ClassGroup
+  FK: SubjectId
   Cascade: false (restrict if classes exist)
 ```
 
@@ -378,8 +378,8 @@ Course (1) ──────────────── (N) ClassGroup
 
 #### **ClassGroup Entity**
 ```
-ClassGroup (N) ──────────────── (1) Course
-  FK: CourseId
+ClassGroup (N) ──────────────── (1) Subject
+  FK: SubjectId
   Cascade: false
 
 ClassGroup (N) ──────────────── (1) Teacher
@@ -433,7 +433,7 @@ AssignmentSubmission (N) ──────────────── (1) St
 |--------|-------------------|---------------------------|
 | Teacher | false | ✓ Yes (explicit checks) |
 | Student | true (enrollments, submissions) | ✓ Yes (snapshot + audit) |
-| Course | false | ✗ No explicit check |
+| Subject | false | ✗ No explicit check |
 | ClassGroup | true (enrollments, assignments) | ✗ No explicit check |
 | Assignment | true (submissions) | ✗ No explicit check |
 | StudentEnrollment | true | ✗ No explicit check |
@@ -441,7 +441,7 @@ AssignmentSubmission (N) ──────────────── (1) St
 | AuditLog | none | N/A |
 | Admin | none | N/A |
 
-**Issue:** Course and ClassGroup deletion lack service-layer FK checks despite cascade: false configuration.
+**Issue:** Subject and ClassGroup deletion lack service-layer FK checks despite cascade: false configuration.
 
 ---
 
@@ -513,7 +513,7 @@ AssignmentSubmission (N) ──────────────── (1) St
 |----------|---------------------|----------------------|-------|
 | Teacher deletion with assigned students | ✓ Yes | N/A | Explicit check in AdminService.DeleteTeacher() |
 | Student deletion with enrollments | ✓ Yes (implicit, cascade) | N/A | Relies on EF cascade delete + audit log |
-| Course deletion with class groups | ✗ No | ✗ No | **ISSUE:** No check if course has classes |
+| Subject deletion with class groups | ✗ No | ✗ No | **ISSUE:** No check if subject has classes |
 | ClassGroup deletion with enrollments | ✗ No (implicit cascade) | ✗ No | Relies on cascade delete |
 | Assignment DueDate after CreatedAt | ✗ No | ✗ No | **ISSUE:** No temporal validation |
 | Score <= MaxScore | ✗ No | ✗ No | **ISSUE:** No range validation |
@@ -527,7 +527,7 @@ AssignmentSubmission (N) ──────────────── (1) St
 ✓ Explicit FK check: `if (!_db.Teachers.Any(t => t.Id == request.TeacherId))`
 
 #### **AdminService.CreateClassGroup()**
-✓ Explicit FK checks for both Course and Teacher
+✓ Explicit FK checks for both Subject and Teacher
 
 #### **AdminService.EnrollStudent()**
 - [ ] **MISSING:** No FK validation for ClassGroupId
@@ -556,7 +556,7 @@ AssignmentSubmission (N) ──────────────── (1) St
 - ✓ CreateStudent
 - ✓ UpdateStudent
 - ✓ DeleteStudent
-- ✓ CreateCourse
+- ✓ CreateSubject
 - ✓ CreateClassGroup
 - ✓ EnrollStudent
 - ✓ UnenrollStudent
@@ -564,7 +564,7 @@ AssignmentSubmission (N) ──────────────── (1) St
 **Audit Log Properties:**
 ```
 Action: "Created", "Updated", "Deleted" (string, 20 chars max)
-EntityType: "Teacher", "Student", "Course", etc. (string, 100 chars max)
+EntityType: "Teacher", "Student", "Subject", etc. (string, 100 chars max)
 EntityId: Numeric ID of affected entity
 Changes: JSON-serialized old/new values (string, 4000 chars max)
 PerformedBy: Email or system identifier (string, 100 chars max)
@@ -614,7 +614,7 @@ _db.SaveChanges();  // Hard delete
 
 **Pattern:** `DateTime.UtcNow` used consistently in model defaults and service methods.
 
-**Issue:** No UpdatedAt tracking on non-Admin entities (Teacher, Student, Course, ClassGroup, Assignment, AssignmentSubmission, StudentEnrollment).
+**Issue:** No UpdatedAt tracking on non-Admin entities (Teacher, Student, Subject, ClassGroup, Assignment, AssignmentSubmission, StudentEnrollment).
 
 ---
 
@@ -699,8 +699,8 @@ CK_AssignmentSubmissions_Score_Positive
 | Student.Email | ✓ Yes | IX_Students_Email | Case-insensitive via CHECK |
 | Student.StudentNumber | ✓ Yes | IX_Students_StudentNumber | Auto-generated |
 | Student.OmangOrPassport | ✓ Yes | IX_Students_OmangOrPassport | Unique, 9 chars |
-| Course.Code | ✓ Yes | IX_Courses_Code | Unique |
-| ClassGroup.(Name, CourseId, TeacherId) | ✓ Yes | Composite IX | Prevents duplicate classes |
+| Subject.Code | ✓ Yes | IX_Subjects_Code | Unique |
+| ClassGroup.(Name, SubjectId, TeacherId) | ✓ Yes | Composite IX | Prevents duplicate classes |
 | Admin.Email | ✓ Yes | IX_Admins_Email | Unique |
 | Admin.Phone | ✗ No | Not indexed | Optional anyway |
 | StudentEnrollment.(StudentId, ClassGroupId) | ✗ **MISSING** | ✗ **MISSING** | **ISSUE:** Duplicate enrollments possible |
@@ -751,7 +751,7 @@ admin.Property(e => e.Phone).IsOptional().HasMaxLength(20);
 
 7. **Missing FK validation in services:**
    - EnrollStudent() - no StudentId/ClassGroupId existence check
-   - Course/ClassGroup deletion - no children check despite cascade: false
+   - Subject/ClassGroup deletion - no children check despite cascade: false
 
 8. **Missing validators for key entities:**
    - Admin (entire entity)
@@ -767,7 +767,7 @@ admin.Property(e => e.Phone).IsOptional().HasMaxLength(20);
 
 10. **UpdatedAt tracking missing** on most entities (only Admin has it)
 11. **Teacher Phone not validated in FluentValidator** (only DB CHECK enforces)
-12. **Course deletion missing FK check** (should check for children despite cascade: false)
+12. **Subject deletion missing FK check** (should check for children despite cascade: false)
 13. **Empty validator files:** ClassGroupValidator.cs, StudentAssessmentValidator.cs
 14. **Static validators inconsistent** with AbstractValidator pattern (AdminValidator.cs)
 
@@ -783,7 +783,7 @@ admin.Property(e => e.Phone).IsOptional().HasMaxLength(20);
 | 4 | Phone field optional/inconsistent | Admin.Phone vs Student/Teacher | 🔴 Critical | Inconsistent data model | Standardize to required 8 digits or optional string(20) |
 | 5 | Phone validation mismatch | AdminValidator regex vs DB CHECK | 🔴 Critical | Validator rejects valid DB data | Align validator with DB CHECK (8 digits numeric only) |
 | 6 | Soft delete not implemented | All entities | 🔴 Critical | AGENTS.md compliance | Add IsDeleted flag to grading entities |
-| 7 | Missing FK validation | EnrollStudent, Course delete | 🟠 High | Orphaned data possible | Add explicit parent existence checks |
+| 7 | Missing FK validation | EnrollStudent, Subject delete | 🟠 High | Orphaned data possible | Add explicit parent existence checks |
 | 8 | No phone validation | TeacherValidator | 🟠 High | Invalid phone data admitted | Add Phone validation to TeacherValidator |
 | 9 | Missing DTO validators | Admin, AssignmentSubmission | 🟠 High | Invalid data accepted | Create FluentValidators for all DTOs |
 | 10 | DueDate business logic | Assignment | 🟠 High | Past assignments possible | Validate DueDate >= CreatedAt |
@@ -804,8 +804,8 @@ admin.Property(e => e.Phone).IsOptional().HasMaxLength(20);
 | AdminService.UpdateStudent() | ✓ TeacherId | Validated |
 | AdminService.DeleteTeacher() | ✓ ClassGroup, Assignment | Validated |
 | AdminService.DeleteStudent() | N/A (cascade delete) | Implicit |
-| AdminService.CreateCourse() | N/A | No FKs |
-| AdminService.CreateClassGroup() | ✓ CourseId, TeacherId | Validated |
+| AdminService.CreateSubject() | N/A | No FKs |
+| AdminService.CreateClassGroup() | ✓ SubjectId, TeacherId | Validated |
 | AdminService.EnrollStudent() | ✗ StudentId, ClassGroupId | **MISSING** |
 | AdminService.UnenrollStudent() | ✗ StudentId, ClassGroupId | **MISSING** |
 | [AssignmentService] | ? | Not reviewed |
@@ -875,7 +875,7 @@ admin.Property(e => e.Phone).IsOptional().HasMaxLength(20);
 
 11. Add UpdatedAt tracking to major entities
 12. Convert AdminValidator to FluentValidation pattern
-13. Implement Course/ClassGroup deletion FK checks
+13. Implement Subject/ClassGroup deletion FK checks
 14. Add missing CHECK constraints for temporal/range validations
 15. Add IpAddress/UserAgent capture to audit logs
 

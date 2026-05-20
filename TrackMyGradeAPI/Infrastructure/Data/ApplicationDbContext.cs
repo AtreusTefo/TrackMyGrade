@@ -22,8 +22,8 @@ namespace TrackMyGradeAPI.Data
         /// <summary>Students managed by the application.</summary>
         public DbSet<Student> Students { get; set; }
 
-        /// <summary>Courses offered by the school.</summary>
-        public DbSet<Course> Courses { get; set; }
+        /// <summary>Subjects offered by the school.</summary>
+        public DbSet<Subject> Subjects { get; set; }
 
         /// <summary>Class groups taught by teachers.</summary>
         public DbSet<ClassGroup> ClassGroups { get; set; }
@@ -111,21 +111,21 @@ namespace TrackMyGradeAPI.Data
                 .HasForeignKey(ss => ss.StudentId)
                 .WillCascadeOnDelete(true);
 
-            // Courses
-            var course = modelBuilder.Entity<Course>();
-            course.HasKey(e => e.Id);
-            course.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            course.Property(e => e.Code).IsRequired().HasMaxLength(50)
+            // Subjects
+            var subject = modelBuilder.Entity<Subject>();
+            subject.HasKey(e => e.Id);
+            subject.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            subject.Property(e => e.Code).IsRequired().HasMaxLength(50)
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                    new IndexAnnotation(new IndexAttribute("IX_Courses_Code") { IsUnique = true }));
-            course.Property(e => e.Description).IsOptional().HasMaxLength(1000);
-            course.Property(e => e.CreatedAt).IsRequired();
-            course.Property(e => e.UpdatedAt).IsRequired();
-            course.Property(e => e.IsDeleted).IsRequired();
+                    new IndexAnnotation(new IndexAttribute("IX_Subjects_Code") { IsUnique = true }));
+            subject.Property(e => e.Description).IsOptional().HasMaxLength(1000);
+            subject.Property(e => e.CreatedAt).IsRequired();
+            subject.Property(e => e.UpdatedAt).IsRequired();
+            subject.Property(e => e.IsDeleted).IsRequired();
 
-            course.HasMany(c => c.ClassGroups)
-                .WithRequired(g => g.Course)
-                .HasForeignKey(g => g.CourseId)
+            subject.HasMany(c => c.ClassGroups)
+                .WithRequired(g => g.Subject)
+                .HasForeignKey(g => g.SubjectId)
                 .WillCascadeOnDelete(false);
 
             // ClassGroups
@@ -135,7 +135,7 @@ namespace TrackMyGradeAPI.Data
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                     new IndexAnnotation(new IndexAttribute("IX_ClassGroups_TeacherId_Name", 2) { IsUnique = true }));
             classGroup.Property(e => e.GradeLevel).IsRequired();
-            classGroup.Property(e => e.CourseId).IsRequired()
+            classGroup.Property(e => e.SubjectId).IsRequired()
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                     new IndexAnnotation(new IndexAttribute("IX_ClassGroups_TeacherId_Name", 1) { IsUnique = true }));
             classGroup.Property(e => e.TeacherId).IsRequired();
@@ -143,9 +143,9 @@ namespace TrackMyGradeAPI.Data
             classGroup.Property(e => e.UpdatedAt).IsRequired();
             classGroup.Property(e => e.IsDeleted).IsRequired();
 
-            classGroup.HasRequired(e => e.Course)
+            classGroup.HasRequired(e => e.Subject)
                 .WithMany(c => c.ClassGroups)
-                .HasForeignKey(e => e.CourseId)
+                .HasForeignKey(e => e.SubjectId)
                 .WillCascadeOnDelete(false);
 
             classGroup.HasRequired(e => e.Teacher)

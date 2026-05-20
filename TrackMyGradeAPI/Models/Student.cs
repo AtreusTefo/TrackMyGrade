@@ -113,35 +113,35 @@ namespace TrackMyGradeAPI.Models
     // ── New domain entities ────────────────────────────────────────────
 
     /// <summary>A subject area offered by the school (e.g. Mathematics Grade 10).</summary>
-    public class Course
+    public class Subject
     {
-        /// <summary>Primary key for the course record.</summary>
+        /// <summary>Primary key for the subject record.</summary>
         public int Id { get; set; }
 
-        /// <summary>Human-readable course name.</summary>
+        /// <summary>Human-readable subject name.</summary>
         public string Name { get; set; }
 
-        /// <summary>Course code used for registration.</summary>
+        /// <summary>Subject code used for registration.</summary>
         public string Code { get; set; }
 
-        /// <summary>Detailed description of the course.</summary>
+        /// <summary>Detailed description of the subject.</summary>
         public string Description { get; set; }
 
-        /// <summary>UTC timestamp when the course was created.</summary>
+        /// <summary>UTC timestamp when the subject was created.</summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        /// <summary>UTC timestamp when the course was last updated.</summary>
+        /// <summary>UTC timestamp when the subject was last updated.</summary>
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        /// <summary>Flag indicating whether this course has been soft-deleted.</summary>
+        /// <summary>Flag indicating whether this subject has been soft-deleted.</summary>
         public bool IsDeleted { get; set; } = false;
 
-        /// <summary>Class groups offered under this course.</summary>
+        /// <summary>Class groups offered under this subject.</summary>
         public virtual ICollection<ClassGroup> ClassGroups { get; set; }
     }
 
     /// <summary>
-    /// A class taught by one teacher within a course
+    /// A class taught by one teacher within a subject
     /// (e.g. Grade 10A — Mathematics, taught by Mrs Smith).
     /// </summary>
     public class ClassGroup
@@ -155,8 +155,8 @@ namespace TrackMyGradeAPI.Models
         /// <summary>Academic grade level for this class group.</summary>
         public int GradeLevel { get; set; }
 
-        /// <summary>Identifier of the course for this class group.</summary>
-        public int CourseId { get; set; }
+        /// <summary>Identifier of the subject for this class group.</summary>
+        public int SubjectId { get; set; }
 
         /// <summary>Identifier of the teacher assigned to this class group.</summary>
         public int TeacherId { get; set; }
@@ -170,8 +170,8 @@ namespace TrackMyGradeAPI.Models
         /// <summary>Flag indicating whether this class group has been soft-deleted.</summary>
         public bool IsDeleted { get; set; } = false;
 
-        /// <summary>Course associated with this class group.</summary>
-        public virtual Course Course { get; set; }
+        /// <summary>Subject associated with this class group.</summary>
+        public virtual Subject Subject { get; set; }
 
         /// <summary>Teacher assigned to this class group.</summary>
         public virtual Teacher Teacher { get; set; }

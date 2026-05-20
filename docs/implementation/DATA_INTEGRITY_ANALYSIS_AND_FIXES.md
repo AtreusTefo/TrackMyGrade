@@ -40,7 +40,7 @@ A comprehensive analysis of all database models, validators, and UI tables has i
 #### Current State - Missing UpdatedAt / Timestamp Fields:
 - **Teacher**: Has IsActivated tracking ✓
 - **Student**: Has IsActivated tracking ✓
-- **Course**: NO timestamp fields ✗
+- **Subject**: NO timestamp fields ✗
 - **ClassGroup**: NO timestamp fields ✗
 - **Assignment**: NO UpdatedAt field ✗
 - **AssignmentSubmission**: NO UpdatedAt field ✗
@@ -53,7 +53,7 @@ A comprehensive analysis of all database models, validators, and UI tables has i
 - EF6 optimistic concurrency impossible without [Timestamp] fields
 
 #### Fix Priority: **MAJOR**
-- Add `UpdatedAt` DateTime field to Course, ClassGroup, Assignment, AssignmentSubmission, StudentEnrollment
+- Add `UpdatedAt` DateTime field to Subject, ClassGroup, Assignment, AssignmentSubmission, StudentEnrollment
 - Configure as required in DbContext
 - Add [ConcurrencyCheck] data annotation for critical entities
 
@@ -67,7 +67,7 @@ A comprehensive analysis of all database models, validators, and UI tables has i
 
 #### Required Additions:
 - Add `IsDeleted` (bool, default false) to:
-  - Course
+  - Subject
   - ClassGroup
   - Assignment
   - AssignmentSubmission
@@ -132,11 +132,11 @@ A comprehensive analysis of all database models, validators, and UI tables has i
 | Component | Table Type | DataTables | Status |
 |-----------|-----------|-----------|--------|
 | `student-list.component.ts` | Student List | Yes ✓ | Proper integration with pagination, sorting |
-| `admin-dashboard.component.ts` | 4 Tables (Teachers, Students, Courses, Audit) | No ✗ | Plain HTML tables, no sorting/pagination |
+| `admin-dashboard.component.ts` | 4 Tables (Teachers, Students, Subjects, Audit) | No ✗ | Plain HTML tables, no sorting/pagination |
 | `audit-logs.component.ts` | Audit Logs | No ✗ | Plain HTML tables, no sorting/pagination |
 
 #### DataTables Features Missing:
-- Sorting on Teachers, Students, Courses, Audit Logs tables
+- Sorting on Teachers, Students, Subjects, Audit Logs tables
 - Pagination controls for large datasets
 - Global search/filter across all columns
 - Column-specific search
@@ -158,7 +158,7 @@ A comprehensive analysis of all database models, validators, and UI tables has i
 
 #### Missing Constraints:
 - Admin Phone format (no check constraint, stored as up to 20 chars)
-- Course code uniqueness (has index, check constraint redundant)
+- Subject code uniqueness (has index, check constraint redundant)
 
 #### Fix Priority: **LOW**
 - Add check constraint for Admin phone format when Phone is made Required
@@ -189,7 +189,7 @@ admin.Property(e => e.Phone).IsRequired().HasMaxLength(8);
 
 #### 1.2 Add Timestamp Fields
 Add to the following entities:
-- `Course`: `UpdatedAt` (DateTime, Required)
+- `Subject`: `UpdatedAt` (DateTime, Required)
 - `ClassGroup`: `UpdatedAt` (DateTime, Required)
 - `Assignment`: `UpdatedAt` (DateTime, Required)
 - `AssignmentSubmission`: `UpdatedAt` (DateTime, Required)
@@ -197,7 +197,7 @@ Add to the following entities:
 
 #### 1.3 Add IsDeleted Soft Delete Flags
 Add to the following entities:
-- `Course`: `IsDeleted` (bool, default false)
+- `Subject`: `IsDeleted` (bool, default false)
 - `ClassGroup`: `IsDeleted` (bool, default false)
 - `Assignment`: `IsDeleted` (bool, default false)
 - `AssignmentSubmission`: `IsDeleted` (bool, default false)
@@ -208,7 +208,7 @@ Add to the following entities:
 
 ### Phase 2: Entity Model Updates
 
-#### 2.1 Course Entity
+#### 2.1 Subject Entity
 - Add `public DateTime UpdatedAt { get; set; }` (default: DateTime.UtcNow)
 - Add `public bool IsDeleted { get; set; }` (default: false)
 
@@ -254,7 +254,7 @@ Add to the following entities:
 - Import DataTables
 - Initialize DataTables for Teachers table
 - Initialize DataTables for Students table
-- Initialize DataTables for Courses table
+- Initialize DataTables for Subjects table
 - Initialize DataTables for Audit table
 
 #### 4.2 audit-logs.component.ts

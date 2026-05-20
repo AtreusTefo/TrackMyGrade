@@ -4,10 +4,10 @@
 
 ### 1. Frontend Development (Angular 18)
 - **Resolved Admin Dashboard Connection and Rendering Issues**
-  - Fixed empty HTML template by implementing all 5 tab panels (Teachers, Students, Courses, Classes, Audit Logs) in `admin-dashboard.component.html` (18 → 541 lines)
+  - Fixed empty HTML template by implementing all 5 tab panels (Teachers, Students, Subjects, Classes, Audit Logs) in `admin-dashboard.component.html` (18 → 541 lines)
   - Enhanced `admin-dashboard.component.ts` with proper state management, data loading guards, and form validation (527 → 677 lines)
   - Updated `admin-dashboard.component.css` with comprehensive styling including new classes for buttons, toasts, loading bars, and responsive design (660 → 1051 lines)
-  - Added missing nav buttons for Courses and Classes tabs with proper accessibility attributes
+  - Added missing nav buttons for Subjects and Classes tabs with proper accessibility attributes
 
 - **Created Activate Component (New Feature)**
   - Implemented `activate.component.ts` with activation logic (154 lines)
@@ -58,7 +58,7 @@
 
 ## What Was Completed
 
-- **Admin Dashboard Fully Functional**: All 5 tabs (Teachers, Students, Courses, Classes, Audit Logs) are now implemented with proper data loading, form validation, and user interactions.
+- **Admin Dashboard Fully Functional**: All 5 tabs (Teachers, Students, Subjects, Classes, Audit Logs) are now implemented with proper data loading, form validation, and user interactions.
 - **Data Integrity Ensured**: Fixed referential integrity issues, added client-side validation, and ensured proper cascade deletions.
 - **UI/UX Improvements**: Added toast notifications, loading animations, empty state messages, and responsive design.
 - **Backend Enhancements**: Improved services, added audit logging, enhanced security with middleware, and updated API endpoints.
@@ -72,7 +72,7 @@
 **Resolution**: Implemented complete HTML structure for all 5 tab panels, including forms, tables, and interactive elements, expanding to 541 lines.
 
 ### C2 - Missing Navigation Buttons
-**Challenge**: Only 3 nav buttons were present; Courses and Classes tabs were missing.
+**Challenge**: Only 3 nav buttons were present; Subjects and Classes tabs were missing.
 **Resolution**: Added all 5 nav buttons with correct `id`, `role="tab"`, and `aria-selected` attributes for proper accessibility and functionality.
 
 ### C3 - Tab Guard Logic Issues
@@ -92,11 +92,11 @@
 **Resolution**: Added immediate filtering of deleted entities from related arrays after API success.
 
 ### D3 - Incomplete New Objects
-**Challenge**: Newly created class groups lacked populated course/teacher objects.
-**Resolution**: Enriched response objects with selected course/teacher data before adding to local state.
+**Challenge**: Newly created class groups lacked populated subject/teacher objects.
+**Resolution**: Enriched response objects with selected subject/teacher data before adding to local state.
 
 ### D4 - Validation Gaps
-**Challenge**: Course codes weren't checked for uniqueness client-side; OMANG/Passport accepted invalid formats.
+**Challenge**: Subject codes weren't checked for uniqueness client-side; OMANG/Passport accepted invalid formats.
 **Resolution**: Added client-side uniqueness checks and regex validation for proper formats.
 
 ### S1 - Shared Submitting Flags
