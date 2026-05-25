@@ -93,7 +93,8 @@ When creating new error fix documentation:
 
 ## Environment Commands
 - **Build API:** `cd TrackMyGradeAPI && msbuild TrackMyGradeAPI.csproj`
-- **Run API:** `cd TrackMyGradeAPI && .\bin\TrackMyGradeAPI.exe`
+- **Restore NuGet Packages:** `cd TrackMyGradeAPI; msbuild TrackMyGradeAPI.csproj /t:Restore`
+- **Run API:** `cd TrackMyGradeAPI; msbuild TrackMyGradeAPI.csproj`
 - **Build Angular:** `cd StudentApp && npm run build`
 - **Run Angular:** `cd StudentApp && npm start`
 

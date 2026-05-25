@@ -313,47 +313,16 @@ namespace TrackMyGradeAPI.Data
                 context.Database.Connection.Open();
             }
 
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Phone_Format')
-                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Phone_Format]
-                   CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Teachers_Phone_Format')
-                   ALTER TABLE [Teachers] ADD CONSTRAINT [CK_Teachers_Phone_Format]
-                   CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Admins_Phone_Format')
-                   ALTER TABLE [Admins] ADD CONSTRAINT [CK_Admins_Phone_Format]
-                   CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Email_Lowercase')
-                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Email_Lowercase]
-                   CHECK ([Email] = LOWER([Email]));"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Teachers_Email_Lowercase')
-                   ALTER TABLE [Teachers] ADD CONSTRAINT [CK_Teachers_Email_Lowercase]
-                   CHECK ([Email] = LOWER([Email]));"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Grade_Range')
-                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Grade_Range]
-                   CHECK ([Grade] BETWEEN 7 AND 12);"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_AssignmentSubmissions_Score_Positive')
-                   ALTER TABLE [AssignmentSubmissions] ADD CONSTRAINT [CK_AssignmentSubmissions_Score_Positive]
-                   CHECK ([Score] IS NULL OR [Score] >= 0);"
-            );
+            try
+            {
+                // Constraints are managed by Configuration.cs Seed method.
+                // This is a no-op to keep the contract but avoid duplicate/conflicting constraint creation.
+                // All constraints are properly applied during migration via Configuration.EnsureDataIntegrityConstraints().
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Warning: Error in constraint handling: {ex.Message}");
+            }
         }
     }
 }

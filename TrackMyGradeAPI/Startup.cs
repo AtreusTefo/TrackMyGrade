@@ -4,6 +4,10 @@ using TrackMyGradeAPI.Data;
 using TrackMyGradeAPI.Logging;
 using TrackMyGradeAPI.Mapping;
 using TrackMyGradeAPI.Middleware;
+using Microsoft.Owin.Cors;
+using System.Web.Cors;
+using Microsoft.Owin;
+using System.Threading.Tasks;
 
 namespace TrackMyGradeAPI
 {
@@ -14,7 +18,41 @@ namespace TrackMyGradeAPI
         /// <param name="app">The OWIN application builder.</param>
         public void Configuration(IAppBuilder app)
         {
-            // Add error handling middleware (must be first to catch all exceptions)
+            // Configure OWIN CORS policy early in the pipeline so preflight requests
+            // are handled before authentication middleware (prevents missing CORS headers).
+            var corsPolicy = new CorsPolicy
+            {
+                AllowAnyHeader = false,
+                AllowAnyMethod = false,
+                AllowAnyOrigin = false,
+                SupportsCredentials = true
+            };
+
+            // Allowed origin for local development Angular app
+            corsPolicy.Origins.Add("http://localhost:4200");
+
+            // Common headers used by the frontend (include Authorization and custom tokens)
+            corsPolicy.Headers.Add("authorization");
+            corsPolicy.Headers.Add("content-type");
+            corsPolicy.Headers.Add("x-studenttoken");
+            corsPolicy.Headers.Add("x-teacherid");
+
+            // Allowed HTTP methods including OPTIONS for preflight
+            corsPolicy.Methods.Add("GET");
+            corsPolicy.Methods.Add("POST");
+            corsPolicy.Methods.Add("PUT");
+            corsPolicy.Methods.Add("DELETE");
+            corsPolicy.Methods.Add("OPTIONS");
+
+            app.UseCors(new CorsOptions
+            {
+                PolicyProvider = new CorsPolicyProvider
+                {
+                    PolicyResolver = ctx => Task.FromResult(corsPolicy)
+                }
+            });
+
+            // Add error handling middleware (must be early to catch exceptions)
             app.Use<ErrorHandlingMiddleware>();
 
             // Add security headers middleware (second in pipeline)
