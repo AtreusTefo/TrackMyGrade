@@ -133,11 +133,11 @@ namespace TrackMyGradeAPI.Data
             classGroup.HasKey(e => e.Id);
             classGroup.Property(e => e.Name).IsRequired().HasMaxLength(100)
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                    new IndexAnnotation(new IndexAttribute("IX_ClassGroups_TeacherId_Name", 2) { IsUnique = true }));
+                    new IndexAnnotation(new IndexAttribute("IX_ClassGroups_SubjectId_Name", 2) { IsUnique = true }));
             classGroup.Property(e => e.GradeLevel).IsRequired();
             classGroup.Property(e => e.SubjectId).IsRequired()
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                    new IndexAnnotation(new IndexAttribute("IX_ClassGroups_TeacherId_Name", 1) { IsUnique = true }));
+                    new IndexAnnotation(new IndexAttribute("IX_ClassGroups_SubjectId_Name", 1) { IsUnique = true }));
             classGroup.Property(e => e.TeacherId).IsRequired();
             classGroup.Property(e => e.CreatedAt).IsRequired();
             classGroup.Property(e => e.UpdatedAt).IsRequired();

@@ -59,15 +59,59 @@
     <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.35.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.35.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Infrastructure\ITokenService.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Startup.cs" />
+    <Compile Include="Infrastructure\Data\ApplicationDbContext.cs" />
+    <Compile Include="Migrations\202505260000_FixSubjectsConstraintName.cs" />
+    <Compile Include="Migrations\202605261100_SyncModelChanges.cs" />
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Student.cs" />
+    <Compile Include="Application\DTOs\AdminDtos.cs" />
+    <Compile Include="Application\DTOs\AuthDtos.cs" />
+    <Compile Include="Application\DTOs\SubjectDtos.cs" />
+    <Compile Include="Application\DTOs\AssignmentDtos.cs" />
+    <Compile Include="Application\DTOs\AuditLogDtos.cs" />
+    <Compile Include="Application\Validators\AdminValidator.cs" />
+    <Compile Include="Application\Validators\TeacherValidator.cs" />
+    <Compile Include="Application\Validators\StudentValidator.cs" />
+    <Compile Include="Application\Validators\StudentAuthValidator.cs" />
+    <Compile Include="Logging\ErrorLoggingConfig.cs" />
+    <Compile Include="Mapping\AutoMapperConfig.cs" />
+    <Compile Include="Middleware\ErrorHandlingMiddleware.cs" />
+    <Compile Include="Middleware\SecurityHeadersMiddleware.cs" />
+    <Compile Include="Infrastructure\Security\TokenAuthorizeAttribute.cs" />
+    <Compile Include="WebApiConfig.cs" />
+    <Compile Include="Handlers\FluentValidationFilter.cs" />
+    <Compile Include="Infrastructure\SimpleDependencyResolver.cs" />
+    <Compile Include="Infrastructure\ElmahExceptionHandler.cs" />
+    <Compile Include="Infrastructure\ElmahExceptionLogger.cs" />
+    <Compile Include="Infrastructure\SwaggerConfig.cs" />
+    <Compile Include="Application\Services\TeacherService.cs" />
+    <Compile Include="Application\Services\StudentService.cs" />
+    <Compile Include="Application\Services\StudentAuthService.cs" />
+    <Compile Include="Application\Services\AdminService.cs" />
+    <Compile Include="Application\Services\AuditLogService.cs" />
+    <Compile Include="Application\Services\ActivationService.cs" />
+    <Compile Include="Application\Services\AssignmentService.cs" />
+    <Compile Include="Application\Services\TokenService.cs" />
+    <Compile Include="Presentation\Controllers\TeachersController.cs" />
+    <Compile Include="Presentation\Controllers\StudentsController.cs" />
+    <Compile Include="Presentation\Controllers\StudentAuthController.cs" />
+    <Compile Include="Presentation\Controllers\AdminController.cs" />
+    <Compile Include="Presentation\Controllers\ActivationController.cs" />
+    <Compile Include="Presentation\Controllers\TeacherClassController.cs" />
+    <Compile Include="Presentation\Controllers\StudentSubmissionController.cs" />
+    <Compile Include="Presentation\Controllers\TestController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="**\*.cs" Exclude="obj\**\*.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

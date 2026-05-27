@@ -32,7 +32,7 @@ namespace TrackMyGradeAPI.Infrastructure
     {
         private readonly ApplicationDbContext _db;
         private readonly IMapper              _mapper;
-        private readonly ITokenService        _tokenService;
+        private readonly ITokenService _tokenService;
         private bool _disposed;
 
         /// <summary>Initializes a new instance of the SimpleDependencyScope class.</summary>
@@ -51,7 +51,7 @@ namespace TrackMyGradeAPI.Infrastructure
             // ── Existing controllers ───────────────────────────────────────
             if (serviceType == typeof(TeachersController))
                 return new TeachersController(
-                    new TeacherService(_db, _mapper, _tokenService));
+                    new TeacherService(_db, _mapper, (TrackMyGradeAPI.Infrastructure.ITokenService)_tokenService));
 
             if (serviceType == typeof(StudentsController))
                 return new StudentsController(
