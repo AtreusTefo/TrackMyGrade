@@ -22,8 +22,8 @@ namespace TrackMyGradeAPI.Data
         /// <summary>Students managed by the application.</summary>
         public DbSet<Student> Students { get; set; }
 
-        /// <summary>Courses offered by the school.</summary>
-        public DbSet<Course> Courses { get; set; }
+        /// <summary>Subjects offered by the school.</summary>
+        public DbSet<Subject> Subjects { get; set; }
 
         /// <summary>Class groups taught by teachers.</summary>
         public DbSet<ClassGroup> ClassGroups { get; set; }
@@ -111,18 +111,21 @@ namespace TrackMyGradeAPI.Data
                 .HasForeignKey(ss => ss.StudentId)
                 .WillCascadeOnDelete(true);
 
-            // Courses
-            var course = modelBuilder.Entity<Course>();
-            course.HasKey(e => e.Id);
-            course.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            course.Property(e => e.Code).IsRequired().HasMaxLength(50)
+            // Subjects
+            var subject = modelBuilder.Entity<Subject>();
+            subject.HasKey(e => e.Id);
+            subject.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            subject.Property(e => e.Code).IsRequired().HasMaxLength(50)
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
-                    new IndexAnnotation(new IndexAttribute("IX_Courses_Code") { IsUnique = true }));
-            course.Property(e => e.Description).IsOptional().HasMaxLength(1000);
+                    new IndexAnnotation(new IndexAttribute("IX_Subjects_Code") { IsUnique = true }));
+            subject.Property(e => e.Description).IsOptional().HasMaxLength(1000);
+            subject.Property(e => e.CreatedAt).IsRequired();
+            subject.Property(e => e.UpdatedAt).IsRequired();
+            subject.Property(e => e.IsDeleted).IsRequired();
 
-            course.HasMany(c => c.ClassGroups)
-                .WithRequired(g => g.Course)
-                .HasForeignKey(g => g.CourseId)
+            subject.HasMany(c => c.ClassGroups)
+                .WithRequired(g => g.Subject)
+                .HasForeignKey(g => g.SubjectId)
                 .WillCascadeOnDelete(false);
 
             // ClassGroups
@@ -132,14 +135,17 @@ namespace TrackMyGradeAPI.Data
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                     new IndexAnnotation(new IndexAttribute("IX_ClassGroups_TeacherId_Name", 2) { IsUnique = true }));
             classGroup.Property(e => e.GradeLevel).IsRequired();
-            classGroup.Property(e => e.CourseId).IsRequired()
+            classGroup.Property(e => e.SubjectId).IsRequired()
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                     new IndexAnnotation(new IndexAttribute("IX_ClassGroups_TeacherId_Name", 1) { IsUnique = true }));
             classGroup.Property(e => e.TeacherId).IsRequired();
+            classGroup.Property(e => e.CreatedAt).IsRequired();
+            classGroup.Property(e => e.UpdatedAt).IsRequired();
+            classGroup.Property(e => e.IsDeleted).IsRequired();
 
-            classGroup.HasRequired(e => e.Course)
+            classGroup.HasRequired(e => e.Subject)
                 .WithMany(c => c.ClassGroups)
-                .HasForeignKey(e => e.CourseId)
+                .HasForeignKey(e => e.SubjectId)
                 .WillCascadeOnDelete(false);
 
             classGroup.HasRequired(e => e.Teacher)
@@ -161,6 +167,12 @@ namespace TrackMyGradeAPI.Data
             var enrollment = modelBuilder.Entity<StudentEnrollment>();
             enrollment.HasKey(e => e.Id);
             enrollment.Property(e => e.EnrolledAt).IsRequired();
+            enrollment.Property(e => e.UpdatedAt).IsRequired();
+            enrollment.Property(e => e.IsDeleted).IsRequired();
+            enrollment.Property(e => e.StudentId).HasColumnAnnotation(IndexAnnotation.AnnotationName,
+                new IndexAnnotation(new IndexAttribute("IX_StudentEnrollment_StudentId_ClassGroupId", 1) { IsUnique = true }));
+            enrollment.Property(e => e.ClassGroupId).HasColumnAnnotation(IndexAnnotation.AnnotationName,
+                new IndexAnnotation(new IndexAttribute("IX_StudentEnrollment_StudentId_ClassGroupId", 2) { IsUnique = true }));
 
             enrollment.HasRequired(e => e.Student)
                 .WithMany(s => s.Enrollments)
@@ -181,6 +193,8 @@ namespace TrackMyGradeAPI.Data
             assignment.Property(e => e.MaxScore).IsRequired();
             assignment.Property(e => e.CreatedByTeacherId).IsRequired();
             assignment.Property(e => e.CreatedAt).IsRequired();
+            assignment.Property(e => e.UpdatedAt).IsRequired();
+            assignment.Property(e => e.IsDeleted).IsRequired();
 
             assignment.HasRequired(e => e.ClassGroup)
                 .WithMany(cg => cg.Assignments)
@@ -201,10 +215,12 @@ namespace TrackMyGradeAPI.Data
             var submission = modelBuilder.Entity<AssignmentSubmission>();
             submission.HasKey(e => e.Id);
             submission.Property(e => e.SubmittedAt).IsRequired();
+            submission.Property(e => e.UpdatedAt).IsRequired();
             submission.Property(e => e.Content).IsRequired().HasMaxLength(2000);
             submission.Property(e => e.Score).IsOptional();
             submission.Property(e => e.Feedback).IsOptional().HasMaxLength(2000);
             submission.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            submission.Property(e => e.IsDeleted).IsRequired();
 
             submission.HasRequired(e => e.Assignment)
                 .WithMany(a => a.Submissions)
@@ -245,7 +261,7 @@ namespace TrackMyGradeAPI.Data
             admin.Property(e => e.Email).IsRequired().HasMaxLength(255)
                 .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                     new IndexAnnotation(new IndexAttribute("IX_Admins_Email") { IsUnique = true }));
-            admin.Property(e => e.Phone).IsOptional().HasMaxLength(20);
+            admin.Property(e => e.Phone).IsRequired().HasMaxLength(8);
             admin.Property(e => e.Password).IsRequired().HasMaxLength(255);
             admin.Property(e => e.CreatedAt).IsRequired();
             admin.Property(e => e.UpdatedAt).IsRequired();
@@ -297,41 +313,16 @@ namespace TrackMyGradeAPI.Data
                 context.Database.Connection.Open();
             }
 
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Phone_Format')
-                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Phone_Format]
-                   CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Teachers_Phone_Format')
-                   ALTER TABLE [Teachers] ADD CONSTRAINT [CK_Teachers_Phone_Format]
-                   CHECK ([Phone] NOT LIKE '%[^0-9]%' AND LEN([Phone]) = 8);"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Email_Lowercase')
-                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Email_Lowercase]
-                   CHECK ([Email] = LOWER([Email]));"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Teachers_Email_Lowercase')
-                   ALTER TABLE [Teachers] ADD CONSTRAINT [CK_Teachers_Email_Lowercase]
-                   CHECK ([Email] = LOWER([Email]));"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Students_Grade_Range')
-                   ALTER TABLE [Students] ADD CONSTRAINT [CK_Students_Grade_Range]
-                   CHECK ([Grade] BETWEEN 7 AND 12);"
-            );
-
-            context.Database.ExecuteSqlCommand(
-                @"IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_AssignmentSubmissions_Score_Positive')
-                   ALTER TABLE [AssignmentSubmissions] ADD CONSTRAINT [CK_AssignmentSubmissions_Score_Positive]
-                   CHECK ([Score] IS NULL OR [Score] >= 0);"
-            );
+            try
+            {
+                // Constraints are managed by Configuration.cs Seed method.
+                // This is a no-op to keep the contract but avoid duplicate/conflicting constraint creation.
+                // All constraints are properly applied during migration via Configuration.EnsureDataIntegrityConstraints().
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Warning: Error in constraint handling: {ex.Message}");
+            }
         }
     }
 }

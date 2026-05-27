@@ -14,9 +14,6 @@
       <h1>Admin Dashboard</h1>
       <div class="admin-welcome">Welcome, {{ adminName }}</div>
     </div>
-    <button id="btn-logout" class="btn btn-outline" (click)="logout()" aria-label="Log out of admin panel">
-      Log Out
-    </button>
   </header>
 
   <!-- ── Navigation ────────────────────────────────────────────────────── -->
@@ -27,15 +24,12 @@
     <button id="tab-students" role="tab" [attr.aria-selected]="activeTab === 'students'"
       [class.active]="activeTab === 'students'"
       (click)="activeTab = 'students'; loadStudentsIfNeeded()">Students</button>
-    <button id="tab-courses" role="tab" [attr.aria-selected]="activeTab === 'courses'"
-      [class.active]="activeTab === 'courses'"
-      (click)="activeTab = 'courses'">Courses</button>
+    <button id="tab-subjects" role="tab" [attr.aria-selected]="activeTab === 'subjects'"
+      [class.active]="activeTab === 'subjects'" (click)="activeTab = 'subjects'">Subjects</button>
     <button id="tab-classes" role="tab" [attr.aria-selected]="activeTab === 'classes'"
-      [class.active]="activeTab === 'classes'"
-      (click)="activeTab = 'classes'">Class Groups</button>
+      [class.active]="activeTab === 'classes'" (click)="activeTab = 'classes'">Class Groups</button>
     <button id="tab-audit" role="tab" [attr.aria-selected]="activeTab === 'audit'"
-      [class.active]="activeTab === 'audit'"
-      (click)="activeTab = 'audit'; loadAuditLogsIfNeeded()">Audit Logs</button>
+      [class.active]="activeTab === 'audit'" (click)="activeTab = 'audit'; loadAuditLogsIfNeeded()">Audit Logs</button>
   </nav>
 
   <!-- ── Global loading indicator ──────────────────────────────────────── -->
@@ -52,6 +46,8 @@
       <button id="btn-add-teacher" class="btn btn-primary" (click)="toggleTeacherForm()">
         {{ showTeacherForm ? 'Cancel' : '+ Add Teacher' }}
       </button>
+      <input type="file" id="bulk-import-teachers" accept=".csv" style="display:none" (change)="handleBulkImport($event, 'teachers')" />
+      <button class="btn btn-outline" (click)="triggerFileInput('bulk-import-teachers')" [disabled]="bulkUploading">Bulk Import CSV</button>
       <button id="btn-refresh-teachers" class="btn btn-secondary" (click)="loadData()">Refresh</button>
     </div>
 
@@ -62,45 +58,51 @@
         <div class="form-grid-2">
           <div class="field-row">
             <label for="teacher-firstName">First Name <span class="required">*</span></label>
-            <input id="teacher-firstName" type="text" [(ngModel)]="newTeacher.firstName"
-              name="teacherFirstName" maxlength="100"
-              [class.input-error]="teacherErrors['firstName']" autocomplete="given-name" />
+            <input id="teacher-firstName" type="text" [(ngModel)]="newTeacher.firstName" name="teacherFirstName"
+              maxlength="100" [class.input-error]="teacherErrors['firstName']" autocomplete="given-name" />
             <span *ngIf="teacherErrors['firstName']" class="field-error">{{ teacherErrors['firstName'] }}</span>
           </div>
           <div class="field-row">
             <label for="teacher-lastName">Last Name <span class="required">*</span></label>
-            <input id="teacher-lastName" type="text" [(ngModel)]="newTeacher.lastName"
-              name="teacherLastName" maxlength="100"
-              [class.input-error]="teacherErrors['lastName']" autocomplete="family-name" />
+            <input id="teacher-lastName" type="text" [(ngModel)]="newTeacher.lastName" name="teacherLastName"
+              maxlength="100" [class.input-error]="teacherErrors['lastName']" autocomplete="family-name" />
             <span *ngIf="teacherErrors['lastName']" class="field-error">{{ teacherErrors['lastName'] }}</span>
           </div>
         </div>
         <div class="form-grid-2">
           <div class="field-row">
             <label for="teacher-email">Email <span class="required">*</span></label>
-            <input id="teacher-email" type="email" [(ngModel)]="newTeacher.email"
-              name="teacherEmail" maxlength="255"
+            <input id="teacher-email" type="email" [(ngModel)]="newTeacher.email" name="teacherEmail" maxlength="255"
               [class.input-error]="teacherErrors['email']" autocomplete="email" />
             <span *ngIf="teacherErrors['email']" class="field-error">{{ teacherErrors['email'] }}</span>
           </div>
           <div class="field-row">
             <label for="teacher-phone">Phone</label>
-            <input id="teacher-phone" type="tel" [(ngModel)]="newTeacher.phone"
-              name="teacherPhone" maxlength="20"
-              [class.input-error]="teacherErrors['phone']" autocomplete="tel" />
+            <div style="display: flex; gap: 0.5rem;">
+              <select id="teacher-country" [(ngModel)]="teacherPhoneCountryCode" name="teacherCountryCode" style="width: auto;">
+                <option value="+1">+1 (US/CA)</option>
+                <option value="+44">+44 (UK)</option>
+                <option value="+27">+27 (ZA)</option>
+                <option value="+267">+267 (BW)</option>
+                <option value="+91">+91 (IN)</option>
+                <option value="+61">+61 (AU)</option>
+              </select>
+              <input id="teacher-phone" type="tel" [(ngModel)]="teacherPhoneNumber" name="teacherPhone" maxlength="20"
+                [class.input-error]="teacherErrors['phone']" autocomplete="tel" style="flex: 1;" />
+            </div>
             <span *ngIf="teacherErrors['phone']" class="field-error">{{ teacherErrors['phone'] }}</span>
           </div>
         </div>
         <div class="field-row">
           <label for="teacher-subject">Subject <span class="required">*</span></label>
-          <input id="teacher-subject" type="text" [(ngModel)]="newTeacher.subject"
-            name="teacherSubject" maxlength="100"
-            [class.input-error]="teacherErrors['subject']" />
+          <select id="teacher-subject" [(ngModel)]="newTeacher.subject" name="teacherSubject" [class.input-error]="teacherErrors['subject']">
+            <option value="" disabled>-- Select a subject --</option>
+            <option *ngFor="let s of subjects" [value]="s.name">{{ s.name }}</option>
+          </select>
           <span *ngIf="teacherErrors['subject']" class="field-error">{{ teacherErrors['subject'] }}</span>
         </div>
         <div class="form-actions">
-          <button id="btn-submit-teacher" type="submit" class="btn btn-primary"
-            [disabled]="submittingTeacher">
+          <button id="btn-submit-teacher" type="submit" class="btn btn-primary" [disabled]="submittingTeacher">
             {{ submittingTeacher ? 'Saving...' : 'Create Teacher' }}
           </button>
           <button type="button" class="btn btn-secondary" (click)="toggleTeacherForm()">Cancel</button>
@@ -114,7 +116,7 @@
       <div *ngIf="!loading && teachers.length === 0" class="empty-state">
         No teachers found. Use "Add Teacher" to create one.
       </div>
-      <table *ngIf="teachers.length > 0" aria-label="Teachers list">
+      <table #teachersTable *ngIf="teachers.length > 0" aria-label="Teachers list">
         <thead>
           <tr>
             <th scope="col">Name</th>
@@ -131,8 +133,7 @@
             <td>{{ teacher.phone || '—' }}</td>
             <td>{{ teacher.subject }}</td>
             <td class="actions-cell">
-              <button [id]="'btn-delete-teacher-' + teacher.id"
-                class="btn btn-danger btn-sm"
+              <button [id]="'btn-delete-teacher-' + teacher.id" class="btn btn-danger btn-sm"
                 [disabled]="submittingTeacher"
                 (click)="deleteTeacher(teacher.id, teacher.firstName + ' ' + teacher.lastName)"
                 [attr.aria-label]="'Delete teacher ' + teacher.firstName + ' ' + teacher.lastName">
@@ -154,6 +155,8 @@
       <button id="btn-add-student" class="btn btn-primary" (click)="toggleStudentForm()">
         {{ showStudentForm ? 'Cancel' : '+ Add Student' }}
       </button>
+      <input type="file" id="bulk-import-students" accept=".csv" style="display:none" (change)="handleBulkImport($event, 'students')" />
+      <button class="btn btn-outline" (click)="triggerFileInput('bulk-import-students')" [disabled]="bulkUploading">Bulk Import CSV</button>
       <button id="btn-refresh-students" class="btn btn-secondary" (click)="loadData()">Refresh</button>
     </div>
 
@@ -164,47 +167,53 @@
         <div class="form-grid-2">
           <div class="field-row">
             <label for="student-firstName">First Name <span class="required">*</span></label>
-            <input id="student-firstName" type="text" [(ngModel)]="newStudent.firstName"
-              name="studentFirstName" maxlength="100"
-              [class.input-error]="studentErrors['firstName']" autocomplete="given-name" />
+            <input id="student-firstName" type="text" [(ngModel)]="newStudent.firstName" name="studentFirstName"
+              maxlength="100" [class.input-error]="studentErrors['firstName']" autocomplete="given-name" />
             <span *ngIf="studentErrors['firstName']" class="field-error">{{ studentErrors['firstName'] }}</span>
           </div>
           <div class="field-row">
             <label for="student-lastName">Last Name <span class="required">*</span></label>
-            <input id="student-lastName" type="text" [(ngModel)]="newStudent.lastName"
-              name="studentLastName" maxlength="100"
-              [class.input-error]="studentErrors['lastName']" autocomplete="family-name" />
+            <input id="student-lastName" type="text" [(ngModel)]="newStudent.lastName" name="studentLastName"
+              maxlength="100" [class.input-error]="studentErrors['lastName']" autocomplete="family-name" />
             <span *ngIf="studentErrors['lastName']" class="field-error">{{ studentErrors['lastName'] }}</span>
           </div>
         </div>
         <div class="form-grid-2">
           <div class="field-row">
             <label for="student-email">Email <span class="required">*</span></label>
-            <input id="student-email" type="email" [(ngModel)]="newStudent.email"
-              name="studentEmail" maxlength="255"
+            <input id="student-email" type="email" [(ngModel)]="newStudent.email" name="studentEmail" maxlength="255"
               [class.input-error]="studentErrors['email']" autocomplete="email" />
             <span *ngIf="studentErrors['email']" class="field-error">{{ studentErrors['email'] }}</span>
           </div>
           <div class="field-row">
             <label for="student-phone">Phone</label>
-            <input id="student-phone" type="tel" [(ngModel)]="newStudent.phone"
-              name="studentPhone" maxlength="20"
-              [class.input-error]="studentErrors['phone']" autocomplete="tel" />
+            <div style="display: flex; gap: 0.5rem;">
+              <select id="student-country" [(ngModel)]="studentPhoneCountryCode" name="studentCountryCode" style="width: auto;">
+                <option value="+1">+1 (US/CA)</option>
+                <option value="+44">+44 (UK)</option>
+                <option value="+27">+27 (ZA)</option>
+                <option value="+267">+267 (BW)</option>
+                <option value="+91">+91 (IN)</option>
+                <option value="+61">+61 (AU)</option>
+              </select>
+              <input id="student-phone" type="tel" [(ngModel)]="studentPhoneNumber" name="studentPhone" maxlength="20"
+                [class.input-error]="studentErrors['phone']" autocomplete="tel" style="flex: 1;" />
+            </div>
             <span *ngIf="studentErrors['phone']" class="field-error">{{ studentErrors['phone'] }}</span>
           </div>
         </div>
         <div class="form-grid-2">
           <div class="field-row">
             <label for="student-omang">OMANG / Passport <span class="required">*</span></label>
-            <input id="student-omang" type="text" [(ngModel)]="newStudent.omangOrPassport"
-              name="studentOmang" maxlength="20"
-              [class.input-error]="studentErrors['omangOrPassport']" />
-            <span *ngIf="studentErrors['omangOrPassport']" class="field-error">{{ studentErrors['omangOrPassport'] }}</span>
+            <input id="student-omang" type="text" [(ngModel)]="newStudent.omangOrPassport" name="studentOmang"
+              maxlength="20" [class.input-error]="studentErrors['omangOrPassport']" />
+            <span *ngIf="studentErrors['omangOrPassport']" class="field-error">{{ studentErrors['omangOrPassport']
+              }}</span>
           </div>
           <div class="field-row">
             <label for="student-grade">Grade <span class="required">*</span></label>
-            <select id="student-grade" [(ngModel)]="newStudent.grade"
-              name="studentGrade" [class.input-error]="studentErrors['grade']">
+            <select id="student-grade" [(ngModel)]="newStudent.grade" name="studentGrade"
+              [class.input-error]="studentErrors['grade']">
               <option *ngFor="let g of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="g">Grade {{ g }}</option>
             </select>
             <span *ngIf="studentErrors['grade']" class="field-error">{{ studentErrors['grade'] }}</span>
@@ -212,8 +221,8 @@
         </div>
         <div class="field-row">
           <label for="student-teacher">Assign Teacher <span class="required">*</span></label>
-          <select id="student-teacher" [(ngModel)]="newStudent.teacherId"
-            name="studentTeacher" [class.input-error]="studentErrors['teacherId']">
+          <select id="student-teacher" [(ngModel)]="newStudent.teacherId" name="studentTeacher"
+            [class.input-error]="studentErrors['teacherId']">
             <option [value]="0" disabled>-- Select a teacher --</option>
             <option *ngFor="let t of teachers" [value]="t.id">
               {{ t.firstName }} {{ t.lastName }} ({{ t.subject }})
@@ -222,8 +231,7 @@
           <span *ngIf="studentErrors['teacherId']" class="field-error">{{ studentErrors['teacherId'] }}</span>
         </div>
         <div class="form-actions">
-          <button id="btn-submit-student" type="submit" class="btn btn-primary"
-            [disabled]="submittingStudent">
+          <button id="btn-submit-student" type="submit" class="btn btn-primary" [disabled]="submittingStudent">
             {{ submittingStudent ? 'Saving...' : 'Create Student' }}
           </button>
           <button type="button" class="btn btn-secondary" (click)="toggleStudentForm()">Cancel</button>
@@ -237,7 +245,7 @@
       <div *ngIf="!loading && students.length === 0" class="empty-state">
         No students found. Use "Add Student" to create one.
       </div>
-      <table *ngIf="students.length > 0" aria-label="Students list">
+      <table #studentsTable *ngIf="students.length > 0" aria-label="Students list">
         <thead>
           <tr>
             <th scope="col">Name</th>
@@ -256,8 +264,7 @@
             <td>{{ student.grade }}</td>
             <td>{{ student.teacher ? student.teacher.firstName + ' ' + student.teacher.lastName : '—' }}</td>
             <td class="actions-cell">
-              <button [id]="'btn-delete-student-' + student.id"
-                class="btn btn-danger btn-sm"
+              <button [id]="'btn-delete-student-' + student.id" class="btn btn-danger btn-sm"
                 [disabled]="submittingStudent"
                 (click)="deleteStudent(student.id, student.firstName + ' ' + student.lastName)"
                 [attr.aria-label]="'Delete student ' + student.firstName + ' ' + student.lastName">
@@ -271,73 +278,75 @@
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       TAB: COURSES
+       TAB: SUBJECTS
   ══════════════════════════════════════════════════════════════════════ -->
-  <div *ngIf="activeTab === 'courses'" class="panel" role="tabpanel" aria-labelledby="tab-courses">
+  <div *ngIf="activeTab === 'subjects'" class="panel" role="tabpanel" aria-labelledby="tab-subjects">
 
     <div class="panel-actions">
-      <button id="btn-add-course" class="btn btn-primary" (click)="toggleCourseForm()">
-        {{ showCourseForm ? 'Cancel' : '+ Add Course' }}
+      <button id="btn-add-subject" class="btn btn-primary" (click)="toggleSubjectForm()">
+        {{ showSubjectForm ? 'Cancel' : '+ Add Subject' }}
       </button>
-      <button id="btn-refresh-courses" class="btn btn-secondary" (click)="loadData()">Refresh</button>
+      <input type="file" id="bulk-import-subjects" accept=".csv" style="display:none" (change)="handleBulkImport($event, 'subjects')" />
+      <button class="btn btn-outline" (click)="triggerFileInput('bulk-import-subjects')" [disabled]="bulkUploading">Bulk Import CSV</button>
+      <button id="btn-refresh-subjects" class="btn btn-secondary" (click)="loadData()">Refresh</button>
     </div>
 
-    <!-- Create Course Form -->
-    <div *ngIf="showCourseForm" class="form-card">
-      <h2>New Course</h2>
-      <form (ngSubmit)="createCourse()" novalidate>
+    <!-- Create Subject Form -->
+    <div *ngIf="showSubjectForm" class="form-card">
+      <h2>New Subject</h2>
+      <form (ngSubmit)="createSubject()" novalidate>
         <div class="form-grid-2">
           <div class="field-row">
-            <label for="course-name">Course Name <span class="required">*</span></label>
-            <input id="course-name" type="text" [(ngModel)]="newCourse.name"
-              name="courseName" maxlength="200"
-              [class.input-error]="courseErrors['name']" />
-            <span *ngIf="courseErrors['name']" class="field-error">{{ courseErrors['name'] }}</span>
+            <label for="subject-name">Subject Name <span class="required">*</span></label>
+            <input id="subject-name" type="text" [(ngModel)]="newSubject.name" name="subjectName" maxlength="200"
+              [class.input-error]="subjectErrors['name']" />
+            <span *ngIf="subjectErrors['name']" class="field-error">{{ subjectErrors['name'] }}</span>
           </div>
           <div class="field-row">
-            <label for="course-code">Course Code <span class="required">*</span></label>
-            <input id="course-code" type="text" [(ngModel)]="newCourse.code"
-              name="courseCode" maxlength="20" placeholder="e.g. MATH101"
-              [class.input-error]="courseErrors['code']" />
-            <span *ngIf="courseErrors['code']" class="field-error">{{ courseErrors['code'] }}</span>
+            <label for="subject-code">Subject Code <span class="required">*</span></label>
+            <input id="subject-code" type="text" [(ngModel)]="newSubject.code" name="subjectCode" maxlength="20"
+              placeholder="e.g. MATH101" [class.input-error]="subjectErrors['code']" />
+            <span *ngIf="subjectErrors['code']" class="field-error">{{ subjectErrors['code'] }}</span>
           </div>
         </div>
         <div class="field-row">
-          <label for="course-description">Description</label>
-          <textarea id="course-description" [(ngModel)]="newCourse.description"
-            name="courseDescription" maxlength="500" rows="3"
-            [class.input-error]="courseErrors['description']"></textarea>
-          <span *ngIf="courseErrors['description']" class="field-error">{{ courseErrors['description'] }}</span>
+          <label for="subject-description">Description</label>
+          <textarea id="subject-description" [(ngModel)]="newSubject.description" name="subjectDescription"
+            maxlength="500" rows="3" [class.input-error]="subjectErrors['description']"></textarea>
+          <span *ngIf="subjectErrors['description']" class="field-error">{{ subjectErrors['description'] }}</span>
         </div>
         <div class="form-actions">
-          <button id="btn-submit-course" type="submit" class="btn btn-primary"
-            [disabled]="submittingCourse">
-            {{ submittingCourse ? 'Saving...' : 'Create Course' }}
+          <button id="btn-submit-subject" type="submit" class="btn btn-primary" [disabled]="submittingSubject">
+            {{ submittingSubject ? 'Saving...' : 'Create Subject' }}
           </button>
-          <button type="button" class="btn btn-secondary" (click)="toggleCourseForm()">Cancel</button>
+          <button type="button" class="btn btn-secondary" (click)="toggleSubjectForm()">Cancel</button>
         </div>
       </form>
     </div>
 
-    <!-- Courses Table -->
+    <!-- Subjects Table -->
     <div class="table-card">
-      <h2>Courses ({{ courses.length }})</h2>
-      <div *ngIf="!loading && courses.length === 0" class="empty-state">
-        No courses found. Use "Add Course" to create one.
+      <h2>Subjects ({{ subjects.length }})</h2>
+      <div *ngIf="!loading && subjects.length === 0" class="empty-state">
+        No subjects found. Use "Add Subject" to create one.
       </div>
-      <table *ngIf="courses.length > 0" aria-label="Courses list">
+      <table #subjectsTable *ngIf="subjects.length > 0" aria-label="Subjects list">
         <thead>
           <tr>
             <th scope="col">Code</th>
             <th scope="col">Name</th>
             <th scope="col">Description</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let course of courses">
-            <td><span class="code-badge">{{ course.code }}</span></td>
-            <td>{{ course.name }}</td>
-            <td>{{ course.description || '—' }}</td>
+          <tr *ngFor="let subject of subjects">
+            <td><span class="code-badge">{{ subject.code }}</span></td>
+            <td>{{ subject.name }}</td>
+            <td>{{ subject.description || '—' }}</td>
+            <td class="actions-cell">
+              <button class="btn btn-danger btn-sm" [disabled]="submittingSubject" (click)="deleteSubject(subject.id, subject.name)">Delete</button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -353,6 +362,8 @@
       <button id="btn-add-class" class="btn btn-primary" (click)="toggleClassForm()">
         {{ showClassForm ? 'Cancel' : '+ Add Class Group' }}
       </button>
+      <input type="file" id="bulk-import-classes" accept=".csv" style="display:none" (change)="handleBulkImport($event, 'classes')" />
+      <button class="btn btn-outline" (click)="triggerFileInput('bulk-import-classes')" [disabled]="bulkUploading">Bulk Import CSV</button>
       <button id="btn-refresh-classes" class="btn btn-secondary" (click)="loadData()">Refresh</button>
     </div>
 
@@ -363,15 +374,14 @@
         <div class="form-grid-2">
           <div class="field-row">
             <label for="class-name">Class Name <span class="required">*</span></label>
-            <input id="class-name" type="text" [(ngModel)]="newClass.name"
-              name="className" maxlength="100"
+            <input id="class-name" type="text" [(ngModel)]="newClass.name" name="className" maxlength="100"
               [class.input-error]="classErrors['name']" />
             <span *ngIf="classErrors['name']" class="field-error">{{ classErrors['name'] }}</span>
           </div>
           <div class="field-row">
             <label for="class-gradeLevel">Grade Level <span class="required">*</span></label>
-            <select id="class-gradeLevel" [(ngModel)]="newClass.gradeLevel"
-              name="classGradeLevel" [class.input-error]="classErrors['gradeLevel']">
+            <select id="class-gradeLevel" [(ngModel)]="newClass.gradeLevel" name="classGradeLevel"
+              [class.input-error]="classErrors['gradeLevel']">
               <option *ngFor="let g of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="g">Grade {{ g }}</option>
             </select>
             <span *ngIf="classErrors['gradeLevel']" class="field-error">{{ classErrors['gradeLevel'] }}</span>
@@ -379,18 +389,18 @@
         </div>
         <div class="form-grid-2">
           <div class="field-row">
-            <label for="class-course">Course <span class="required">*</span></label>
-            <select id="class-course" [(ngModel)]="newClass.courseId"
-              name="classCourse" [class.input-error]="classErrors['courseId']">
-              <option [value]="0" disabled>-- Select a course --</option>
-              <option *ngFor="let c of courses" [value]="c.id">{{ c.code }} – {{ c.name }}</option>
+            <label for="class-subject">Subject <span class="required">*</span></label>
+            <select id="class-subject" [(ngModel)]="newClass.subjectId" name="classSubject"
+              [class.input-error]="classErrors['subjectId']">
+              <option [value]="0" disabled>-- Select a subject --</option>
+              <option *ngFor="let c of subjects" [value]="c.id">{{ c.code }} – {{ c.name }}</option>
             </select>
-            <span *ngIf="classErrors['courseId']" class="field-error">{{ classErrors['courseId'] }}</span>
+            <span *ngIf="classErrors['subjectId']" class="field-error">{{ classErrors['subjectId'] }}</span>
           </div>
           <div class="field-row">
             <label for="class-teacher">Teacher <span class="required">*</span></label>
-            <select id="class-teacher" [(ngModel)]="newClass.teacherId"
-              name="classTeacher" [class.input-error]="classErrors['teacherId']">
+            <select id="class-teacher" [(ngModel)]="newClass.teacherId" name="classTeacher"
+              [class.input-error]="classErrors['teacherId']">
               <option [value]="0" disabled>-- Select a teacher --</option>
               <option *ngFor="let t of teachers" [value]="t.id">
                 {{ t.firstName }} {{ t.lastName }} ({{ t.subject }})
@@ -400,8 +410,7 @@
           </div>
         </div>
         <div class="form-actions">
-          <button id="btn-submit-class" type="submit" class="btn btn-primary"
-            [disabled]="submittingClass">
+          <button id="btn-submit-class" type="submit" class="btn btn-primary" [disabled]="submittingClass">
             {{ submittingClass ? 'Saving...' : 'Create Class Group' }}
           </button>
           <button type="button" class="btn btn-secondary" (click)="toggleClassForm()">Cancel</button>
@@ -419,10 +428,13 @@
         <div>
           <span class="class-group-name">{{ cg.name }}</span>
           <span class="meta-pill">Grade {{ cg.gradeLevel }}</span>
-          <span class="meta-pill meta-course">{{ cg.course?.code ?? 'N/A' }}</span>
+          <span class="meta-pill meta-subject">{{ cg.subject?.code ?? 'N/A' }}</span>
         </div>
-        <div class="class-group-teacher">
-          Teacher: <strong>{{ cg.teacher ? cg.teacher.firstName + ' ' + cg.teacher.lastName : '—' }}</strong>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div class="class-group-teacher">
+            Teacher: <strong>{{ cg.teacher ? cg.teacher.firstName + ' ' + cg.teacher.lastName : '—' }}</strong>
+          </div>
+          <button class="btn btn-danger btn-sm" [disabled]="submittingClass" (click)="deleteClassGroup(cg.id, cg.name)">Delete Class</button>
         </div>
       </div>
 
@@ -437,10 +449,8 @@
         <div class="enrolled-list">
           <div *ngFor="let st of cg.students" class="enrolled-student">
             <span>{{ st.firstName }} {{ st.lastName }}</span>
-            <button [id]="'btn-unenroll-' + cg.id + '-' + st.id"
-              class="btn btn-danger btn-xs"
-              [disabled]="submittingEnroll"
-              (click)="unenrollStudent(cg.id, st.id, st.firstName + ' ' + st.lastName)"
+            <button [id]="'btn-unenroll-' + cg.id + '-' + st.id" class="btn btn-danger btn-xs"
+              [disabled]="submittingEnroll" (click)="unenrollStudent(cg.id, st.id, st.firstName + ' ' + st.lastName)"
               [attr.aria-label]="'Remove ' + st.firstName + ' ' + st.lastName + ' from ' + cg.name">
               Remove
             </button>
@@ -449,20 +459,15 @@
 
         <!-- Enroll Student Row -->
         <div class="enroll-row">
-          <select [id]="'select-enroll-' + cg.id"
-            [(ngModel)]="cg.selectedStudentId"
-            [name]="'enroll-' + cg.id"
+          <select [id]="'select-enroll-' + cg.id" [(ngModel)]="cg.selectedStudentId" [name]="'enroll-' + cg.id"
             [attr.aria-label]="'Select student to enroll in ' + cg.name">
             <option [value]="0" disabled>-- Select student to enroll --</option>
-            <option *ngFor="let s of students" [value]="s.id"
-              [disabled]="isStudentEnrolled(cg, s.id)">
+            <option *ngFor="let s of students" [value]="s.id" [disabled]="isStudentEnrolled(cg, s.id)">
               {{ s.firstName }} {{ s.lastName }} (Grade {{ s.grade }})
             </option>
           </select>
-          <button [id]="'btn-enroll-' + cg.id"
-            class="btn btn-primary btn-sm"
-            [disabled]="submittingEnroll || !cg.selectedStudentId"
-            (click)="enrollStudent(cg.id, cg.selectedStudentId)">
+          <button [id]="'btn-enroll-' + cg.id" class="btn btn-primary btn-sm"
+            [disabled]="submittingEnroll || !cg.selectedStudentId" (click)="enrollStudent(cg.id, cg.selectedStudentId)">
             {{ submittingEnroll ? 'Enrolling...' : 'Enroll' }}
           </button>
         </div>
@@ -484,16 +489,16 @@
     <div class="filter-row">
       <div class="field-row">
         <label for="audit-entity-filter">Entity Type</label>
-        <select id="audit-entity-filter" [(ngModel)]="auditEntityFilter"
-          name="auditEntityFilter" (change)="applyAuditFilter()">
+        <select id="audit-entity-filter" [(ngModel)]="auditEntityFilter" name="auditEntityFilter"
+          (change)="applyAuditFilter()">
           <option value="">All Entities</option>
           <option *ngFor="let e of uniqueAuditEntities" [value]="e">{{ e }}</option>
         </select>
       </div>
       <div class="field-row">
         <label for="audit-action-filter">Action</label>
-        <select id="audit-action-filter" [(ngModel)]="auditActionFilter"
-          name="auditActionFilter" (change)="applyAuditFilter()">
+        <select id="audit-action-filter" [(ngModel)]="auditActionFilter" name="auditActionFilter"
+          (change)="applyAuditFilter()">
           <option value="">All Actions</option>
           <option *ngFor="let a of uniqueAuditActions" [value]="a">{{ a }}</option>
         </select>
@@ -506,7 +511,7 @@
       <div *ngIf="!loading && filteredAuditLogs.length === 0" class="empty-state">
         No audit log entries match the current filters.
       </div>
-      <table *ngIf="filteredAuditLogs.length > 0" aria-label="Audit log entries">
+      <table #auditTable *ngIf="filteredAuditLogs.length > 0" aria-label="Audit log entries">
         <thead>
           <tr>
             <th scope="col">Timestamp</th>
@@ -523,10 +528,8 @@
             <td><span class="code-badge">{{ log.entityType }}</span></td>
             <td>{{ log.entityId }}</td>
             <td>
-              <span class="action-badge"
-                [class.action-create]="log.action === 'Create'"
-                [class.action-update]="log.action === 'Update'"
-                [class.action-delete]="log.action === 'Delete'">
+              <span class="action-badge" [class.action-create]="log.action === 'Create'"
+                [class.action-update]="log.action === 'Update'" [class.action-delete]="log.action === 'Delete'">
                 {{ log.action }}
               </span>
             </td>

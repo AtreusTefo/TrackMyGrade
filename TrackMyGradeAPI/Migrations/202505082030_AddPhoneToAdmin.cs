@@ -14,7 +14,7 @@ namespace TrackMyGradeAPI.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Admins", "Phone", c => c.String(maxLength: 20));
+            AddColumn("dbo.Admins", "Phone", c => c.String(nullable: false, maxLength: 8, defaultValue: "71234567"));
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Owin.Hosting;
+using TrackMyGradeAPI.Logging;
 
 namespace TrackMyGradeAPI
 {
@@ -30,6 +31,19 @@ namespace TrackMyGradeAPI
             }
             catch (Exception ex)
             {
+                // Log startup exception to ELMAH for diagnostics
+                // Note: ELMAH configuration is read from App.config automatically
+                try
+                {
+                    ErrorLoggingConfig.LogErrorWithMessage(
+                        $"Startup Exception - Failed to start TrackMyGrade API on {baseUrl}",
+                        ex);
+                }
+                catch
+                {
+                    // ELMAH logging failed - will print to console as fallback
+                }
+
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Failed to start API. Full error:");
                 Console.WriteLine(new string('-', 50));

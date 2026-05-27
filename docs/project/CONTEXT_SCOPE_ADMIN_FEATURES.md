@@ -135,7 +135,7 @@ This document provides a comprehensive update to the development context for all
   - `UpdateStudent()` - logs update with old/new state
   - `DeleteTeacher()` - logs deletion with snapshot
   - `DeleteStudent()` - logs deletion with snapshot
-  - `CreateCourse()` - logs creation
+  - `CreateSubject()` - logs creation
   - `CreateClassGroup()` - logs creation
   - `EnrollStudent()` - logs enrollment creation
   - `UnenrollStudent()` - logs enrollment deletion
@@ -228,9 +228,9 @@ ON StudentEnrollments(StudentId, ClassGroupId);
 - `PUT /api/admin/students/{id}` - Update [Admin JWT required]
 - `DELETE /api/admin/students/{id}` - Delete [Admin JWT required]
 
-### Courses
-- `GET /api/admin/courses` - List all [Admin JWT required]
-- `POST /api/admin/courses` - Create new [Admin JWT required]
+### Subjects
+- `GET /api/admin/subjects` - List all [Admin JWT required]
+- `POST /api/admin/subjects` - Create new [Admin JWT required]
 
 ### Class Groups
 - `GET /api/admin/class-groups` - List all [Admin JWT required]
@@ -258,7 +258,7 @@ ON StudentEnrollments(StudentId, ClassGroupId);
 - Teacher email (case-insensitive)
 - Student email (case-insensitive)
 - Student OMANG/Passport
-- Course code (case-insensitive)
+- Subject code (case-insensitive)
 - StudentEnrollment (StudentId, ClassGroupId)
 
 ### Referential Integrity
@@ -266,14 +266,14 @@ ON StudentEnrollments(StudentId, ClassGroupId);
 - StudentEnrollment.StudentId → Student.Id (cascade delete)
 - StudentEnrollment.ClassGroupId → ClassGroup.Id (no cascade)
 - ClassGroup.TeacherId → Teacher.Id (no cascade)
-- ClassGroup.CourseId → Course.Id (no cascade)
+- ClassGroup.SubjectId → Subject.Id (no cascade)
 - Assignment.ClassGroupId → ClassGroup.Id (cascade delete)
 - Assignment.CreatedByTeacherId → Teacher.Id (no cascade)
 
 ### Business Logic Safeguards
 - Cannot delete teacher with active classes
 - Cannot delete teacher with assignments
-- Cannot delete course with active classes
+- Cannot delete subject with active classes
 - Cannot create duplicate enrollments
 - Cannot update student with invalid teacher reference
 - Safe cascade delete for student (removes enrollments and submissions)
@@ -475,7 +475,7 @@ Location: `StudentApp/src/app/services/admin-api.service.ts`
 
 **Referential integrity error**
 - Check that referenced entity exists
-- Verify teacher/course is not in use
+- Verify teacher/subject is not in use
 - Review error message for blocked resources
 
 **Audit log not appearing**

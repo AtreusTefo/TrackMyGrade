@@ -41,9 +41,12 @@ namespace TrackMyGradeAPI.Handlers
                 !request.Headers.Authorization.Scheme.Equals("Bearer",
                     StringComparison.OrdinalIgnoreCase))
             {
-                actionContext.Response = Unauthorized(request, "Missing or invalid Authorization header.");
+                actionContext.Response = Unauthorized(request, "Missing or invalid Authorization header. Please log in again.");
                 return;
             }
+            
+            // Trim token to handle potential whitespace/transmission issues
+            authHeader = authHeader?.Trim() ?? string.Empty;
 
             // ── 2. Validate token ───────────────────────────────────────
             var tokenService = new TokenService();          // lightweight; no DI needed for attribute

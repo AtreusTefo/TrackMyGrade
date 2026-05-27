@@ -41,7 +41,7 @@ Comprehensive validation framework with:
 - DeleteTeacher: Now prevents orphaned resources
 - CreateStudent: Now validates teacher exists
 - UpdateStudent: Now checks duplicates on update
-- CreateClassGroup: Now validates course & teacher exist
+- CreateClassGroup: Now validates subject & teacher exist
 - EnrollStudent: Enhanced with better error messages
 - All methods use AdminValidator before processing
 
@@ -85,11 +85,11 @@ Layer 4: Database (SQL Constraints)
 
 Duplicate emails (case-insensitive)
 Duplicate OMANG/Passport
-Duplicate course codes
+Duplicate subject codes
 Invalid email formats
 Invalid phone formats
 Invalid grade levels (must be 1-12)
-Invalid foreign keys (teacher, course)
+Invalid foreign keys (teacher, subject)
 Orphaned resources (deleted teachers with classes)
 Duplicate enrollments (same student in same class)
 Race condition enrollment (double-click protection)
@@ -103,7 +103,7 @@ Race condition enrollment (double-click protection)
 1. **Teacher Deletion** - Now prevents deletion if teacher has active classes/assignments
 2. **Student Email Update** - Now checks uniqueness on update, not just create
 3. **Student Creation** - Now validates teacher exists before creating
-4. **Class Group Creation** - Now validates course exists before creating
+4. **Class Group Creation** - Now validates subject exists before creating
 
 ### 🟠 HIGH FIXES
 
@@ -262,7 +262,7 @@ Race condition enrollment (double-click protection)
 
 ### Critical Tests (Must Pass)
 1. Create student with non-existent teacher → Error
-2. Create class with non-existent course → Error
+2. Create class with non-existent subject → Error
 3. Delete teacher with active classes → Error
 4. Update student email to duplicate → Error
 5. Enroll same student twice → Error

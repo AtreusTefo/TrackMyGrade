@@ -25,8 +25,8 @@
 3. **Student Creation Didn't Validate Teacher Exists**
    - Now throws: `"Teacher with ID 999 not found."`
 
-4. **Class Groups Could Reference Non-Existent Courses**
-   - Now throws: `"Course with ID 999 not found."`
+4. **Class Groups Could Reference Non-Existent Subjects**
+   - Now throws: `"Subject with ID 999 not found."`
 
 ### HIGH FIXES
 
@@ -84,7 +84,7 @@
 ValidateCreateTeacher(AdminCreateTeacherDto request)
 ValidateCreateStudent(AdminCreateStudentDto request)
 ValidateUpdateStudent(AdminUpdateStudentDto request)
-ValidateCreateCourse(CreateCourseDto request)
+ValidateCreateSubject(CreateSubjectDto request)
 ValidateCreateClassGroup(CreateClassGroupDto request)
 ```
 
@@ -130,7 +130,7 @@ catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerErr
 submitting = false;  // Prevent duplicate submissions
 teacherErrors: { [key: string]: string } = {};
 studentErrors: { [key: string]: string } = {};
-courseErrors: { [key: string]: string } = {};
+subjectErrors: { [key: string]: string } = {};
 classErrors: { [key: string]: string } = {};
 ```
 
@@ -158,7 +158,7 @@ classErrors: { [key: string]: string } = {};
 
 ### MUST TEST
 1. ✅ Create student with non-existent teacher → Error
-2. ✅ Create class group with non-existent course → Error
+2. ✅ Create class group with non-existent subject → Error
 3. ✅ Delete teacher with active classes → Error
 4. ✅ Update student email to duplicate → Error
 5. ✅ Enroll same student twice → Error

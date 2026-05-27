@@ -22,7 +22,7 @@ namespace TrackMyGradeAPI.Validators
         public static void ValidateCreateTeacher(AdminCreateTeacherDto request)
         public static void ValidateCreateStudent(AdminCreateStudentDto request)
         public static void ValidateUpdateStudent(AdminUpdateStudentDto request)
-        public static void ValidateCreateCourse(CreateCourseDto request)
+        public static void ValidateCreateSubject(CreateSubjectDto request)
         public static void ValidateCreateClassGroup(CreateClassGroupDto request)
     }
 }
@@ -174,17 +174,17 @@ public void DeleteStudent(int id)
 }
 ```
 
-### Change 2.7: CreateCourse Method
+### Change 2.7: CreateSubject Method
 ```csharp
-public CourseDto CreateCourse(CreateCourseDto request)
+public SubjectDto CreateSubject(CreateSubjectDto request)
 {
     // ADD: Validation
-    AdminValidator.ValidateCreateCourse(request);
+    AdminValidator.ValidateCreateSubject(request);
 
     string normalizedCode = request.Code.Trim().ToUpper();
     // EXISTING: Code check (unchanged)
-    if (_db.Courses.Any(c => c.Code == normalizedCode))
-        throw new InvalidOperationException("A course with this code already exists.");
+    if (_db.Subjects.Any(c => c.Code == normalizedCode))
+        throw new InvalidOperationException("A subject with this code already exists.");
 
     // ... rest unchanged
 }
@@ -197,10 +197,10 @@ public ClassGroupDto CreateClassGroup(CreateClassGroupDto request)
     // ADD: Validation
     AdminValidator.ValidateCreateClassGroup(request);
 
-    // ADD: Verify course exists with better exception
-    var course = _db.Courses.Find(request.CourseId);
-    if (course == null)
-        throw new KeyNotFoundException($"Course with ID {request.CourseId} not found.");
+    // ADD: Verify subject exists with better exception
+    var subject = _db.Subjects.Find(request.SubjectId);
+    if (subject == null)
+        throw new KeyNotFoundException($"Subject with ID {request.SubjectId} not found.");
 
     // ADD: Verify teacher exists with better exception
     var teacher = _db.Teachers.Find(request.TeacherId);
@@ -211,7 +211,7 @@ public ClassGroupDto CreateClassGroup(CreateClassGroupDto request)
     {
         Name = request.Name.Trim(),
         GradeLevel = request.GradeLevel,
-        CourseId = request.CourseId,
+        SubjectId = request.SubjectId,
         TeacherId = request.TeacherId
     };
     _db.ClassGroups.Add(group);
@@ -308,7 +308,7 @@ public IHttpActionResult CreateTeacher([FromBody] AdminCreateTeacherDto request)
 3. **CreateStudent** - Added ArgumentException, KeyNotFoundException, proper logging
 4. **UpdateStudent** - Added ArgumentException, KeyNotFoundException → NotFound()
 5. **DeleteStudent** - Added KeyNotFoundException, proper logging
-6. **CreateCourse** - Added ArgumentException, InvalidOperationException
+6. **CreateSubject** - Added ArgumentException, InvalidOperationException
 7. **CreateClassGroup** - Added ArgumentException, KeyNotFoundException
 8. **EnrollStudent** - Added KeyNotFoundException, InvalidOperationException
 9. **UnenrollStudent** - Added KeyNotFoundException, proper logging
@@ -330,7 +330,7 @@ export class AdminDashboardComponent implements OnInit {
   // ADD: Error objects for each form
   teacherErrors: { [key: string]: string } = {};
   studentErrors: { [key: string]: string } = {};
-  courseErrors: { [key: string]: string } = {};
+  subjectErrors: { [key: string]: string } = {};
   classErrors: { [key: string]: string } = {};
 }
 ```
@@ -379,7 +379,7 @@ validateTeacherForm(): boolean {
     return !Object.values(this.teacherErrors).some(e => e);
 }
 
-// Similar for: validateStudentForm, validateCourseForm, validateClassForm
+// Similar for: validateStudentForm, validateSubjectForm, validateClassForm
 ```
 
 ### Change 4.4: Update createTeacher Method
@@ -436,7 +436,7 @@ deleteTeacher(id: number, name: string): void {  // ADD: name parameter
 ### Change 4.6: Similar updates for ALL CRUD methods
 - createStudent: validate + lock + clear errors
 - deleteStudent: better message + lock
-- createCourse: validate + lock
+- createSubject: validate + lock
 - createClassGroup: validate + lock
 - enrollStudent: lock for race condition prevention
 - unenrollStudent: better confirmation + lock
