@@ -14,7 +14,6 @@
 - **General:** If logic is ambiguous, explicitly state the ambiguity and request clarification from the user in a concise format. Reference ARCHITECTURE.md before suggesting structural changes.
 
 ## Error Resolution Procedure
-
 ### When an Error Occurs or Needs Fixing:
 1. **Check Existing Documentation FIRST**
    - Search `docs/error-fixes/` for the error message, error code, or related keywords
@@ -101,7 +100,6 @@ When creating new error fix documentation:
 ## Data Integrity, Referential Integrity & Consistency Standards
 
 ### Frontend Layer (Angular 18) - Input Validation & Sanitization
-
 1. **Input Validation (Client-Side)**
    - Use reactive forms with validators matching backend FluentValidation rules exactly.
    - Validate input types, lengths, formats, and ranges before API submission.
@@ -119,7 +117,6 @@ When creating new error fix documentation:
    - Always expect backend to reject invalid data independently.
 
 ### Backend Layer (C# / ASP.NET) - Request Processing & Business Logic
-
 4. **Service Layer Input Validation**
    - Validate ALL incoming DTOs using FluentValidation validators in Service layer before processing.
    - Return `400 Bad Request` with detailed validation error messages on failure.
@@ -153,7 +150,6 @@ When creating new error fix documentation:
    - Include user context in logs for compliance and debugging.
 
 ### Database Layer (SQL Server / EF6) - Schema Constraints & Referential Integrity
-
 10. **Column Constraints**
     - Define NOT NULL constraints on required columns; use `[Required]` data annotation in entities.
     - Set appropriate SQL Server column types: `varchar(255)` for Email, `int` for StudentId, `datetime2` for timestamps.
@@ -201,7 +197,6 @@ When creating new error fix documentation:
     - All three layers enforce same rules independently.
 
 ### Testing Requirements
-
 18. **Comprehensive Test Coverage**
     - Frontend: Validation rejects invalid inputs; submit button disabled until form valid.
     - Backend: Invalid DTOs rejected with `400 Bad Request`; FK constraints prevent orphans.

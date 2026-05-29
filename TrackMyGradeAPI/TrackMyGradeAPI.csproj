@@ -67,10 +67,9 @@
     <Compile Include="Startup.cs" />
     <Compile Include="Infrastructure\Data\ApplicationDbContext.cs" />
     <Compile Include="Migrations\202505260000_FixSubjectsConstraintName.cs" />
-    <Compile Include="Migrations\202605261100_SyncModelChanges.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Student.cs" />
-    <Compile Include="Application\DTOs\AdminDtos.cs" />
+    <Compile Include="Application\DTOs\AdminDto.cs" />
     <Compile Include="Application\DTOs\AuthDtos.cs" />
     <Compile Include="Application\DTOs\SubjectDtos.cs" />
     <Compile Include="Application\DTOs\AssignmentDtos.cs" />
@@ -83,7 +82,8 @@
     <Compile Include="Mapping\AutoMapperConfig.cs" />
     <Compile Include="Middleware\ErrorHandlingMiddleware.cs" />
     <Compile Include="Middleware\SecurityHeadersMiddleware.cs" />
-    <Compile Include="Infrastructure\Security\TokenAuthorizeAttribute.cs" />
+    <Compile Include="Handlers\TokenAuthorizeAttribute.cs" />
+    <Compile Include="Application\Services\TokenService.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Compile Include="Handlers\FluentValidationFilter.cs" />
     <Compile Include="Infrastructure\SimpleDependencyResolver.cs" />
@@ -97,7 +97,9 @@
     <Compile Include="Application\Services\AuditLogService.cs" />
     <Compile Include="Application\Services\ActivationService.cs" />
     <Compile Include="Application\Services\AssignmentService.cs" />
-    <Compile Include="Application\Services\TokenService.cs" />
+    <Compile Include="Application\Services\AssessmentSubmissionService.cs" />
+    <Compile Include="Application\Services\EmailService.cs" />
+    <Compile Include="Application\Services\ExportService.cs" />
     <Compile Include="Presentation\Controllers\TeachersController.cs" />
     <Compile Include="Presentation\Controllers\StudentsController.cs" />
     <Compile Include="Presentation\Controllers\StudentAuthController.cs" />

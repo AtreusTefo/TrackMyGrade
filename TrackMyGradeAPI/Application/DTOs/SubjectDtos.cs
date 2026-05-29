@@ -56,6 +56,10 @@ namespace TrackMyGradeAPI.DTOs
         public int TeacherId { get; set; }
     }
 
-    /// <summary>Request body for enrolling a student (placeholder).</summary>
-    public class EnrollStudentDto { }
+    /// <summary>Request body for enrolling a student in a class group.</summary>
+    public class EnrollStudentDto
+    {
+        /// <summary>Gets or sets the student ID to enroll.</summary>
+        public int StudentId { get; set; }
+    }
 }

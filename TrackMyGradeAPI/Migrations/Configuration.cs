@@ -13,9 +13,9 @@ namespace TrackMyGradeAPI.Migrations
         /// <summary>Creates a new migrations configuration.</summary>
         public Configuration()
         {
-            // Disabled to enforce a code-based migration workflow.
-            // All model changes are now captured in explicit migration files.
-            AutomaticMigrationsEnabled = false;
+            // Temporarily enabled to allow automatic schema updates during development.
+            // This will be re-disabled after all pending model changes are captured.
+            AutomaticMigrationsEnabled = true;
 
             // Set to false to prevent accidental data loss during schema updates.
             AutomaticMigrationDataLossAllowed = false;

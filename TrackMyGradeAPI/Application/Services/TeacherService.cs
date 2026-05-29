@@ -4,6 +4,7 @@ using AutoMapper;
 using BCrypt.Net;
 using TrackMyGradeAPI.Data;
 using TrackMyGradeAPI.DTOs;
+using TrackMyGradeAPI.Infrastructure;
 using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Services
