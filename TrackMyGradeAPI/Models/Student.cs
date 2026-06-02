@@ -204,6 +204,10 @@ namespace TrackMyGradeAPI.Models
         /// <summary>Flag indicating whether this enrollment has been soft-deleted.</summary>
         public bool IsDeleted { get; set; } = false;
 
+        /// <summary>Row version for optimistic concurrency control — incremented on every update.</summary>
+        [System.ComponentModel.DataAnnotations.Timestamp]
+        public byte[] RowVersion { get; set; }
+
         /// <summary>Student linked to this enrollment.</summary>
         public virtual Student Student { get; set; }
 
@@ -242,6 +246,11 @@ namespace TrackMyGradeAPI.Models
 
         /// <summary>Flag indicating whether this assignment has been soft-deleted.</summary>
         public bool IsDeleted { get; set; } = false;
+
+        /// <summary>Row version for optimistic concurrency control — incremented on every update.</summary>
+        [System.ComponentModel.DataAnnotations.Timestamp]
+        public byte[] RowVersion { get; set; }
+
         /// <summary>Class group navigation property.</summary>
         public virtual ClassGroup ClassGroup { get; set; }
 
@@ -287,6 +296,10 @@ namespace TrackMyGradeAPI.Models
 
         /// <summary>Flag indicating whether this submission has been soft-deleted.</summary>
         public bool IsDeleted { get; set; } = false;
+
+        /// <summary>Row version for optimistic concurrency control — incremented on every update.</summary>
+        [System.ComponentModel.DataAnnotations.Timestamp]
+        public byte[] RowVersion { get; set; }
 
         /// <summary>Assignment associated with this submission.</summary>
         public virtual Assignment Assignment { get; set; }

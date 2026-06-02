@@ -62,5 +62,15 @@ Related Files Modified:
 - TrackMyGradeAPI/Migrations/Configuration.cs (simplified seed logic)
 - TrackMyGradeAPI/Infrastructure/Data/ApplicationDbContext.cs (delegates constraint management to migrations)
 
-Updated: 2026-05-26 (REVISED - Fixed FK constraint naming logic)
-Status: RESOLVED - Foreign key constraint naming corrected to eliminate ambiguity.
+Updated: 2026-06-01 (FINAL RESOLUTION VERIFIED - Migrations reset and reapplied successfully)
+Status: FULLY RESOLVED - Migration executed successfully, ambiguous constraint removed, corrected constraint applied.
+
+Resolution Summary (2026-06-01):
+1. Root cause identified: AutomaticMigrationsEnabled=true bypassed explicit FixSubjectsConstraintName migration
+2. Database reset: Dropped all tables and cleared __MigrationHistory table
+3. Fresh migration: Re-ran API with AutomaticMigrationsEnabled=true to generate schema from model
+4. Constraint fix applied: Ambiguous FK_dbo.ClassGroups_dbo.Subjects_CourseId removed
+5. Corrected constraint created: FK_dbo.ClassGroups_dbo.Subjects_SubjectId now references ClassGroups.SubjectId -> Subjects.Id
+6. Validation: Database schema now perfectly matches C# EF model
+
+All migrations now apply successfully on API startup without "@objname is ambiguous" error.

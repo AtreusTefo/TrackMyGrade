@@ -13,8 +13,9 @@ namespace TrackMyGradeAPI.Migrations
         /// <summary>Creates a new migrations configuration.</summary>
         public Configuration()
         {
-            // Temporarily enabled to allow automatic schema updates during development.
-            // This will be re-disabled after all pending model changes are captured.
+            // Enabled to allow EF to generate schema automatically from the model.
+            // After automatic migrations create tables, explicit migrations like 
+            // FixSubjectsConstraintName will execute to apply specific fixes.
             AutomaticMigrationsEnabled = true;
 
             // Set to false to prevent accidental data loss during schema updates.
