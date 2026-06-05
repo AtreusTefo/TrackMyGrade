@@ -133,7 +133,7 @@ Perfect for: Finding anything quickly
 **AdminService.cs** - Enhanced business logic
 - DeleteTeacher checks for orphaned resources
 - CreateStudent validates teacher exists
-- CreateClassGroup validates course exists
+- CreateClassGroup validates subject exists
 - UpdateStudent checks duplicates on update
 - EnrollStudent prevents duplicates
 

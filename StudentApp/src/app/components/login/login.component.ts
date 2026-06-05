@@ -89,11 +89,26 @@ export class LoginComponent implements OnInit {
   private tryAdminLogin(creds: any): void {
     this.adminAuthService.login(creds).subscribe({
       next: (res) => {
+        console.log('[AdminLogin] Login response received:', res);
         this.adminAuthService.setCurrentAdmin(res);
+        
+        // Verify token was actually stored
+        const storedToken = this.adminAuthService.getToken();
+        console.log('[AdminLogin] Token stored:', storedToken ? 'YES' : 'NO (EMPTY/NULL)');
+        
+        if (!storedToken) {
+          this.loginError = 'Login failed: No authentication token received';
+          this.isSubmitting = false;
+          return;
+        }
+        
         this.isSubmitting = false;
         this.router.navigate(['/admin-dashboard']);
       },
-      error: () => this.tryTeacherLogin(creds)
+      error: (err) => {
+        console.error('[AdminLogin] Login error:', err);
+        this.tryTeacherLogin(creds);
+      }
     });
   }
 

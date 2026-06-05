@@ -74,16 +74,16 @@ string normalizedPassport = request.OmangOrPassport.Trim();
 if (_db.Students.Any(s => s.OmangOrPassport == normalizedPassport))
     throw new InvalidOperationException("A student with this OMANG/Passport already exists.");
 
-// Course code uniqueness (case-insensitive)
+// Subject code uniqueness (case-insensitive)
 string normalizedCode = request.Code.Trim().ToUpper();
-if (_db.Courses.Any(c => c.Code == normalizedCode))
-    throw new InvalidOperationException("A course with this code already exists.");
+if (_db.Subjects.Any(c => c.Code == normalizedCode))
+    throw new InvalidOperationException("A subject with this code already exists.");
 ```
 
 **Guarantees**:
 - No duplicate emails (case-insensitive comparison)
 - No duplicate identifiers (OMANG, Passport)
-- No duplicate course codes
+- No duplicate subject codes
 - Check performed before database INSERT
 
 #### Update Safety Checks
@@ -308,9 +308,9 @@ if (student.Email != normalizedEmail &&
     _db.Students.Any(s => s.Id != id && s.Email == normalizedEmail))
     throw new InvalidOperationException("Email already exists.");
 
-// Course code
+// Subject code
 string normalizedCode = request.Code.Trim().ToUpper();
-if (_db.Courses.Any(c => c.Code == normalizedCode))
+if (_db.Subjects.Any(c => c.Code == normalizedCode))
     throw new InvalidOperationException("Code already exists.");
 ```
 
@@ -442,8 +442,8 @@ modelBuilder.Entity<Student>()
     .HasIndex(s => s.OmangOrPassport)
     .IsUnique();
 
-// Course code uniqueness
-modelBuilder.Entity<Course>()
+// Subject code uniqueness
+modelBuilder.Entity<Subject>()
     .HasIndex(c => c.Code)
     .IsUnique();
 
@@ -525,13 +525,13 @@ catch (Exception ex)
 - [ ] Cannot create student with non-existent teacher
 - [ ] Cannot create enrollment with non-existent class
 - [ ] Cannot delete teacher with active classes
-- [ ] Cannot delete course with active classes
+- [ ] Cannot delete subject with active classes
 - [ ] Foreign key constraints enforced
 
 ### Data Consistency Tests
 - [ ] No duplicate emails (case-insensitive)
 - [ ] No duplicate OMANG/Passport
-- [ ] No duplicate course codes
+- [ ] No duplicate subject codes
 - [ ] No duplicate enrollments
 - [ ] Cascade deletes work correctly
 

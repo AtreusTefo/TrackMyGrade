@@ -14,9 +14,9 @@
 
 ### C1 - HTML template was empty (non-functional dashboard)
 **Before:** 18 lines - only a header and tab bar. No panels, no forms, no tables.
-**After:** 541 lines - all 5 tab panels fully implemented (Teachers, Students, Courses, Classes, Audit Logs).
+**After:** 541 lines - all 5 tab panels fully implemented (Teachers, Students, Subjects, Classes, Audit Logs).
 
-### C2 - Missing nav buttons for Courses and Classes tabs
+### C2 - Missing nav buttons for Subjects and Classes tabs
 **Before:** Only 3 nav buttons: Teachers, Students, Audit Logs.
 **After:** All 5 nav buttons present with correct `id`, `role="tab"`, and `aria-selected` attributes.
 
@@ -38,14 +38,14 @@
 ### D2 - Teacher deletion did not cascade to `classGroups` in-memory
 **Fix:** `deleteTeacher()` now also removes all class groups that reference the deleted teacher from the local `classGroups` array.
 
-### D3 - New class group lacked populated `course`/`teacher` objects
-**Fix:** `createClassGroup()` enriches the response object with `selectedCourse` and `selectedTeacher` from local state before pushing to `classGroups`.
+### D3 - New class group lacked populated `subject`/`teacher` objects
+**Fix:** `createClassGroup()` enriches the response object with `selectedSubject` and `selectedTeacher` from local state before pushing to `classGroups`.
 
-### D4 - Course code uniqueness not checked client-side
-**Fix:** `validateCourseForm()` checks `this.courses` for an existing code (case-insensitive) before calling the API. Also enforces alphanumeric/hyphen/underscore format.
+### D4 - Subject code uniqueness not checked client-side
+**Fix:** `validateSubjectForm()` checks `this.subjects` for an existing code (case-insensitive) before calling the API. Also enforces alphanumeric/hyphen/underscore format.
 
 ### D5 - Form model not reset when toggling forms closed
-**Fix:** `toggleTeacherForm()`, `toggleStudentForm()`, `toggleCourseForm()`, `toggleClassForm()` call the blank model factory and `clearErrors()` on close.
+**Fix:** `toggleTeacherForm()`, `toggleStudentForm()`, `toggleSubjectForm()`, `toggleClassForm()` call the blank model factory and `clearErrors()` on close.
 
 ### D6 - OMANG/Passport field accepted arbitrary strings
 **Fix:** Added alphanumeric-only regex (`/^[a-zA-Z0-9]+$/`), minimum length 4, maximum 20.
@@ -65,13 +65,13 @@
 ## Data Consistency Fixes
 
 ### S1 - Single `submitting` flag blocked all forms simultaneously
-**Fix:** Replaced with per-form flags: `submittingTeacher`, `submittingStudent`, `submittingCourse`, `submittingClass`, `submittingEnroll`.
+**Fix:** Replaced with per-form flags: `submittingTeacher`, `submittingStudent`, `submittingSubject`, `submittingClass`, `submittingEnroll`.
 
 ### S2 - Error and success messages overrode each other
 **Fix:** Each uses its own `clearTimeout` before setting, preventing stale timer overrides.
 
 ### S3 - Parallel `loadData()` used fragile closure counter
-**Fix:** Replaced with `forkJoin({ teachers, students, courses, classGroups })` plus `finalize()` for loading state.
+**Fix:** Replaced with `forkJoin({ teachers, students, subjects, classGroups })` plus `finalize()` for loading state.
 
 ### S4 - `applyAuditFilter()` filtered on `log.entityName` but API returns `log.entityType`
 **Fix:** Filter now uses `log.entityType` and `log.action`, matching the actual API response shape.
@@ -108,7 +108,7 @@
 - `.required` (red asterisk marker)
 - `.input-error`, `.field-error` (inline validation feedback)
 - `.empty-state` (dashed placeholder for empty lists)
-- `.code-badge` (monospaced label for course codes / entity types)
+- `.code-badge` (monospaced label for subject codes / entity types)
 - `.class-group-card`, `.class-group-header`, `.meta-pill` (class group UI)
 - `.enrolled-section`, `.enrolled-student`, `.enroll-row` (enrollment UI)
 - `.action-badge`, `.action-create`, `.action-update`, `.action-delete` (audit coloring)

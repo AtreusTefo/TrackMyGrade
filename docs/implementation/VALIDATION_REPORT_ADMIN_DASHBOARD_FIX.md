@@ -92,7 +92,7 @@ AGENTS.md Compliance:
     - Removed: 🛡️ (brand icon)
     - Removed: 👨‍🏫 (Teachers button)
     - Removed: 🎓 (Students button)
-    - Removed: 📚 (Courses button)
+    - Removed: 📚 (Subjects button)
     - Removed: 🏫 (Classes button)
     - Replaced with: [ADMIN], plain text labels
 
@@ -106,13 +106,13 @@ AGENTS.md Compliance:
 [x] Type Safety Rule
     - any[] -> Teacher[] (teachers)
     - any[] -> Student[] (students)
-    - any[] -> Course[] (courses)
+    - any[] -> Subject[] (subjects)
     - any[] -> ClassGroup[] (classGroups)
     - Form objects typed with DTOs
     - No remaining 'any' types in component
 
 [x] Naming Conventions
-    - PascalCase for models: Teacher, Student, Course, ClassGroup
+    - PascalCase for models: Teacher, Student, Subject, ClassGroup
     - camelCase for properties: firstName, lastName, email
     - camelCase for methods: createTeacher, deleteStudent
 
@@ -134,7 +134,7 @@ Data Integrity Checks:
 
 Referential Integrity Checks:
 [x] Teacher pre-validated before student creation
-[x] Course pre-validated before class creation
+[x] Subject pre-validated before class creation
 [x] Teacher pre-validated before class creation
 [x] Duplicate enrollment prevented
 [x] Student deletion cascades to UI
@@ -197,7 +197,7 @@ Integration Tests Needed:
 E2E Tests Needed:
 [ ] Teacher CRUD operations
 [ ] Student CRUD operations
-[ ] Course CRUD operations
+[ ] Subject CRUD operations
 [ ] Class group management
 [ ] Enrollment workflows
 [ ] Cascade deletion

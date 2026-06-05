@@ -46,13 +46,13 @@ namespace TrackMyGradeAPI.Services
         }
 
         /// <summary>
-        /// Returns all students enrolled in any ClassGroup taught by this teacher.
+        /// Returns all students enrolled in any ClassGroup taught by this teacher (excludes soft-deleted enrollments).
         /// </summary>
         public List<StudentResponseDto> GetByTeacher(int teacherId)
         {
-            // Collect student IDs from all classes the teacher teaches
+            // Collect student IDs from all classes the teacher teaches (active enrollments only)
             var enrolledStudentIds = _db.StudentEnrollments
-                .Where(e => e.ClassGroup.TeacherId == teacherId)
+                .Where(e => e.ClassGroup.TeacherId == teacherId && !e.IsDeleted)
                 .Select(e => e.StudentId)
                 .Distinct()
                 .ToList();
@@ -65,13 +65,14 @@ namespace TrackMyGradeAPI.Services
         }
 
         /// <summary>
-        /// Returns one student — only if they are enrolled in a class taught by the teacher.
+        /// Returns one student — only if they are enrolled in a class taught by the teacher (active enrollment only).
         /// </summary>
         public StudentResponseDto GetById(int studentId, int teacherId)
         {
             bool hasAccess = _db.StudentEnrollments.Any(
                 e => e.StudentId    == studentId &&
-                     e.ClassGroup.TeacherId == teacherId);
+                     e.ClassGroup.TeacherId == teacherId &&
+                     !e.IsDeleted);
 
             if (!hasAccess)
                 throw new UnauthorizedAccessException(

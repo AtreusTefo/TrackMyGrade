@@ -27,7 +27,7 @@ Daily Report - May 4, 2026
 ### 3. **Backend Implementation** (1.5 hours)
    - Created AdminValidator.cs with validation framework (188 lines)
    - Enhanced AdminService.cs with 10 updated methods
-   - Added FK validation checks (teacher, course existence)
+   - Added FK validation checks (teacher, subject existence)
    - Implemented duplicate checking on update (email, OMANG)
    - Added orphaned resource detection
    - Improved error messages with context
@@ -93,8 +93,8 @@ Updated Methods:
   ✓ CreateStudent - Validate teacher exists
   ✓ UpdateStudent - Check duplicates, validate teacher
   ✓ DeleteStudent - Improved error message
-  ✓ CreateCourse - Added validation
-  ✓ CreateClassGroup - Validate course and teacher exist
+  ✓ CreateSubject - Added validation
+  ✓ CreateClassGroup - Validate subject and teacher exist
   ✓ EnrollStudent - Better error handling
   ✓ UnenrollStudent - Improved error message
 ```
@@ -136,7 +136,7 @@ New Features:
 | 1 | Teacher Deletion Allowed Orphaned Classes | ✅ FIXED |
 | 2 | Student Update Allowed Duplicate Emails | ✅ FIXED |
 | 3 | Student Creation Didn't Validate Teacher | ✅ FIXED |
-| 4 | Class Groups Referenced Non-Existent Courses | ✅ FIXED |
+| 4 | Class Groups Referenced Non-Existent Subjects | ✅ FIXED |
 
 #### 🟠 HIGH (6 Issues Fixed)
 
@@ -203,7 +203,7 @@ New Features:
 
 **Problem:**
 - Complex multi-layer architecture (Angular frontend, C# backend, Entity Framework DB)
-- Multiple entities with relationships (Teacher, Student, Course, ClassGroup, StudentEnrollment, Assignment, etc.)
+- Multiple entities with relationships (Teacher, Student, Subject, ClassGroup, StudentEnrollment, Assignment, etc.)
 - Need to trace data flow across all layers
 - Understanding cascade delete rules and FK constraints
 

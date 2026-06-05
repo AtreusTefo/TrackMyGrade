@@ -1,0 +1,25 @@
+﻿<error errorId="32be771c-2001-463e-8a21-3519f99d1d2e" host="DEV-PC3" type="System.OperationCanceledException" message="The operation was canceled." source="mscorlib" detail="System.OperationCanceledException: The operation was canceled.&#xD;&#xA;   at System.Threading.CancellationToken.ThrowOperationCanceledException()&#xD;&#xA;   at System.Web.Http.Owin.HttpMessageHandlerAdapter.&lt;BufferResponseContentAsync&gt;d__27.MoveNext()&#xD;&#xA;--- End of stack trace from previous location where exception was thrown ---&#xD;&#xA;   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)&#xD;&#xA;   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)&#xD;&#xA;   at System.Web.Http.Owin.HttpMessageHandlerAdapter.&lt;InvokeCore&gt;d__20.MoveNext()&#xD;&#xA;--- End of stack trace from previous location where exception was thrown ---&#xD;&#xA;   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)&#xD;&#xA;   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)&#xD;&#xA;   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()&#xD;&#xA;   at TrackMyGradeAPI.Middleware.SecurityHeadersMiddleware.&lt;Invoke&gt;d__1.MoveNext() in C:\Users\Developer.03\Desktop\TrackMyGrade\TrackMyGradeAPI\Middleware\SecurityHeadersMiddleware.cs:line 28&#xD;&#xA;--- End of stack trace from previous location where exception was thrown ---&#xD;&#xA;   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)&#xD;&#xA;   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)&#xD;&#xA;   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()&#xD;&#xA;   at TrackMyGradeAPI.Middleware.ErrorHandlingMiddleware.&lt;Invoke&gt;d__1.MoveNext() in C:\Users\Developer.03\Desktop\TrackMyGrade\TrackMyGradeAPI\Middleware\ErrorHandlingMiddleware.cs:line 29" time="2026-06-02T09:20:19.5196791Z">
+  <serverVariables>
+    <item name="CONTEXT_UserId">
+      <value string="anonymous" />
+    </item>
+    <item name="CONTEXT_RequestUri">
+      <value string="http://localhost:5000/api/admin/students" />
+    </item>
+    <item name="CONTEXT_Method">
+      <value string="GET" />
+    </item>
+    <item name="CONTEXT_ContentType">
+      <value string="application/json" />
+    </item>
+    <item name="CONTEXT_CustomData">
+      <value string="System.Collections.Generic.Dictionary`2[System.String,System.Object]" />
+    </item>
+    <item name="CONTEXT_Timestamp">
+      <value string="6/2/2026 9:20:19 AM" />
+    </item>
+    <item name="ExceptionChainDepth">
+      <value string="1" />
+    </item>
+  </serverVariables>
+</error>

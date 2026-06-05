@@ -38,7 +38,7 @@ The TrackMyGrade Admin Management system has been fully implemented with three m
 │  │            ApplicationDbContext (EF6)                      │  │
 │  │  ├─ Teachers        ├─ ClassGroups      ├─ AuditLogs      │  │
 │  │  ├─ Students        ├─ Enrollments      └─ Validations    │  │
-│  │  └─ Courses         └─ Assignments                         │  │
+│  │  └─ Subjects         └─ Assignments                         │  │
 │  └────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                     SQL Server LocalDB
@@ -62,7 +62,7 @@ The TrackMyGrade Admin Management system has been fully implemented with three m
 - `POST /api/admin/login` (No Auth) → Returns JWT
 - `GET/POST/DELETE /api/admin/teachers` (Admin Auth)
 - `GET/POST/PUT/DELETE /api/admin/students` (Admin Auth)
-- `GET/POST /api/admin/courses` (Admin Auth)
+- `GET/POST /api/admin/subjects` (Admin Auth)
 - `GET/POST/DELETE /api/admin/class-groups` (Admin Auth)
 - `GET /api/admin/audit-logs` (Admin Auth) - Paginated with filters
 - `GET /api/admin/audit-logs/entity/{type}/{id}` (Admin Auth)
@@ -120,7 +120,7 @@ The TrackMyGrade Admin Management system has been fully implemented with three m
 DbSets:
 ├─ Teachers (5 fields + 3 activation fields)
 ├─ Students (8 fields + 3 activation fields)
-├─ Courses (3 fields)
+├─ Subjects (3 fields)
 ├─ ClassGroups (4 FK fields)
 ├─ StudentEnrollments (2 FK + timestamp)
 ├─ Assignments (7 fields)
@@ -130,7 +130,7 @@ DbSets:
 Constraints:
 ├─ Unique: Email (Teachers, Students)
 ├─ Unique: OmangOrPassport (Students)
-├─ Unique: Code (Courses)
+├─ Unique: Code (Subjects)
 ├─ Unique: (StudentId, ClassGroupId) - Enrollments
 ├─ FK: Student.TeacherId → Teacher.Id (No Cascade)
 ├─ FK: StudentEnrollment.StudentId → Student.Id (Cascade)
@@ -144,7 +144,7 @@ Indexes:
 ├─ IX_Teacher_Email (Unique)
 ├─ IX_Student_Email (Unique)
 ├─ IX_Student_OmangOrPassport (Unique)
-├─ IX_Course_Code (Unique)
+├─ IX_Subject_Code (Unique)
 ├─ IX_StudentEnrollment_StudentId_ClassGroupId (Unique)
 ├─ IX_AuditLog_EntityType_PerformedAt
 └─ IX_AuditLog_PerformedBy_PerformedAt
@@ -169,14 +169,14 @@ Validators:
 │  └─ Grade required, 1-12
 ├─ ValidateUpdateStudent()
 │  └─ Same as CreateStudent
-├─ ValidateCreateCourse()
+├─ ValidateCreateSubject()
 │  ├─ Name required, max 200 chars
 │  ├─ Code required, max 20 chars (unique)
 │  └─ Description optional, max 500 chars
 └─ ValidateCreateClassGroup()
    ├─ Name required, max 100 chars
    ├─ GradeLevel required, 1-12
-   ├─ CourseId required (must exist)
+   ├─ SubjectId required (must exist)
    └─ TeacherId required (must exist)
 ```
 
@@ -190,8 +190,8 @@ Request DTOs:
 ├─ AdminCreateTeacherDto { firstName, lastName, email, phone?, subject? }
 ├─ AdminCreateStudentDto { firstName, lastName, email, phone?, omangOrPassport, grade, teacherId }
 ├─ AdminUpdateStudentDto { firstName, lastName, email, phone?, omangOrPassport, grade, teacherId }
-├─ CreateCourseDto { name, code, description? }
-├─ CreateClassGroupDto { name, gradeLevel, courseId, teacherId }
+├─ CreateSubjectDto { name, code, description? }
+├─ CreateClassGroupDto { name, gradeLevel, subjectId, teacherId }
 ├─ AuditLogFilterDto { entityType?, action?, performedBy?, startDate?, endDate?, pageNumber, pageSize }
 └─ EnrollStudentDto { studentId }
 
@@ -416,7 +416,7 @@ Audit Impact: No audit log created (deletion blocked)
 
 ### Admin Dashboard Component
 - Path: `StudentApp/src/app/components/admin-dashboard/`
-- Tabs: Teachers | Students | Courses | Classes
+- Tabs: Teachers | Students | Subjects | Classes
 - Features:
   - List views with search/filter
   - Create forms with validation
@@ -446,7 +446,7 @@ Audit Impact: No audit log created (deletion blocked)
 - JWT token injection in headers
 - Teachers CRUD
 - Students CRUD
-- Courses CRUD
+- Subjects CRUD
 - ClassGroups CRUD
 - Audit logs queries
 

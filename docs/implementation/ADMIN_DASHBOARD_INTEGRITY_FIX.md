@@ -27,7 +27,7 @@ ISSUES IDENTIFIED
    - Impact: Cascade failures on deletion, orphaned records possible
 
 5. REFERENTIAL INTEGRITY - Class Group Creation
-   - No pre-validation that selected course exists
+   - No pre-validation that selected subject exists
    - No pre-validation that selected teacher exists
    - Impact: Orphaned class groups, referential constraint violations
 
@@ -61,7 +61,7 @@ IMPLEMENTATION - FILES MODIFIED
 
 1. StudentApp/src/app/models/admin.models.ts (NEW)
    - Created typed interfaces for all entities
-   - Interfaces: Teacher, Student, Course, ClassGroup
+   - Interfaces: Teacher, Student, Subject, ClassGroup
    - Request DTOs: CreateTeacherRequest, CreateStudentRequest, etc.
    - Ensures type safety throughout component
 
@@ -73,7 +73,7 @@ IMPLEMENTATION - FILES MODIFIED
    - Added individual error text spans for each field
 
 3. StudentApp/src/app/components/admin-dashboard/admin-dashboard.component.ts
-   - Imported typed models (Teacher, Student, Course, ClassGroup)
+   - Imported typed models (Teacher, Student, Subject, ClassGroup)
    - Changed any[] to typed arrays (Teacher[], Student[], etc.)
    - Updated type annotations for form objects
    - Fixed validatePhone() to accept string | undefined
@@ -81,8 +81,8 @@ IMPLEMENTATION - FILES MODIFIED
    - Enhanced createTeacher() with typed response
    - Enhanced createStudent() with referential integrity check (teacher exists)
    - Enhanced createStudent() to update classGroups on deletion
-   - Enhanced createCourse() with typed response
-   - Enhanced createClassGroup() with dual referential integrity checks (course + teacher)
+   - Enhanced createSubject() with typed response
+   - Enhanced createClassGroup() with dual referential integrity checks (subject + teacher)
    - Enhanced enrollStudent() with:
      * Validation that student ID is valid
      * Local object reference checks
@@ -139,7 +139,7 @@ TESTING RECOMMENDATIONS
 
 1. Test teacher deletion with active classes (should show backend error)
 2. Test student creation with non-existent teacher (should show validation error)
-3. Test class creation with missing course (should show pre-validation error)
+3. Test class creation with missing subject (should show pre-validation error)
 4. Test double-click enroll button (should be prevented)
 5. Test enrollment of already-enrolled student (should show frontend error)
 6. Test student deletion (verify UI cleanup in classGroups)

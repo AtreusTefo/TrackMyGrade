@@ -22,7 +22,7 @@ Invalid email format      → Error: "Invalid email format"
 Invalid phone format      → Error: "Invalid phone format"
 Invalid grades (0-12)     → Error: "Grade must be 1-12"
 Non-existent teachers     → Error: "Teacher not found"
-Non-existent courses      → Error: "Course not found"
+Non-existent subjects      → Error: "Subject not found"
 Teachers with classes     → Error: "Can't delete, has classes"
 Duplicate enrollments     → Error: "Already enrolled"
 Race condition submissions → Prevented by flag + DB index
@@ -105,9 +105,9 @@ All done!
 **Before:** Student enrolled twice (duplicate record)
 **After:** Button disabled during submission, only one enrollment created
 
-### Scenario 5: Admin tries to create class with non-existent course
-**Before:** Class created but broken, references missing course
-**After:** Error shown: "Course with ID 999 not found."
+### Scenario 5: Admin tries to create class with non-existent subject
+**Before:** Class created but broken, references missing subject
+**After:** Error shown: "Subject with ID 999 not found."
 
 ---
 
@@ -164,7 +164,7 @@ Database Constraints (SQL)
 ## Testing Checklist (Must Pass)
 
 - [ ] Create student with non-existent teacher → Error
-- [ ] Create class with non-existent course → Error
+- [ ] Create class with non-existent subject → Error
 - [ ] Delete teacher with active classes → Error
 - [ ] Update student email to duplicate → Error
 - [ ] Enroll same student twice

@@ -36,7 +36,7 @@ All three Admin Management features have been successfully implemented as a prof
 - ✓ `AdminService.cs` - Audit calls integrated
   - Teacher: Create (logged) ✓, Delete (logged) ✓
   - Student: Create (logged) ✓, Update (logged) ✓, Delete (cascade + logged) ✓
-  - Courses: Create (logged) ✓
+  - Subjects: Create (logged) ✓
   - Classes: Create (logged) ✓, Enroll (logged) ✓, Unenroll (logged) ✓
 
 **New API Endpoints**:
@@ -48,7 +48,7 @@ All three Admin Management features have been successfully implemented as a prof
 **Database Schema**:
 - ✓ `AuditLog` table with 8 columns
 - ✓ 2 performance indexes (EntityType+Date, PerformedBy+Date)
-- ✓ Unique constraints on Email, OMANG, CourseCode
+- ✓ Unique constraints on Email, OMANG, SubjectCode
 - ✓ Foreign keys with strategic cascade rules
 
 **Data Integrity Layers**:

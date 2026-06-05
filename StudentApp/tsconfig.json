@@ -4,6 +4,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
+    "moduleResolution": "bundler",
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -14,6 +15,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
     "module": "preserve"
   },
   "angularCompilerOptions": {

@@ -3,6 +3,7 @@ using System.Linq;
 using AutoMapper;
 using TrackMyGradeAPI.Data;
 using TrackMyGradeAPI.DTOs;
+using TrackMyGradeAPI.Infrastructure;
 using TrackMyGradeAPI.Models;
 
 namespace TrackMyGradeAPI.Services

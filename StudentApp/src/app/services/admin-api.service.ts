@@ -7,7 +7,7 @@ export class AdminApiService {
   private apiUrl = 'http://localhost:5000/api/admin';
   private authUrl = 'http://localhost:5000/api/auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // ── Auth header (real JWT Bearer token) ──────────────────────────────
   private getHeaders(): HttpHeaders {
@@ -61,13 +61,17 @@ export class AdminApiService {
     return this.http.delete<any>(`${this.apiUrl}/students/${studentId}`, { headers: this.getHeaders() });
   }
 
-  // ── Courses ───────────────────────────────────────────────────────────
-  getAllCourses(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/courses`, { headers: this.getHeaders() });
+  // ── Subjects ───────────────────────────────────────────────────────────
+  getAllSubjects(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/subjects`, { headers: this.getHeaders() });
   }
 
-  createCourse(data: { name: string; code: string; description?: string }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/courses`, data, { headers: this.getHeaders() });
+  createSubject(data: { name: string; code: string; description?: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/subjects`, data, { headers: this.getHeaders() });
+  }
+
+  deleteSubject(subjectId: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/subjects/${subjectId}`, { headers: this.getHeaders() });
   }
 
   // ── Class Groups ──────────────────────────────────────────────────────
@@ -75,8 +79,12 @@ export class AdminApiService {
     return this.http.get<any[]>(`${this.apiUrl}/class-groups`, { headers: this.getHeaders() });
   }
 
-  createClassGroup(data: { name: string; gradeLevel: number; courseId: number; teacherId: number }): Observable<any> {
+  createClassGroup(data: { name: string; gradeLevel: number; subjectId: number; teacherId: number }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/class-groups`, data, { headers: this.getHeaders() });
+  }
+
+  deleteClassGroup(classGroupId: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/class-groups/${classGroupId}`, { headers: this.getHeaders() });
   }
 
   enrollStudent(classGroupId: number, studentId: number): Observable<any> {

@@ -25,7 +25,7 @@ The admin dashboard frontend was not reflecting the admin dashboard code due to:
 
 3. Referential Integrity Issues
    - Creating students without verifying teacher exists
-   - Creating classes without verifying course/teacher exists
+   - Creating classes without verifying subject/teacher exists
    - No duplicate enrollment prevention at frontend
    - Orphaned records possible on cascade operations
 
@@ -38,7 +38,7 @@ SOLUTIONS IMPLEMENTED
 
 TIER 1: TYPE SAFETY (Foundation)
 File: StudentApp/src/app/models/admin.models.ts (NEW)
-- Created Teacher, Student, Course, ClassGroup interfaces
+- Created Teacher, Student, Subject, ClassGroup interfaces
 - Created CreateTeacherRequest, CreateStudentRequest, etc. DTOs
 - Ensures compile-time type checking
 
@@ -65,14 +65,14 @@ Ensures teacher exists before submission
 
 createClassGroup() Enhancement:
 ```
-const selectedCourse = this.courses.find(c => c.id === this.newClass.courseId);
+const selectedSubject = this.subjects.find(c => c.id === this.newClass.subjectId);
 const selectedTeacher = this.teachers.find(t => t.id === this.newClass.teacherId);
-if (!selectedCourse || !selectedTeacher) {
-  this.showError('Selected course or teacher is no longer available...');
+if (!selectedSubject || !selectedTeacher) {
+  this.showError('Selected subject or teacher is no longer available...');
   return;
 }
 ```
-Dual validation for course and teacher
+Dual validation for subject and teacher
 
 enrollStudent() Enhancement:
 ```
@@ -130,7 +130,7 @@ ARCHITECTURE IMPROVEMENTS
 Before (Anti-Pattern):
 ```
 enrollStudent() -> loadData() -> getAllTeachers() + getAllStudents() + 
-getAllCourses() + getAllClassGroups() = 4 HTTP calls
+getAllSubjects() + getAllClassGroups() = 4 HTTP calls
 ```
 
 After (Optimized):
@@ -192,7 +192,7 @@ Import Resolution: PASSED
 
 Recommended Tests (Manual):
 1. Create student with non-existent teacher
-2. Create class with missing course
+2. Create class with missing subject
 3. Enroll same student twice
 4. Delete student and verify UI cleanup
 5. Network error scenarios

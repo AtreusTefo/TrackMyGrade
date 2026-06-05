@@ -72,7 +72,7 @@ All three major features for Admin Management in TrackMyGrade have been successf
 ### Business Logic Validation
 - Email uniqueness (case-insensitive)
 - OMANG/Passport uniqueness
-- Course code uniqueness
+- Subject code uniqueness
 - Teacher existence verification
 - Enrollment duplicate prevention
 
@@ -111,9 +111,9 @@ All three major features for Admin Management in TrackMyGrade have been successf
 - `PUT /api/admin/students/{id}`
 - `DELETE /api/admin/students/{id}`
 
-### Courses (2)
-- `GET /api/admin/courses`
-- `POST /api/admin/courses`
+### Subjects (2)
+- `GET /api/admin/subjects`
+- `POST /api/admin/subjects`
 
 ### Class Groups (5)
 - `GET /api/admin/class-groups`
@@ -142,7 +142,7 @@ Indexes: (EntityType, PerformedAt), (PerformedBy, PerformedAt)
 - Teacher.Email
 - Student.Email
 - Student.OmangOrPassport
-- Course.Code
+- Subject.Code
 - (StudentId, ClassGroupId)
 
 ### Foreign Keys (Strategic Cascade)

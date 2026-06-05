@@ -18,14 +18,14 @@ namespace TrackMyGradeAPI.Validators
             RuleFor(x => x.FirstName)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("First name is required")
-                .Matches(@"^[a-zA-Z '\-]+$").WithMessage("First name must contain only letters")
-                .Length(2, 50).WithMessage("First name must be 2–50 characters");
+                .Length(2, 100).WithMessage("First name must be 2–100 characters")
+                .Matches(@"^[a-zA-Z\s\-']+$").WithMessage("First name must contain only letters, spaces, hyphens, or apostrophes");
 
             RuleFor(x => x.LastName)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("Last name is required")
-                .Matches(@"^[a-zA-Z '\-]+$").WithMessage("Last name must contain only letters")
-                .Length(2, 50).WithMessage("Last name must be 2–50 characters");
+                .Length(2, 100).WithMessage("Last name must be 2–100 characters")
+                .Matches(@"^[a-zA-Z\s\-']+$").WithMessage("Last name must contain only letters, spaces, hyphens, or apostrophes");
 
             RuleFor(x => x.Email)
                 .Cascade(CascadeMode.Stop)
@@ -33,14 +33,14 @@ namespace TrackMyGradeAPI.Validators
                 .EmailAddress().WithMessage("Email must be a valid email address");
 
             RuleFor(x => x.Phone)
-                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits")
-                .When(x => !string.IsNullOrEmpty(x.Phone));
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Phone is required")
+                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits (Botswana format)");
 
             RuleFor(x => x.OmangOrPassport)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("Omang No. or Passport is required")
-                .Matches(@"^[a-zA-Z0-9]+$").WithMessage("Must contain only letters and digits")
-                .Length(9).WithMessage("Must be exactly 9 characters");
+                .Matches(@"^[a-zA-Z0-9]{9}$").WithMessage("Must be exactly 9 alphanumeric characters (letters and numbers only)");
 
             RuleFor(x => x.Grade)
                 .InclusiveBetween(1, 12).WithMessage("Grade must be between 1 and 12");
@@ -61,19 +61,37 @@ namespace TrackMyGradeAPI.Validators
         public AdminUpdateStudentValidator()
         {
             RuleFor(x => x.FirstName)
-                .NotEmpty().Length(2, 50).WithMessage("First name must be 2–50 characters");
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("First name is required")
+                .Length(2, 100).WithMessage("First name must be 2–100 characters")
+                .Matches(@"^[a-zA-Z\s\-']+$").WithMessage("First name must contain only letters, spaces, hyphens, or apostrophes");
 
             RuleFor(x => x.LastName)
-                .NotEmpty().Length(2, 50).WithMessage("Last name must be 2–50 characters");
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Last name is required")
+                .Length(2, 100).WithMessage("Last name must be 2–100 characters")
+                .Matches(@"^[a-zA-Z\s\-']+$").WithMessage("Last name must contain only letters, spaces, hyphens, or apostrophes");
 
             RuleFor(x => x.Email)
-                .NotEmpty().EmailAddress().WithMessage("Valid email is required");
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Email is required")
+                .EmailAddress().WithMessage("Valid email is required");
+
+            RuleFor(x => x.Phone)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Phone is required")
+                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits (Botswana format)");
 
             RuleFor(x => x.OmangOrPassport)
-                .NotEmpty().Length(9).WithMessage("Must be exactly 9 characters");
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("OMANG or Passport is required")
+                .Matches(@"^[a-zA-Z0-9]{9}$").WithMessage("Must be exactly 9 alphanumeric characters (letters and numbers only)");
 
             RuleFor(x => x.Grade)
                 .InclusiveBetween(1, 12).WithMessage("Grade must be between 1 and 12");
+
+            RuleFor(x => x.TeacherId)
+                .GreaterThan(0).WithMessage("A valid teacher must be selected");
         }
     }
 }

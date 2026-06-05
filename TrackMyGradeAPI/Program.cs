@@ -1,49 +1,28 @@
-using System;
 using Microsoft.Owin.Hosting;
+using System;
+using TrackMyGradeAPI.Data;
 
 namespace TrackMyGradeAPI
 {
-    class Program
+    /// <summary>
+    /// Entry point for the self-hosted OWIN Web API application.
+    /// </summary>
+    public class Program
     {
-        static void Main(string[] args)
+        /// <summary>
+        /// The main method that starts the OWIN host and initializes the database.
+        /// </summary>
+        public static void Main(string[] args)
         {
-            // Resolve |DataDirectory| in connection string to the folder containing the .exe
-            // SQLite will create TrackMyGrade.db here automatically
-            AppDomain.CurrentDomain.SetData("DataDirectory", AppDomain.CurrentDomain.BaseDirectory);
+            // Initialize the database (apply migrations and seed data)
+            ApplicationDbContext.Initialize();
 
-            const string baseUrl = "http://localhost:5000";
+            string baseAddress = "http://localhost:5000/";
 
-            try
+            // Start OWIN host
+            using (WebApp.Start<Startup>(url: baseAddress))
             {
-                using (WebApp.Start<Startup>(baseUrl))
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("=========================================");
-                    Console.WriteLine("  TrackMyGrade API started successfully");
-                    Console.WriteLine($"  Listening on:  {baseUrl}");
-                    Console.WriteLine($"  Database:      {AppDomain.CurrentDomain.BaseDirectory}TrackMyGrade.db");
-                    Console.WriteLine("  Press Enter to stop...");
-                    Console.WriteLine("=========================================");
-                    Console.ResetColor();
-                    Console.ReadLine();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Failed to start API. Full error:");
-                Console.WriteLine(new string('-', 50));
-                Exception current = ex;
-                int depth = 0;
-                while (current != null)
-                {
-                    Console.WriteLine($"{new string(' ', depth * 2)}[{current.GetType().Name}]");
-                    Console.WriteLine($"{new string(' ', depth * 2)}{current.Message}");
-                    current = current.InnerException;
-                    depth++;
-                }
-                Console.WriteLine(new string('-', 50));
-                Console.ResetColor();
+                Console.WriteLine("=========================================\n  TrackMyGrade API started successfully\n  Listening on:  " + baseAddress + "\n=========================================\nPress Enter to stop...");
                 Console.ReadLine();
             }
         }

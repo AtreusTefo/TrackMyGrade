@@ -95,8 +95,8 @@ Angular Component
 ┌─────────────────────────────────────────────────────────────────┐
 │ LAYER 3: REFERENTIAL INTEGRITY (AdminService)                 │
 ├─────────────────────────────────────────────────────────────────┤
-│ ✓ FK existence checks (teacher, course, student)              │
-│ ✓ Duplicate business key checks (email, OMANG, course code)   │
+│ ✓ FK existence checks (teacher, subject, student)              │
+│ ✓ Duplicate business key checks (email, OMANG, subject code)   │
 │ ✓ Orphaned resource checks (before delete)                    │
 │ ✓ Case-insensitive normalization                              │
 │ Purpose: Prevent invalid relationships                         │
@@ -105,7 +105,7 @@ Angular Component
 ┌─────────────────────────────────────────────────────────────────┐
 │ LAYER 4: DATABASE CONSTRAINTS (Entity Framework + SQL)         │
 ├─────────────────────────────────────────────────────────────────┤
-│ ✓ Unique indexes (email, OMANG, course code)                  │
+│ ✓ Unique indexes (email, OMANG, subject code)                  │
 │ ✓ Foreign key constraints                                     │
 │ ✓ Unique composite indexes (StudentEnrollment, Submissions)   │
 │ ✓ NOT NULL constraints                                        │
@@ -346,14 +346,14 @@ AdminService.DeleteStudent(42)
 Result: ✅ Clean removal, no orphans
 ```
 
-### When Course is Deleted
+### When Subject is Deleted
 
 ```
-DELETE /api/admin/courses/10
+DELETE /api/admin/subjects/10
   ↓
 NO DELETE endpoint in Admin!
 
-(Would need: PUT /api/admin/courses/{id}/reassign)
+(Would need: PUT /api/admin/subjects/{id}/reassign)
 ```
 
 ---
@@ -364,8 +364,8 @@ NO DELETE endpoint in Admin!
 |-----------|--------|-------|-------|
 | Create teacher | Dup email check | Dup email check + format + length | Validator |
 | Create student | Dup email + OMANG check | ✓ + Teacher FK check + format + grade | Service |
-| Create course | Dup code check | ✓ + format + length | Validator |
-| Create class | Course/Teacher exist check | ✓ + more validation | Service |
+| Create subject | Dup code check | ✓ + format + length | Validator |
+| Create class | Subject/Teacher exist check | ✓ + more validation | Service |
 | Update student | Dup checks on create only | ✓ + Dup checks on update | Service |
 | Delete teacher | No checks | ✓ Check for orphaned classes | Service |
 | Enroll student | Dup check only | ✓ + FK checks + better error | Service |
@@ -384,7 +384,7 @@ Invalid phone     │   ✓    │     ✓     │         │          │
 Invalid grade     │   ✓    │     ✓     │         │          │
 Dup email         │        │     ✓     │    ✓    │    ✓     │
 Dup OMANG         │        │     ✓     │    ✓    │    ✓     │
-Dup course code   │        │     ✓     │    ✓    │    ✓     │
+Dup subject code   │        │     ✓     │    ✓    │    ✓     │
 Invalid FK        │        │           │    ✓    │    ✓     │
 Orphaned records  │        │           │    ✓    │    ✓     │
 Dup enrollment    │        │           │    ✓    │    ✓     │

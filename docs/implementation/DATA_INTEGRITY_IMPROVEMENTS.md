@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document outlines comprehensive improvements made to the TrackMyGrade application to ensure data integrity, referential integrity, and data consistency across all admin operations (managing teachers, students, courses, and class groups).
+This document outlines comprehensive improvements made to the TrackMyGrade application to ensure data integrity, referential integrity, and data consistency across all admin operations (managing teachers, students, subjects, and class groups).
 
 ---
 
@@ -28,13 +28,13 @@ This document outlines comprehensive improvements made to the TrackMyGrade appli
 - ✅ File: `TrackMyGradeAPI\Application\Validators\AdminValidator.cs` - `ValidateCreateStudent()`
 - ✅ File: `TrackMyGradeAPI\Application\Services\AdminService.cs` - `CreateStudent()`
 
-#### Issue 1.3: Invalid Course ID in ClassGroup Creation
+#### Issue 1.3: Invalid Subject ID in ClassGroup Creation
 **Severity:** HIGH
-**Before:** ClassGroups could be created with non-existent course IDs
+**Before:** ClassGroups could be created with non-existent subject IDs
 **After:**
-- ✅ Validator validates courseId > 0
-- ✅ Service checks course exists before creation
-- ✅ Throws KeyNotFoundException if course not found
+- ✅ Validator validates subjectId > 0
+- ✅ Service checks subject exists before creation
+- ✅ Throws KeyNotFoundException if subject not found
 - ✅ File: `TrackMyGradeAPI\Application\Services\AdminService.cs` - `CreateClassGroup()`
 
 #### Issue 1.4: Invalid Teacher ID in ClassGroup Creation
@@ -120,7 +120,7 @@ This document outlines comprehensive improvements made to the TrackMyGrade appli
 **Severity:** 🟠 HIGH
 **Before:** Validation errors were not shown per-field
 **After:**
-- ✅ Added error objects for each form (teacherErrors, studentErrors, courseErrors, classErrors)
+- ✅ Added error objects for each form (teacherErrors, studentErrors, subjectErrors, classErrors)
 - ✅ Errors displayed inline per-field
 - ✅ Errors cleared when form is reset
 - ✅ File: `StudentApp\src\app\components\admin-dashboard\admin-dashboard.component.ts`
@@ -190,7 +190,7 @@ This document outlines comprehensive improvements made to the TrackMyGrade appli
   - `ValidateCreateTeacher()`
   - `ValidateCreateStudent()`
   - `ValidateUpdateStudent()`
-  - `ValidateCreateCourse()`
+  - `ValidateCreateSubject()`
   - `ValidateCreateClassGroup()`
 
 #### 2. Enhanced AdminService
@@ -222,7 +222,7 @@ This document outlines comprehensive improvements made to the TrackMyGrade appli
 - Form-specific validators:
   - `validateTeacherForm()`
   - `validateStudentForm()`
-  - `validateCourseForm()`
+  - `validateSubjectForm()`
   - `validateClassForm()`
 - Enhanced delete methods with better confirmations
 - Better error display and auto-clearing
@@ -239,7 +239,7 @@ The `ApplicationDbContext` already includes:
 - ✅ Cascade delete: Assignment when ClassGroup is deleted
 - ✅ NO cascade delete on FK to prevent orphaning:
   - Student.TeacherId (WillCascadeOnDelete: false)
-  - ClassGroup.CourseId (WillCascadeOnDelete: false)
+  - ClassGroup.SubjectId (WillCascadeOnDelete: false)
   - ClassGroup.TeacherId (WillCascadeOnDelete: false)
 
 ---
@@ -258,7 +258,7 @@ The `ApplicationDbContext` already includes:
 // AdminService tests
 - CreateTeacher_DuplicateEmail_ThrowsException()
 - CreateStudent_NonexistentTeacher_ThrowsException()
-- CreateClassGroup_NonexistentCourse_ThrowsException()
+- CreateClassGroup_NonexistentSubject_ThrowsException()
 - DeleteTeacher_WithActiveClasses_ThrowsException()
 - UpdateStudent_DuplicateEmail_ThrowsException()
 ```
@@ -279,7 +279,7 @@ The `ApplicationDbContext` already includes:
 - [ ] Create student with non-existent teacher → Error
 - [ ] Create student with invalid email → Error (frontend)
 - [ ] Create student with invalid grade (0 or 13) → Error
-- [ ] Create class group with non-existent course → Error
+- [ ] Create class group with non-existent subject → Error
 - [ ] Enroll same student twice in same class → Error
 - [ ] Delete teacher with active classes → Error
 - [ ] Update student email to existing email → Error
@@ -329,8 +329,8 @@ All changes are additive with better validation; no data loss.
 These improvements ensure:
 - ✅ **Data Integrity:** Valid, consistent data in database
 - ✅ **Referential Integrity:** No orphaned records
-- ✅ **Data Consistency:** No duplicate emails, OMANGs, or course codes
-- ✅ **Admin Isolation:** Admins manage users/courses/classes only, not assignments
+- ✅ **Data Consistency:** No duplicate emails, OMANGs, or subject codes
+- ✅ **Admin Isolation:** Admins manage users/subjects/classes only, not assignments
 - ✅ **User Experience:** Clear error messages and validation feedback
 - ✅ **Error Handling:** Appropriate HTTP status codes and messages
 

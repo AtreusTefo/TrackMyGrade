@@ -5,12 +5,13 @@ using AutoMapper;
 using BCrypt.Net;
 using TrackMyGradeAPI.Data;
 using TrackMyGradeAPI.DTOs;
+using TrackMyGradeAPI.Infrastructure;
 using TrackMyGradeAPI.Models;
 using TrackMyGradeAPI.Validators;
 
 namespace TrackMyGradeAPI.Services
 {
-    /// <summary>Service interface for administrative operations: teachers, students, courses, and class groups.</summary>
+    /// <summary>Service interface for administrative operations: teachers, students, subjects, and class groups.</summary>
     public interface IAdminService
     {
         /// <summary>Authenticates an admin user and returns a JWT token.</summary>
@@ -45,13 +46,16 @@ namespace TrackMyGradeAPI.Services
         /// <param name="id">The student ID to delete.</param>
         void                   DeleteStudent(int id);
 
-        /// <summary>Gets all courses.</summary>
-        /// <returns>A list of all course DTOs.</returns>
-        List<CourseDto>        GetAllCourses();
-        /// <summary>Creates a new course.</summary>
-        /// <param name="request">The course creation request.</param>
-        /// <returns>The created course DTO.</returns>
-        CourseDto              CreateCourse(CreateCourseDto request);
+        /// <summary>Gets all subjects.</summary>
+        /// <returns>A list of all subject DTOs.</returns>
+        List<SubjectDto>        GetAllSubjects();
+        /// <summary>Creates a new subject.</summary>
+        /// <param name="request">The subject creation request.</param>
+        /// <returns>The created subject DTO.</returns>
+        SubjectDto              CreateSubject(CreateSubjectDto request);
+        /// <summary>Deletes a subject.</summary>
+        /// <param name="id">The subject ID to delete.</param>
+        void                    DeleteSubject(int id);
 
         /// <summary>Gets all class groups.</summary>
         /// <returns>A list of all class group DTOs.</returns>
@@ -60,6 +64,9 @@ namespace TrackMyGradeAPI.Services
         /// <param name="request">The class group creation request.</param>
         /// <returns>The created class group DTO.</returns>
         ClassGroupDto          CreateClassGroup(CreateClassGroupDto request);
+        /// <summary>Deletes a class group.</summary>
+        /// <param name="id">The class group ID to delete.</param>
+        void                   DeleteClassGroup(int id);
         /// <summary>Enrolls a student in a class group.</summary>
         /// <param name="classGroupId">The class group ID.</param>
         /// <param name="studentId">The student ID to enroll.</param>
@@ -258,7 +265,7 @@ namespace TrackMyGradeAPI.Services
         // ── Students ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// Retrieves a list of all students in the system.
+        /// Retrieves a list of all students in the system (excludes soft-deleted records).
         /// </summary>
         /// <returns>List of student DTOs.</returns>
         public List<AdminStudentDto> GetAllStudents()
@@ -408,61 +415,83 @@ namespace TrackMyGradeAPI.Services
             _auditLogService.LogDelete("Student", id, studentSnapshot, "admin@trackmygrade.com");
         }
 
-        // ── Courses ───────────────────────────────────────────────────────
+        // ── Subjects ───────────────────────────────────────────────────────
 
         /// <summary>
-        /// Retrieves a list of all courses in the system.
+        /// Retrieves a list of all subjects in the system (excludes soft-deleted records).
         /// </summary>
-        /// <returns>List of course DTOs.</returns>
-        public List<CourseDto> GetAllCourses()
+        /// <returns>List of subject DTOs.</returns>
+        public List<SubjectDto> GetAllSubjects()
         {
-            return _db.Courses
-                .Select(c => new CourseDto { Id = c.Id, Name = c.Name, Code = c.Code, Description = c.Description })
+            return _db.Subjects
+                .Where(s => !s.IsDeleted)
+                .Select(c => new SubjectDto { Id = c.Id, Name = c.Name, Code = c.Code, Description = c.Description })
                 .ToList();
         }
 
         /// <summary>
-        /// Creates a new course in the system.
+        /// Creates a new subject in the system.
         /// </summary>
-        /// <param name="request">The course creation DTO.</param>
-        /// <returns>The created course DTO.</returns>
-        public CourseDto CreateCourse(CreateCourseDto request)
+        /// <param name="request">The subject creation DTO.</param>
+        /// <returns>The created subject DTO.</returns>
+        public SubjectDto CreateSubject(CreateSubjectDto request)
         {
             // ── Validate input ─────────────────────────────────────────────
-            AdminValidator.ValidateCreateCourse(request);
+            AdminValidator.ValidateCreateSubject(request);
 
-            // ── Check for duplicate course code (case-insensitive) ─────────
+            // ── Check for duplicate subject code (case-insensitive) ─────────
             string normalizedCode = request.Code.Trim().ToUpper();
-            if (_db.Courses.Any(c => c.Code == normalizedCode))
-                throw new InvalidOperationException("A course with this code already exists.");
+            if (_db.Subjects.Any(c => c.Code == normalizedCode))
+                throw new InvalidOperationException("A subject with this code already exists.");
 
-            var course = new Course
+            var subject = new Subject
             {
                 Name = request.Name.Trim(),
                 Code = normalizedCode,
                 Description = request.Description?.Trim()
             };
-            _db.Courses.Add(course);
+            _db.Subjects.Add(subject);
             _db.SaveChanges();
 
-            _auditLogService.LogCreate("Course", course.Id, new { course.Name, course.Code, course.Description }, "admin@trackmygrade.com");
+            _auditLogService.LogCreate("Subject", subject.Id, new { subject.Name, subject.Code, subject.Description }, "admin@trackmygrade.com");
 
-            return new CourseDto { Id = course.Id, Name = course.Name, Code = course.Code, Description = course.Description };
+            return new SubjectDto { Id = subject.Id, Name = subject.Name, Code = subject.Code, Description = subject.Description };
+        }
+
+        /// <summary>
+        /// Deletes a subject. Only succeeds if subject has no assigned classes.
+        /// </summary>
+        /// <param name="id">The ID of the subject to delete.</param>
+        public void DeleteSubject(int id)
+        {
+            var subject = _db.Subjects.Find(id);
+            if (subject == null) throw new KeyNotFoundException($"Subject with ID {id} not found.");
+
+            var classGroupCount = _db.ClassGroups.Count(cg => cg.SubjectId == id);
+            if (classGroupCount > 0)
+                throw new InvalidOperationException($"Cannot delete subject: {classGroupCount} class group(s) are assigned to it.");
+
+            var subjectSnapshot = new { subject.Name, subject.Code, subject.Description };
+            _db.Subjects.Remove(subject);
+            _db.SaveChanges();
+
+            _auditLogService.LogDelete("Subject", id, subjectSnapshot, "admin@trackmygrade.com");
         }
 
         // ── Class Groups ──────────────────────────────────────────────────
 
         /// <summary>
-        /// Retrieves a list of all class groups in the system.
+        /// Retrieves a list of all class groups in the system (excludes soft-deleted records).
         /// </summary>
         /// <returns>List of class group DTOs.</returns>
         public List<ClassGroupDto> GetAllClassGroups()
         {
             return _db.ClassGroups
+                .Where(cg => !cg.IsDeleted)
                 .Select(cg => new ClassGroupDto
                 {
                     Id = cg.Id, Name = cg.Name, GradeLevel = cg.GradeLevel,
-                    CourseId = cg.CourseId, CourseName = cg.Course.Name,
+                    SubjectId = cg.SubjectId, SubjectName = cg.Subject.Name,
                     TeacherId = cg.TeacherId,
                     TeacherName = cg.Teacher.FirstName + " " + cg.Teacher.LastName
                 }).ToList();
@@ -470,6 +499,7 @@ namespace TrackMyGradeAPI.Services
 
         /// <summary>
         /// Creates a new class group with the provided information.
+        /// Validates FK references (SubjectId, TeacherId) exist before creating.
         /// </summary>
         /// <param name="request">The class group creation DTO.</param>
         /// <returns>The created class group DTO.</returns>
@@ -478,12 +508,12 @@ namespace TrackMyGradeAPI.Services
             // ── Validate input ─────────────────────────────────────────────
             AdminValidator.ValidateCreateClassGroup(request);
 
-            // ── Verify course exists (referential integrity) ────────────────
-            var course = _db.Courses.Find(request.CourseId);
-            if (course == null)
-                throw new KeyNotFoundException($"Course with ID {request.CourseId} not found.");
+            // ── FK: Verify subject exists and is not soft-deleted ──────────
+            var subject = _db.Subjects.Find(request.SubjectId);
+            if (subject == null || subject.IsDeleted)
+                throw new KeyNotFoundException($"Subject with ID {request.SubjectId} not found or has been deleted.");
 
-            // ── Verify teacher exists (referential integrity) ───────────────
+            // ── FK: Verify teacher exists ──────────────────────────────────
             var teacher = _db.Teachers.Find(request.TeacherId);
             if (teacher == null)
                 throw new KeyNotFoundException($"Teacher with ID {request.TeacherId} not found.");
@@ -492,61 +522,107 @@ namespace TrackMyGradeAPI.Services
             {
                 Name = request.Name.Trim(),
                 GradeLevel = request.GradeLevel,
-                CourseId = request.CourseId,
-                TeacherId = request.TeacherId
+                SubjectId = request.SubjectId,
+                TeacherId = request.TeacherId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
             _db.ClassGroups.Add(group);
             _db.SaveChanges();
 
             _auditLogService.LogCreate("ClassGroup", group.Id, 
-                new { group.Name, group.GradeLevel, group.CourseId, group.TeacherId }, 
+                new { group.Name, group.GradeLevel, group.SubjectId, group.TeacherId }, 
                 "admin@trackmygrade.com");
 
             return new ClassGroupDto
             {
                 Id = group.Id, Name = group.Name, GradeLevel = group.GradeLevel,
-                CourseId = group.CourseId, CourseName = course.Name,
+                SubjectId = group.SubjectId, SubjectName = subject.Name,
                 TeacherId = group.TeacherId, TeacherName = $"{teacher.FirstName} {teacher.LastName}"
             };
         }
 
         /// <summary>
+        /// Deletes a class group. Only succeeds if no active enrollments or assignments exist.
+        /// </summary>
+        /// <param name="id">The ID of the class group to delete.</param>
+        public void DeleteClassGroup(int id)
+        {
+            var classGroup = _db.ClassGroups.Find(id);
+            if (classGroup == null) throw new KeyNotFoundException($"Class group with ID {id} not found.");
+
+            // Enrollments
+            var enrollmentCount = _db.StudentEnrollments.Count(e => e.ClassGroupId == id);
+            if (enrollmentCount > 0)
+                throw new InvalidOperationException($"Cannot delete class group: {enrollmentCount} student(s) are enrolled.");
+
+            // Assignments
+            var assignmentCount = _db.Assignments.Count(a => a.ClassGroupId == id);
+            if (assignmentCount > 0)
+                throw new InvalidOperationException($"Cannot delete class group: {assignmentCount} assignment(s) are associated.");
+
+            var classSnapshot = new { classGroup.Name, classGroup.GradeLevel, classGroup.SubjectId, classGroup.TeacherId };
+            _db.ClassGroups.Remove(classGroup);
+            _db.SaveChanges();
+
+            _auditLogService.LogDelete("ClassGroup", id, classSnapshot, "admin@trackmygrade.com");
+        }
+
+        /// <summary>
         /// Enrolls a student into a class group.
+        /// Validates FK references (ClassGroupId, StudentId) exist before enrollment.
+        /// Uses transaction to ensure atomicity: enrollment creation and audit logging must succeed together or rollback.
         /// </summary>
         /// <param name="classGroupId">The ID of the class group.</param>
         /// <param name="studentId">The ID of the student to enroll.</param>
         /// <returns>The class group DTO after enrollment.</returns>
         public ClassGroupDto EnrollStudent(int classGroupId, int studentId)
         {
-            // ── Verify class group exists ──────────────────────────────────
+            // ── FK: Verify class group exists and is not soft-deleted ──────
             var classGroup = _db.ClassGroups.Find(classGroupId);
-            if (classGroup == null)
-                throw new KeyNotFoundException($"Class group with ID {classGroupId} not found.");
+            if (classGroup == null || classGroup.IsDeleted)
+                throw new KeyNotFoundException($"Class group with ID {classGroupId} not found or has been deleted.");
 
-            // ── Verify student exists ──────────────────────────────────────
+            // ── FK: Verify student exists ──────────────────────────────────
             var student = _db.Students.Find(studentId);
             if (student == null)
                 throw new KeyNotFoundException($"Student with ID {studentId} not found.");
 
-            // ── Check if already enrolled (prevent duplicates) ──────────────
-            if (_db.StudentEnrollments.Any(e => e.ClassGroupId == classGroupId && e.StudentId == studentId))
+            // ── Business Logic: Check if already enrolled (prevent duplicates) ──
+            if (_db.StudentEnrollments.Any(e => e.ClassGroupId == classGroupId && e.StudentId == studentId && !e.IsDeleted))
                 throw new InvalidOperationException($"Student {studentId} is already enrolled in class group {classGroupId}.");
 
-            // ── Create enrollment ──────────────────────────────────────────
-            var enrollment = new StudentEnrollment
+            // ── Transaction: Wrap enrollment and audit logging for atomicity ──
+            using (var transaction = _db.Database.BeginTransaction())
             {
-                StudentId = studentId,
-                ClassGroupId = classGroupId,
-                EnrolledAt = DateTime.UtcNow
-            };
-            _db.StudentEnrollments.Add(enrollment);
-            _db.SaveChanges();
+                try
+                {
+                    // Create enrollment
+                    var enrollment = new StudentEnrollment
+                    {
+                        StudentId = studentId,
+                        ClassGroupId = classGroupId,
+                        EnrolledAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    _db.StudentEnrollments.Add(enrollment);
+                    _db.SaveChanges();
 
-            _auditLogService.LogCreate("StudentEnrollment", enrollment.Id, 
-                new { enrollment.StudentId, enrollment.ClassGroupId }, 
-                "admin@trackmygrade.com");
+                    // Log enrollment creation before commit (captures intent)
+                    _auditLogService.LogCreate("StudentEnrollment", enrollment.Id, 
+                        new { enrollment.StudentId, enrollment.ClassGroupId }, 
+                        "admin@trackmygrade.com");
 
-            return GetAllClassGroups().First(cg => cg.Id == classGroupId);
+                    transaction.Commit();
+
+                    return GetAllClassGroups().First(cg => cg.Id == classGroupId);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new InvalidOperationException("Failed to enroll student. Transaction rolled back.", ex);
+                }
+            }
         }
 
         /// <summary>

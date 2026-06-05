@@ -13,6 +13,52 @@
 - **For Gemini/GPT:** Be extremely concise. Avoid conversational filler.
 - **General:** If logic is ambiguous, explicitly state the ambiguity and request clarification from the user in a concise format. Reference ARCHITECTURE.md before suggesting structural changes.
 
+## Error Resolution Procedure
+### When an Error Occurs or Needs Fixing:
+1. **Check Existing Documentation FIRST**
+   - Search `docs/error-fixes/` for the error message, error code, or related keywords
+   - Check `docs/daily-reports/` for recent issues and resolutions
+   - Check `docs/implementation/` for known issues and completed fixes
+   - Use grep/semantic search to find if this error has been documented before
+
+2. **Identify If Already Documented**
+   - If error documentation exists, review the root cause and solution
+   - If a fix was already applied, verify it was implemented correctly
+   - If multiple solutions exist, choose the most recent or recommended one
+
+3. **Apply Documented Solution**
+   - Follow the exact steps outlined in the existing error documentation
+   - Reference the documented fix in your response to the user
+   - Link to the existing error documentation file
+
+4. **If Error Not Documented**
+   - Proceed with analysis and implementation
+   - Create comprehensive error documentation in `docs/error-fixes/` 
+   - Include root cause, solution, testing steps, and troubleshooting guide
+   - Reference this file for future occurrences
+
+5. **If Documented Solution Doesn't Work**
+   - Test the documented solution thoroughly to verify it truly doesn't resolve the issue
+   - Analyze why the documented fix failed (environment differences, code changes, etc.)
+   - Implement a new solution using root cause analysis
+   - Update the original error documentation file with:
+     - **New Section:** "Why Previous Solution Failed" - Explain the reason
+     - **Revised Solution:** Replace old fix with new, tested fix
+     - **Updated Testing Steps:** Reflect the new solution validation
+     - **Version Note:** Add timestamp "Updated: [DATE]" at top of document
+     - **Related Issues:** Link any new error files if multiple fixes discovered
+   - Document both solutions if both are valid for different scenarios
+   - Alert the user that documentation has been revised
+
+### Error Documentation Template
+When creating new error fix documentation:
+- **Issue Title:** Clear, searchable error description
+- **Root Cause:** Technical explanation of why error occurred
+- **Fix Applied:** Exact changes made (file paths, line numbers, code)
+- **Testing Steps:** How to verify the fix works
+- **Troubleshooting:** Additional diagnostics if error persists
+- **Related Files:** All files affected by the fix
+
 ## Documentation Standards
 - **Style:** Professional, technical, and objective. 
 - **Format:** Use standard Markdown (headings, tables, lists).
@@ -46,14 +92,15 @@
 
 ## Environment Commands
 - **Build API:** `cd TrackMyGradeAPI && msbuild TrackMyGradeAPI.csproj`
-- **Run API:** `cd TrackMyGradeAPI && .\bin\TrackMyGradeAPI.exe`
+- **Restore NuGet Packages:** `cd TrackMyGradeAPI; msbuild TrackMyGradeAPI.csproj /t:Restore`
+- **Run API:** `cd TrackMyGradeAPI; .\bin\TrackMyGradeAPI.exe`
+- **Install npm dependencies:** `cd StudentApp && npm install`
 - **Build Angular:** `cd StudentApp && npm run build`
 - **Run Angular:** `cd StudentApp && npm start`
 
 ## Data Integrity, Referential Integrity & Consistency Standards
 
 ### Frontend Layer (Angular 18) - Input Validation & Sanitization
-
 1. **Input Validation (Client-Side)**
    - Use reactive forms with validators matching backend FluentValidation rules exactly.
    - Validate input types, lengths, formats, and ranges before API submission.
@@ -71,7 +118,6 @@
    - Always expect backend to reject invalid data independently.
 
 ### Backend Layer (C# / ASP.NET) - Request Processing & Business Logic
-
 4. **Service Layer Input Validation**
    - Validate ALL incoming DTOs using FluentValidation validators in Service layer before processing.
    - Return `400 Bad Request` with detailed validation error messages on failure.
@@ -105,14 +151,13 @@
    - Include user context in logs for compliance and debugging.
 
 ### Database Layer (SQL Server / EF6) - Schema Constraints & Referential Integrity
-
 10. **Column Constraints**
     - Define NOT NULL constraints on required columns; use `[Required]` data annotation in entities.
     - Set appropriate SQL Server column types: `varchar(255)` for Email, `int` for StudentId, `datetime2` for timestamps.
     - Use check constraints for valid ranges: `[Range(0, 100)]` for GradeValue, `[Range(0.0, 4.0)]` for GPA.
 
 11. **Uniqueness Constraints**
-    - Enforce unique constraints on Email, UserName, CourseCode using `[Index(IsUnique = true)]` data annotation.
+    - Enforce unique constraints on Email, UserName, SubjectCode using `[Index(IsUnique = true)]` data annotation.
     - Prevent duplicate enrollments: Add composite unique constraint on StudentId + ClassGroupId.
     - Duplicates detected at database level; backend returns `409 Conflict` on violation.
 
@@ -153,7 +198,6 @@
     - All three layers enforce same rules independently.
 
 ### Testing Requirements
-
 18. **Comprehensive Test Coverage**
     - Frontend: Validation rejects invalid inputs; submit button disabled until form valid.
     - Backend: Invalid DTOs rejected with `400 Bad Request`; FK constraints prevent orphans.

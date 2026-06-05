@@ -166,11 +166,11 @@ public class AdminServiceTests
     public void DeleteTeacher_WithActiveClasses_ThrowsException()
     {
         var teacher = new Teacher { FirstName = "John", LastName = "Smith", Email = "john@school.com" };
-        var course = new Course { Name = "Math", Code = "MATH-101" };
-        var classGroup = new ClassGroup { Name = "10A", GradeLevel = 10, Course = course, Teacher = teacher };
+        var subject = new Subject { Name = "Math", Code = "MATH-101" };
+        var classGroup = new ClassGroup { Name = "10A", GradeLevel = 10, Subject = subject, Teacher = teacher };
 
         _db.Teachers.Add(teacher);
-        _db.Courses.Add(course);
+        _db.Subjects.Add(subject);
         _db.ClassGroups.Add(classGroup);
         _db.SaveChanges();
 
@@ -233,11 +233,11 @@ public class AdminServiceTests
             TeacherId = 1 
         };
         var teacher = new Teacher { FirstName = "John", LastName = "Smith", Email = "john@school.com" };
-        var course = new Course { Name = "Math", Code = "MATH-101" };
-        var classGroup = new ClassGroup { Name = "10A", GradeLevel = 10, Course = course, Teacher = teacher };
+        var subject = new Subject { Name = "Math", Code = "MATH-101" };
+        var classGroup = new ClassGroup { Name = "10A", GradeLevel = 10, Subject = subject, Teacher = teacher };
 
         _db.Teachers.Add(teacher);
-        _db.Courses.Add(course);
+        _db.Subjects.Add(subject);
         _db.ClassGroups.Add(classGroup);
         _db.Students.Add(student);
         _db.SaveChanges();
@@ -272,20 +272,20 @@ public void StudentLifecycle_CreateEnrollDeleteCascades()
     Assert.IsNotNull(teacher);
     Assert.IsTrue(teacher.Id > 0);
 
-    // 2. Create course
-    var course = _adminService.CreateCourse(new CreateCourseDto 
+    // 2. Create subject
+    var subject = _adminService.CreateSubject(new CreateSubjectDto 
     { 
         Name = "Mathematics Grade 10", 
         Code = "MATH-10" 
     });
-    Assert.IsNotNull(course);
+    Assert.IsNotNull(subject);
 
     // 3. Create class group
     var classGroup = _adminService.CreateClassGroup(new CreateClassGroupDto 
     { 
         Name = "10A", 
         GradeLevel = 10, 
-        CourseId = course.Id, 
+        SubjectId = subject.Id, 
         TeacherId = teacher.Id 
     });
     Assert.IsNotNull(classGroup);
@@ -346,17 +346,17 @@ public void StudentLifecycle_CreateEnrollDeleteCascades()
 - [ ] Delete student with enrollments → Enrollments deleted automatically
 - [ ] Delete student with submissions → Submissions deleted automatically
 
-### Course Management
+### Subject Management
 
-- [ ] Create course with valid data → Success
-- [ ] Create course with duplicate code (case-insensitive) → Error: "A course with this code already exists."
-- [ ] Create course with name > 200 chars → Error: "Course name cannot exceed 200 characters."
-- [ ] Create course with code > 20 chars → Error: "Course code cannot exceed 20 characters."
+- [ ] Create subject with valid data → Success
+- [ ] Create subject with duplicate code (case-insensitive) → Error: "A subject with this code already exists."
+- [ ] Create subject with name > 200 chars → Error: "Subject name cannot exceed 200 characters."
+- [ ] Create subject with code > 20 chars → Error: "Subject code cannot exceed 20 characters."
 
 ### Class Group Management
 
 - [ ] Create class with valid data → Success
-- [ ] Create class with non-existent course → Error: "Course with ID X not found."
+- [ ] Create class with non-existent subject → Error: "Subject with ID X not found."
 - [ ] Create class with non-existent teacher → Error: "Teacher with ID X not found."
 - [ ] Create class with grade level < 1 → Error: "Grade level must be between 1 and 12."
 - [ ] Create class with grade level > 12 → Error: "Grade level must be between 1 and 12."
@@ -402,7 +402,7 @@ public void StudentLifecycle_CreateEnrollDeleteCascades()
   - [ ] Emails trimmed and lowercased
   - [ ] Names trimmed
   - [ ] OMANG trimmed
-  - [ ] Course code trimmed and uppercased
+  - [ ] Subject code trimmed and uppercased
 
 ---
 
@@ -487,11 +487,11 @@ public void DeleteTeacher_WithActiveClasses_Returns400BadRequest()
 {
     // Setup: teacher with class
     var teacher = _adminService.CreateTeacher(...);
-    var course = _adminService.CreateCourse(...);
+    var subject = _adminService.CreateSubject(...);
     _adminService.CreateClassGroup(new CreateClassGroupDto 
     { 
         TeacherId = teacher.Id, 
-        CourseId = course.Id 
+        SubjectId = subject.Id 
     });
 
     var response = _controller.DeleteTeacher(teacher.Id);
@@ -518,7 +518,7 @@ public class RegressionTests
 
     // All relationships intact
     [TestMethod] public void StudentTeacherRelationship_StillWorks() { }
-    [TestMethod] public void ClassGroupCourseRelationship_StillWorks() { }
+    [TestMethod] public void ClassGroupSubjectRelationship_StillWorks() { }
     [TestMethod] public void ClassGroupTeacherRelationship_StillWorks() { }
 
     // Cascade deletes still work

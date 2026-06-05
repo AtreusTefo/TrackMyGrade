@@ -156,35 +156,47 @@ namespace TrackMyGradeAPI.Controllers
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
         }
 
-        // ── Courses
+        // ── Subjects
 
-        // GET: api/admin/courses
+        // GET: api/admin/subjects
         /// <summary>
-        /// Retrieves a list of all courses in the system.
+        /// Retrieves a list of all subjects in the system.
         /// </summary>
-        /// <returns>List of course DTOs.</returns>
-        [HttpGet, Route("courses")]
+        /// <returns>List of subject DTOs.</returns>
+        [HttpGet, Route("subjects")]
         [TokenAuthorize("Admin")]
-        [ResponseType(typeof(System.Collections.Generic.List<CourseDto>))]
-        public IHttpActionResult GetCourses()
+        [ResponseType(typeof(System.Collections.Generic.List<SubjectDto>))]
+        public IHttpActionResult GetSubjects()
         {
-            try { return Ok(_adminService.GetAllCourses()); }
+            try { return Ok(_adminService.GetAllSubjects()); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return BadRequest(ex.Message); }
         }
 
-        // POST: api/admin/courses
+        // POST: api/admin/subjects
         /// <summary>
-        /// Creates a new course in the system.
+        /// Creates a new subject in the system.
         /// </summary>
-        /// <param name="request">The course creation DTO.</param>
-        /// <returns>The created course DTO.</returns>
-        [HttpPost, Route("courses")]
+        /// <param name="request">The subject creation DTO.</param>
+        /// <returns>The created subject DTO.</returns>
+        [HttpPost, Route("subjects")]
         [TokenAuthorize("Admin")]
-        [ResponseType(typeof(CourseDto))]
-        public IHttpActionResult CreateCourse([FromBody] CreateCourseDto request)
+        [ResponseType(typeof(SubjectDto))]
+        public IHttpActionResult CreateSubject([FromBody] CreateSubjectDto request)
         {
-            try { return Created("", _adminService.CreateCourse(request)); }
+            try { return Created("", _adminService.CreateSubject(request)); }
             catch (ArgumentException ex) { return BadRequest(ex.Message); }
+            catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+            catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
+        }
+
+        // DELETE: api/admin/subjects/{id}
+        /// <summary>Deletes a subject.</summary>
+        [HttpDelete, Route("subjects/{id:int}")]
+        [TokenAuthorize("Admin")]
+        public IHttpActionResult DeleteSubject(int id)
+        {
+            try { _adminService.DeleteSubject(id); return Ok(new { message = "Subject deleted." }); }
+            catch (KeyNotFoundException) { return NotFound(); }
             catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
         }
@@ -206,7 +218,7 @@ namespace TrackMyGradeAPI.Controllers
         }
 
         // POST: api/admin/class-groups
-        /// <summary>Creates a new class group. Validates course and teacher existence.</summary>
+        /// <summary>Creates a new class group. Validates subject and teacher existence.</summary>
         [HttpPost, Route("class-groups")]
         [TokenAuthorize("Admin")]
         [ResponseType(typeof(ClassGroupDto))]
@@ -239,6 +251,18 @@ namespace TrackMyGradeAPI.Controllers
         {
             try { _adminService.UnenrollStudent(id, studentId); return Ok(new { message = "Student unenrolled." }); }
             catch (KeyNotFoundException ex) { return BadRequest(ex.Message); }
+            catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
+        }
+
+        // DELETE: api/admin/class-groups/{id}
+        /// <summary>Deletes a class group.</summary>
+        [HttpDelete, Route("class-groups/{id:int}")]
+        [TokenAuthorize("Admin")]
+        public IHttpActionResult DeleteClassGroup(int id)
+        {
+            try { _adminService.DeleteClassGroup(id); return Ok(new { message = "Class group deleted." }); }
+            catch (KeyNotFoundException) { return NotFound(); }
+            catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
             catch (Exception ex) { ErrorLoggingConfig.LogError(ex); return InternalServerError(ex); }
         }
 
