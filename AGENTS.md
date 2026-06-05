@@ -94,6 +94,7 @@ When creating new error fix documentation:
 - **Build API:** `cd TrackMyGradeAPI && msbuild TrackMyGradeAPI.csproj`
 - **Restore NuGet Packages:** `cd TrackMyGradeAPI; msbuild TrackMyGradeAPI.csproj /t:Restore`
 - **Run API:** `cd TrackMyGradeAPI; .\bin\TrackMyGradeAPI.exe`
+- **Install npm dependencies:** `cd StudentApp && npm install`
 - **Build Angular:** `cd StudentApp && npm run build`
 - **Run Angular:** `cd StudentApp && npm start`
 

@@ -330,16 +330,128 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   private validatePhone(phone: string | undefined): string {
     if (!phone || !phone.trim()) return '';
-    const phoneRegex = /^\+?[0-9\-\(\)\s]{7,}$/;
-    if (!phoneRegex.test(phone)) return 'Invalid phone format (digits, spaces, +, -, () allowed)';
-    if (phone.length > 20) return 'Phone cannot exceed 20 characters';
+    if (!/^\d{8}$/.test(phone.trim())) return 'Phone must be exactly 8 digits';
     return '';
   }
 
   private validateName(name: string, fieldName: string): string {
     if (!name || !name.trim()) return `${fieldName} is required`;
+    if (!/^[a-zA-Z\s\-']+$/.test(name.trim())) return `${fieldName} must contain only letters, spaces, hyphens, or apostrophes`;
     if (name.trim().length > 100) return `${fieldName} cannot exceed 100 characters`;
     return '';
+  }
+
+  private validateOmang(omang: string): string {
+    if (!omang || !omang.trim()) return 'OMANG or Passport is required';
+    if (!/^[a-zA-Z0-9]{9}$/.test(omang.trim())) return 'OMANG/Passport must be exactly 9 alphanumeric characters';
+    return '';
+  }
+
+  // ── Input event handlers for real-time validation ─────────────────────
+
+  onTeacherFirstNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const lettersOnly = input.value.replace(/[^a-zA-Z\s\-']/g, '');
+    this.newTeacher.firstName = lettersOnly;
+    this.teacherErrors['firstName'] = this.validateName(lettersOnly, 'First name');
+  }
+
+  onTeacherLastNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const lettersOnly = input.value.replace(/[^a-zA-Z\s\-']/g, '');
+    this.newTeacher.lastName = lettersOnly;
+    this.teacherErrors['lastName'] = this.validateName(lettersOnly, 'Last name');
+  }
+
+  onTeacherPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = input.value.replace(/\D/g, '').substring(0, 8);
+    this.teacherPhoneNumber = digitsOnly;
+    if (digitsOnly) {
+      this.teacherErrors['phone'] = this.validatePhone(digitsOnly);
+    } else {
+      this.teacherErrors['phone'] = '';
+    }
+  }
+
+  onTeacherEmailInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.newTeacher.email = input.value.trim();
+    this.teacherErrors['email'] = this.validateEmail(this.newTeacher.email);
+  }
+
+  onTeacherSubjectChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.newTeacher.subject = select.value;
+    if (!select.value || !select.value.trim()) {
+      this.teacherErrors['subject'] = 'Subject is required';
+    } else {
+      this.teacherErrors['subject'] = '';
+    }
+  }
+
+  onStudentFirstNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const lettersOnly = input.value.replace(/[^a-zA-Z\s\-']/g, '');
+    this.newStudent.firstName = lettersOnly;
+    this.studentErrors['firstName'] = this.validateName(lettersOnly, 'First name');
+  }
+
+  onStudentLastNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const lettersOnly = input.value.replace(/[^a-zA-Z\s\-']/g, '');
+    this.newStudent.lastName = lettersOnly;
+    this.studentErrors['lastName'] = this.validateName(lettersOnly, 'Last name');
+  }
+
+  onStudentPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = input.value.replace(/\D/g, '').substring(0, 8);
+    this.studentPhoneNumber = digitsOnly;
+    if (digitsOnly) {
+      this.studentErrors['phone'] = this.validatePhone(digitsOnly);
+    } else {
+      this.studentErrors['phone'] = '';
+    }
+  }
+
+  onStudentEmailInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.newStudent.email = input.value.trim();
+    this.studentErrors['email'] = this.validateEmail(this.newStudent.email);
+  }
+
+  onStudentOmangInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const alphanumericOnly = input.value.replace(/[^a-zA-Z0-9]/g, '').substring(0, 9);
+    this.newStudent.omangOrPassport = alphanumericOnly;
+    if (alphanumericOnly) {
+      this.studentErrors['omangOrPassport'] = this.validateOmang(alphanumericOnly);
+    } else {
+      this.studentErrors['omangOrPassport'] = '';
+    }
+  }
+
+  onStudentGradeChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = parseInt(select.value, 10);
+    this.newStudent.grade = value;
+    if (value < 1 || value > 12) {
+      this.studentErrors['grade'] = 'Grade must be between 1 and 12';
+    } else {
+      this.studentErrors['grade'] = '';
+    }
+  }
+
+  onStudentTeacherChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = parseInt(select.value, 10);
+    this.newStudent.teacherId = value;
+    if (!value || value <= 0) {
+      this.studentErrors['teacherId'] = 'Please select a teacher';
+    } else {
+      this.studentErrors['teacherId'] = '';
+    }
   }
 
   private clearErrors(errorObj: Record<string, string>): void {
@@ -353,14 +465,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.teacherErrors['firstName'] = this.validateName(this.newTeacher.firstName, 'First name');
     this.teacherErrors['lastName'] = this.validateName(this.newTeacher.lastName, 'Last name');
     this.teacherErrors['email'] = this.validateEmail(this.newTeacher.email);
-    
-    this.newTeacher.phone = this.teacherPhoneNumber ? `${this.teacherPhoneCountryCode} ${this.teacherPhoneNumber.trim()}` : '';
+
+    this.newTeacher.phone = this.teacherPhoneNumber ? this.teacherPhoneNumber : '';
     this.teacherErrors['phone'] = this.validatePhone(this.newTeacher.phone);
 
     if (!this.newTeacher.subject || !this.newTeacher.subject.trim()) {
       this.teacherErrors['subject'] = 'Subject is required';
-    } else if (this.newTeacher.subject.length > 100) {
-      this.teacherErrors['subject'] = 'Subject cannot exceed 100 characters';
+    } else {
+      this.teacherErrors['subject'] = '';
     }
 
     // Client-side duplicate email check
@@ -419,28 +531,22 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.studentErrors['firstName'] = this.validateName(this.newStudent.firstName, 'First name');
     this.studentErrors['lastName'] = this.validateName(this.newStudent.lastName, 'Last name');
     this.studentErrors['email'] = this.validateEmail(this.newStudent.email);
-    
-    this.newStudent.phone = this.studentPhoneNumber ? `${this.studentPhoneCountryCode} ${this.studentPhoneNumber.trim()}` : '';
+
+    this.newStudent.phone = this.studentPhoneNumber ? this.studentPhoneNumber : '';
     this.studentErrors['phone'] = this.validatePhone(this.newStudent.phone);
 
-    // OMANG / Passport validation - alphanumeric only, required, 4-20 chars
-    const omang = this.newStudent.omangOrPassport?.trim() ?? '';
-    if (!omang) {
-      this.studentErrors['omangOrPassport'] = 'OMANG or Passport number is required';
-    } else if (!/^[a-zA-Z0-9]+$/.test(omang)) {
-      this.studentErrors['omangOrPassport'] = 'OMANG/Passport must contain only letters and digits';
-    } else if (omang.length < 4) {
-      this.studentErrors['omangOrPassport'] = 'OMANG/Passport must be at least 4 characters';
-    } else if (omang.length > 20) {
-      this.studentErrors['omangOrPassport'] = 'OMANG/Passport cannot exceed 20 characters';
-    }
+    this.studentErrors['omangOrPassport'] = this.validateOmang(this.newStudent.omangOrPassport);
 
     if (this.newStudent.grade < 1 || this.newStudent.grade > 12) {
       this.studentErrors['grade'] = 'Grade must be between 1 and 12';
+    } else {
+      this.studentErrors['grade'] = '';
     }
 
     if (!this.newStudent.teacherId || this.newStudent.teacherId <= 0) {
       this.studentErrors['teacherId'] = 'Please select a teacher';
+    } else {
+      this.studentErrors['teacherId'] = '';
     }
 
     // Client-side duplicate email check
@@ -451,7 +557,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     // Client-side duplicate OMANG check
     if (!this.studentErrors['omangOrPassport'] &&
-      this.students.some(s => s.omangOrPassport?.toLowerCase() === omang.toLowerCase())) {
+      this.students.some(s => s.omangOrPassport?.toLowerCase() === this.newStudent.omangOrPassport.toLowerCase())) {
       this.studentErrors['omangOrPassport'] = 'A student with this OMANG/Passport already exists';
     }
 

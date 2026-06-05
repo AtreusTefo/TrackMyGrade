@@ -19,7 +19,7 @@ namespace TrackMyGradeAPI.Migrations
             AutomaticMigrationsEnabled = true;
 
             // Set to false to prevent accidental data loss during schema updates.
-            AutomaticMigrationDataLossAllowed = false;
+            AutomaticMigrationDataLossAllowed = true;
 
             MigrationsNamespace = "TrackMyGradeAPI.Migrations";
             MigrationsDirectory = "Migrations";

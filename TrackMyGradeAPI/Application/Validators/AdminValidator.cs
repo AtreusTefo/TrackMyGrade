@@ -14,7 +14,17 @@ namespace TrackMyGradeAPI.Validators
         );
 
         private static readonly Regex PhoneRegex = new Regex(
-            @"^\+?[0-9\-\(\)\s]{7,}$",
+            @"^\d{8}$",
+            RegexOptions.Compiled
+        );
+
+        private static readonly Regex NameRegex = new Regex(
+            @"^[a-zA-Z\s\-']+$",
+            RegexOptions.Compiled
+        );
+
+        private static readonly Regex OmangPassportRegex = new Regex(
+            @"^[a-zA-Z0-9]{9}$",
             RegexOptions.Compiled
         );
 
@@ -32,6 +42,18 @@ namespace TrackMyGradeAPI.Validators
             if (string.IsNullOrWhiteSpace(request.LastName))
                 throw new ArgumentException("Last name is required.");
 
+            if (request.FirstName.Length > 100)
+                throw new ArgumentException("First name cannot exceed 100 characters.");
+
+            if (request.LastName.Length > 100)
+                throw new ArgumentException("Last name cannot exceed 100 characters.");
+
+            if (!NameRegex.IsMatch(request.FirstName.Trim()))
+                throw new ArgumentException("First name must contain only letters, spaces, hyphens, or apostrophes.");
+
+            if (!NameRegex.IsMatch(request.LastName.Trim()))
+                throw new ArgumentException("Last name must contain only letters, spaces, hyphens, or apostrophes.");
+
             if (string.IsNullOrWhiteSpace(request.Email))
                 throw new ArgumentException("Email is required.");
 
@@ -41,16 +63,13 @@ namespace TrackMyGradeAPI.Validators
             if (string.IsNullOrWhiteSpace(request.Phone))
                 throw new ArgumentException("Phone is required.");
 
-            if (request.Phone.Length != 8 || !request.Phone.All(char.IsDigit))
-                throw new ArgumentException("Phone must be exactly 8 digits.");
+            if (!PhoneRegex.IsMatch(request.Phone.Trim()))
+                throw new ArgumentException("Phone must be exactly 8 digits (Botswana format).");
 
-            if (request.FirstName.Length > 100)
-                throw new ArgumentException("First name cannot exceed 100 characters.");
+            if (string.IsNullOrWhiteSpace(request.Subject))
+                throw new ArgumentException("Subject is required.");
 
-            if (request.LastName.Length > 100)
-                throw new ArgumentException("Last name cannot exceed 100 characters.");
-
-            if (!string.IsNullOrWhiteSpace(request.Subject) && request.Subject.Length > 100)
+            if (request.Subject.Length > 100)
                 throw new ArgumentException("Subject cannot exceed 100 characters.");
         }
 
@@ -68,35 +87,41 @@ namespace TrackMyGradeAPI.Validators
             if (string.IsNullOrWhiteSpace(request.LastName))
                 throw new ArgumentException("Last name is required.");
 
+            if (request.FirstName.Length > 100)
+                throw new ArgumentException("First name cannot exceed 100 characters.");
+
+            if (request.LastName.Length > 100)
+                throw new ArgumentException("Last name cannot exceed 100 characters.");
+
+            if (!NameRegex.IsMatch(request.FirstName.Trim()))
+                throw new ArgumentException("First name must contain only letters, spaces, hyphens, or apostrophes.");
+
+            if (!NameRegex.IsMatch(request.LastName.Trim()))
+                throw new ArgumentException("Last name must contain only letters, spaces, hyphens, or apostrophes.");
+
             if (string.IsNullOrWhiteSpace(request.Email))
                 throw new ArgumentException("Email is required.");
 
             if (!EmailRegex.IsMatch(request.Email))
                 throw new ArgumentException("Email format is invalid.");
 
-            if (string.IsNullOrWhiteSpace(request.OmangOrPassport))
-                throw new ArgumentException("OMANG or Passport is required.");
-
-            if (request.OmangOrPassport.Length > 20)
-                throw new ArgumentException("OMANG or Passport cannot exceed 20 characters.");
-
             if (string.IsNullOrWhiteSpace(request.Phone))
                 throw new ArgumentException("Phone is required.");
 
-            if (request.Phone.Length != 8 || !request.Phone.All(char.IsDigit))
-                throw new ArgumentException("Phone must be exactly 8 digits.");
+            if (!PhoneRegex.IsMatch(request.Phone.Trim()))
+                throw new ArgumentException("Phone must be exactly 8 digits (Botswana format).");
+
+            if (string.IsNullOrWhiteSpace(request.OmangOrPassport))
+                throw new ArgumentException("OMANG or Passport is required.");
+
+            if (!OmangPassportRegex.IsMatch(request.OmangOrPassport.Trim()))
+                throw new ArgumentException("OMANG/Passport must be exactly 9 alphanumeric characters (letters and numbers only).");
 
             if (request.Grade < 1 || request.Grade > 12)
                 throw new ArgumentException("Grade must be between 1 and 12.");
 
             if (request.TeacherId <= 0)
                 throw new ArgumentException("Valid teacher ID is required.");
-
-            if (request.FirstName.Length > 100)
-                throw new ArgumentException("First name cannot exceed 100 characters.");
-
-            if (request.LastName.Length > 100)
-                throw new ArgumentException("Last name cannot exceed 100 characters.");
         }
 
         /// <summary>Validate admin update student request.</summary>

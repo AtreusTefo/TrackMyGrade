@@ -33,10 +33,16 @@ namespace TrackMyGradeAPI.Validators
         public AdminCreateTeacherValidator()
         {
             RuleFor(x => x.FirstName)
-                .NotEmpty().Length(2, 50).WithMessage("First name must be 2–50 characters");
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("First name is required")
+                .Length(2, 100).WithMessage("First name must be 2–100 characters")
+                .Matches(@"^[a-zA-Z\s\-']+$").WithMessage("First name must contain only letters, spaces, hyphens, or apostrophes");
 
             RuleFor(x => x.LastName)
-                .NotEmpty().Length(2, 50).WithMessage("Last name must be 2–50 characters");
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Last name is required")
+                .Length(2, 100).WithMessage("Last name must be 2–100 characters")
+                .Matches(@"^[a-zA-Z\s\-']+$").WithMessage("Last name must contain only letters, spaces, hyphens, or apostrophes");
 
             RuleFor(x => x.Email)
                 .Cascade(CascadeMode.Stop)
@@ -46,10 +52,12 @@ namespace TrackMyGradeAPI.Validators
             RuleFor(x => x.Phone)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("Phone is required")
-                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits");
+                .Matches(@"^\d{8}$").WithMessage("Phone must be exactly 8 digits (Botswana format)");
 
             RuleFor(x => x.Subject)
-                .NotEmpty().MaximumLength(100).WithMessage("Subject is required (max 100 chars)");
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Subject is required")
+                .MaximumLength(100).WithMessage("Subject cannot exceed 100 characters");
         }
     }
 

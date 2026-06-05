@@ -59,13 +59,15 @@
           <div class="field-row">
             <label for="teacher-firstName">First Name <span class="required">*</span></label>
             <input id="teacher-firstName" type="text" [(ngModel)]="newTeacher.firstName" name="teacherFirstName"
-              maxlength="100" [class.input-error]="teacherErrors['firstName']" autocomplete="given-name" />
+              maxlength="100" [class.input-error]="teacherErrors['firstName']" autocomplete="given-name"
+              (input)="onTeacherFirstNameInput($event)" />
             <span *ngIf="teacherErrors['firstName']" class="field-error">{{ teacherErrors['firstName'] }}</span>
           </div>
           <div class="field-row">
             <label for="teacher-lastName">Last Name <span class="required">*</span></label>
             <input id="teacher-lastName" type="text" [(ngModel)]="newTeacher.lastName" name="teacherLastName"
-              maxlength="100" [class.input-error]="teacherErrors['lastName']" autocomplete="family-name" />
+              maxlength="100" [class.input-error]="teacherErrors['lastName']" autocomplete="family-name"
+              (input)="onTeacherLastNameInput($event)" />
             <span *ngIf="teacherErrors['lastName']" class="field-error">{{ teacherErrors['lastName'] }}</span>
           </div>
         </div>
@@ -73,7 +75,8 @@
           <div class="field-row">
             <label for="teacher-email">Email <span class="required">*</span></label>
             <input id="teacher-email" type="email" [(ngModel)]="newTeacher.email" name="teacherEmail" maxlength="255"
-              [class.input-error]="teacherErrors['email']" autocomplete="email" />
+              [class.input-error]="teacherErrors['email']" autocomplete="email"
+              (input)="onTeacherEmailInput($event)" />
             <span *ngIf="teacherErrors['email']" class="field-error">{{ teacherErrors['email'] }}</span>
           </div>
           <div class="field-row">
@@ -87,15 +90,17 @@
                 <option value="+91">+91 (IN)</option>
                 <option value="+61">+61 (AU)</option>
               </select>
-              <input id="teacher-phone" type="tel" [(ngModel)]="teacherPhoneNumber" name="teacherPhone" maxlength="20"
-                [class.input-error]="teacherErrors['phone']" autocomplete="tel" style="flex: 1;" />
+              <input id="teacher-phone" type="tel" [(ngModel)]="teacherPhoneNumber" name="teacherPhone" maxlength="8"
+                [class.input-error]="teacherErrors['phone']" autocomplete="tel" style="flex: 1;"
+                (input)="onTeacherPhoneInput($event)" placeholder="Max 8 digits" />
             </div>
             <span *ngIf="teacherErrors['phone']" class="field-error">{{ teacherErrors['phone'] }}</span>
           </div>
         </div>
         <div class="field-row">
           <label for="teacher-subject">Subject <span class="required">*</span></label>
-          <select id="teacher-subject" [(ngModel)]="newTeacher.subject" name="teacherSubject" [class.input-error]="teacherErrors['subject']">
+          <select id="teacher-subject" [(ngModel)]="newTeacher.subject" name="teacherSubject" [class.input-error]="teacherErrors['subject']"
+            (change)="onTeacherSubjectChange($event)">
             <option value="" disabled>-- Select a subject --</option>
             <option *ngFor="let s of subjects" [value]="s.name">{{ s.name }}</option>
           </select>
@@ -168,13 +173,15 @@
           <div class="field-row">
             <label for="student-firstName">First Name <span class="required">*</span></label>
             <input id="student-firstName" type="text" [(ngModel)]="newStudent.firstName" name="studentFirstName"
-              maxlength="100" [class.input-error]="studentErrors['firstName']" autocomplete="given-name" />
+              maxlength="100" [class.input-error]="studentErrors['firstName']" autocomplete="given-name"
+              (input)="onStudentFirstNameInput($event)" />
             <span *ngIf="studentErrors['firstName']" class="field-error">{{ studentErrors['firstName'] }}</span>
           </div>
           <div class="field-row">
             <label for="student-lastName">Last Name <span class="required">*</span></label>
             <input id="student-lastName" type="text" [(ngModel)]="newStudent.lastName" name="studentLastName"
-              maxlength="100" [class.input-error]="studentErrors['lastName']" autocomplete="family-name" />
+              maxlength="100" [class.input-error]="studentErrors['lastName']" autocomplete="family-name"
+              (input)="onStudentLastNameInput($event)" />
             <span *ngIf="studentErrors['lastName']" class="field-error">{{ studentErrors['lastName'] }}</span>
           </div>
         </div>
@@ -182,7 +189,8 @@
           <div class="field-row">
             <label for="student-email">Email <span class="required">*</span></label>
             <input id="student-email" type="email" [(ngModel)]="newStudent.email" name="studentEmail" maxlength="255"
-              [class.input-error]="studentErrors['email']" autocomplete="email" />
+              [class.input-error]="studentErrors['email']" autocomplete="email"
+              (input)="onStudentEmailInput($event)" />
             <span *ngIf="studentErrors['email']" class="field-error">{{ studentErrors['email'] }}</span>
           </div>
           <div class="field-row">
@@ -196,8 +204,9 @@
                 <option value="+91">+91 (IN)</option>
                 <option value="+61">+61 (AU)</option>
               </select>
-              <input id="student-phone" type="tel" [(ngModel)]="studentPhoneNumber" name="studentPhone" maxlength="20"
-                [class.input-error]="studentErrors['phone']" autocomplete="tel" style="flex: 1;" />
+              <input id="student-phone" type="tel" [(ngModel)]="studentPhoneNumber" name="studentPhone" maxlength="8"
+                [class.input-error]="studentErrors['phone']" autocomplete="tel" style="flex: 1;"
+                (input)="onStudentPhoneInput($event)" placeholder="Max 8 digits" />
             </div>
             <span *ngIf="studentErrors['phone']" class="field-error">{{ studentErrors['phone'] }}</span>
           </div>
@@ -206,14 +215,16 @@
           <div class="field-row">
             <label for="student-omang">OMANG / Passport <span class="required">*</span></label>
             <input id="student-omang" type="text" [(ngModel)]="newStudent.omangOrPassport" name="studentOmang"
-              maxlength="20" [class.input-error]="studentErrors['omangOrPassport']" />
+              maxlength="9" [class.input-error]="studentErrors['omangOrPassport']"
+              (input)="onStudentOmangInput($event)" placeholder="9 alphanumeric chars" />
             <span *ngIf="studentErrors['omangOrPassport']" class="field-error">{{ studentErrors['omangOrPassport']
               }}</span>
           </div>
           <div class="field-row">
             <label for="student-grade">Grade <span class="required">*</span></label>
             <select id="student-grade" [(ngModel)]="newStudent.grade" name="studentGrade"
-              [class.input-error]="studentErrors['grade']">
+              [class.input-error]="studentErrors['grade']"
+              (change)="onStudentGradeChange($event)">
               <option *ngFor="let g of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="g">Grade {{ g }}</option>
             </select>
             <span *ngIf="studentErrors['grade']" class="field-error">{{ studentErrors['grade'] }}</span>
@@ -222,7 +233,8 @@
         <div class="field-row">
           <label for="student-teacher">Assign Teacher <span class="required">*</span></label>
           <select id="student-teacher" [(ngModel)]="newStudent.teacherId" name="studentTeacher"
-            [class.input-error]="studentErrors['teacherId']">
+            [class.input-error]="studentErrors['teacherId']"
+            (change)="onStudentTeacherChange($event)">
             <option [value]="0" disabled>-- Select a teacher --</option>
             <option *ngFor="let t of teachers" [value]="t.id">
               {{ t.firstName }} {{ t.lastName }} ({{ t.subject }})
